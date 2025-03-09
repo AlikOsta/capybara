@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from .models import Product, Category, Currency, City
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from .forms import ProductForm
+
 
 class ProductListView(ListView):
     model = Product
@@ -73,3 +76,14 @@ class CategoryDetailView(ListView):
             'currencies': Currency.objects.all(),
         })
         return context
+    
+
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'app/product_form.html'
+    success_url = reverse_lazy('app:index')
+    
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)

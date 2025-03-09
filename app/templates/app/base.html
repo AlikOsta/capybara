@@ -32,7 +32,7 @@
                 </div>
             </a>
 
-            <a href="#" class="text-decoration-none">
+            <a href="{% url 'app:product_create' %}" class="text-decoration-none">
                 <div class="p-2 rounded-circle {% if request.resolver_match.url_name == 'add' %}bg-light{% endif %}">
                     <i class="bi bi-plus-square fs-4"></i>
                 </div>

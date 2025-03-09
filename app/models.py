@@ -1,6 +1,5 @@
-import os
 from django.db import models
-
+import os
 from slugify import slugify
 from django.urls import reverse
 from django.contrib.auth import get_user_model
