@@ -1,0 +1,44 @@
+{% extends 'app/base.html' %}
+
+{% block title %}{{ category.name }} - Объявления{% endblock %}
+
+{% block content %}
+<div class="mt-3">
+    <!-- Верхний блок с навигацией и поиском -->
+    <div class="mb-3">
+        <div class="d-flex align-items-center mb-3">
+            <a href="{% url 'app:index' %}" class="text-decoration-none">
+                <i class="bi bi-arrow-left fs-4"></i>
+            </a>
+            <div class="ms-3 flex-grow-1">
+                <form method="get" class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Поиск в категории..." value="{{ query }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Заголовок с количеством -->
+    <div class="d-flex align-items-center mb-3">
+        <h4 class="mb-0">{{ category.name }}</h4>
+        <span class="ms-2 text-muted">({{ products|length }})</span>
+    </div>
+    
+    <!-- Список объявлений -->
+    <div class="row g-3">
+        {% for product in products %}
+        <div class="col-6">
+            {% include 'app/includes/product_card.html' with product=product %}
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted"></i>
+            <p class="mt-3">В этой категории пока нет объявлений</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

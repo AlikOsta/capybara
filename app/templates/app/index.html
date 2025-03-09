@@ -10,23 +10,28 @@
     <div class="row flex-nowrap overflow-auto g-2">
         {% for category in categories %}
         <div class="col-auto" style="min-width: 140px; min-height: 90px;">
-            <div class="card h-100 border-0 position-relative overflow-hidden bg-light shadow-sm rounded-3"
-                 style="height: 90px;">
-                {% if category.image %}
-                <img src="{{ category.image.url }}" 
-                     class="position-absolute bottom-0 end-0 p-2 img-fluid" 
-                     alt="{{ category.name }}" style="max-height: 70px;">
-                {% endif %}
-                <div class="card-body p-2 position-absolute start-0 top-0">
-                    <p class="card-text small fw-bold text-dark">{{ category.name }}</p>
+            <a href="{% url 'app:category_detail' category.slug %}" class="text-decoration-none">
+                <div class="card h-100 border-0 position-relative overflow-hidden bg-light shadow-sm rounded-3"
+                    style="height: 90px;">
+                    {% if category.image %}
+                    <img src="{{ category.image.url }}" 
+                        class="position-absolute bottom-0 end-0 p-2 img-fluid" 
+                        alt="{{ category.name }}" style="max-height: 70px;">
+                    {% endif %}
+                    <div class="card-body p-2 position-absolute start-0 top-0">
+                        <p class="card-text small fw-bold text-dark">{{ category.name }}</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         {% endfor %}
     </div>
 </div>
 
-
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0">Новые объявления</h4>
+    <span class="ms-2 text-muted">({{ products|length }})</span>
+</div>
 
     <!-- Список объявлений -->
     <div class="row g-3">
