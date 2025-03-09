@@ -5,3 +5,5 @@
 *.cpython-312.pyc
 db.sqlite3
 venv
+media
+
