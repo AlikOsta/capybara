@@ -20,6 +20,34 @@
             </div>
         </div>
     </div>
+    <!-- Фильтры и сортировка -->
+    <div class="d-flex align-items-center mb-3 gap-2">
+        <select class="form-select" onchange="location = this.value;">
+            <option value="?{% if query %}q={{ query }}&{% endif %}{% if current_city %}city={{ current_city }}&{% endif %}{% if current_currency %}currency={{ current_currency }}{% endif %}">Сортировка</option>
+            <option value="?sort=price_asc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'price_asc' %}selected{% endif %}>Сначала дешевле</option>
+            <option value="?sort=price_desc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'price_desc' %}selected{% endif %}>Сначала дороже</option>
+            <option value="?sort=date_desc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
+            <option value="?sort=date_asc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
+        </select>
+    
+        <select class="form-select" onchange="location = this.value;">
+            <option value="?{% if query %}q={{ query }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}{% if current_currency %}currency={{ current_currency }}{% endif %}">Все города</option>
+            {% for city in cities %}
+            <option value="?city={{ city.id }}{% if query %}&q={{ query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_city == city.id|stringformat:"s" %}selected{% endif %}>
+                {{ city.name }}
+            </option>
+            {% endfor %}
+        </select>
+    
+        <select class="form-select" onchange="location = this.value;">
+            <option value="?{% if query %}q={{ query }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}{% if current_city %}city={{ current_city }}{% endif %}">Все валюты</option>
+            {% for currency in currencies %}
+            <option value="?currency={{ currency.id }}{% if query %}&q={{ query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}" {% if current_currency == currency.id|stringformat:"s" %}selected{% endif %}>
+                {{ currency.code }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
 
     <!-- Заголовок с количеством -->
     <div class="d-flex align-items-center mb-3">
