@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from .forms import ProductForm
+from django.contrib.auth import get_user_model
 
 
 class ProductListView(ListView):
@@ -12,11 +13,21 @@ class ProductListView(ListView):
     template_name = 'app/index.html'
     context_object_name = 'products'
 
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        query = self.request.GET.get('q', '')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query)
+            )
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
+        context['query'] = self.request.GET.get('q', '')
         return context
-
 
 class ProductDetailView(DetailView):
     model = Product
@@ -68,7 +79,7 @@ class CategoryDetailView(ListView):
         context = super().get_context_data(**kwargs)
         context['category'] = get_object_or_404(Category, slug=self.kwargs['category_slug'])
         context.update({
-            'query': self.request.GET.get('q'),
+            'query': self.request.GET.get('q', ''),
             'current_sort': self.request.GET.get('sort'),
             'current_city': self.request.GET.get('city'),
             'current_currency': self.request.GET.get('currency'),
@@ -87,3 +98,25 @@ class ProductCreateView(CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
+    
+
+class AuthorProfileView(ListView):
+    model = Product
+    template_name = 'app/author_profile.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        author = get_object_or_404(get_user_model(), id=self.kwargs['author_id'])
+        return Product.objects.filter(author=author, status=3) 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        author = get_object_or_404(get_user_model(), id=self.kwargs['author_id'])
+        context['author'] = author
+        context['is_own_profile'] = self.request.user == author
+        if context['is_own_profile']:
+            context['pending_products'] = Product.objects.filter(
+                author=author, 
+                status=0
+            )
+        return context

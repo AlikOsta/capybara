@@ -5,6 +5,19 @@
 {% block content %}
 <div class="mt-3">
 
+    <div class="mb-3">
+        <div class="d-flex align-items-center mb-3">
+            <div class="ms-3 flex-grow-1">
+                <form method="get" class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Поиск..." value="{{ query }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
 <!-- Категории -->
 <div class="mb-4">
     <div class="row flex-nowrap overflow-auto g-2">
