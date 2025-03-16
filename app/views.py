@@ -14,7 +14,7 @@ class ProductListView(ListView):
     context_object_name = 'products'
 
     def get_queryset(self):
-        queryset = Product.objects.all()
+        queryset = Product.objects.filter(status=3)
         query = self.request.GET.get('q', '')
         if query:
             queryset = queryset.filter(
@@ -29,12 +29,12 @@ class ProductListView(ListView):
         context['query'] = self.request.GET.get('q', '')
         return context
 
+
 class ProductDetailView(DetailView):
     model = Product
     template_name = 'app/product_detail.html'
     context_object_name = 'product'
     slug_url_kwarg = 'product_slug'
-
 
 
 class CategoryDetailView(ListView):
@@ -100,23 +100,3 @@ class ProductCreateView(CreateView):
         return super().form_valid(form)
     
 
-class AuthorProfileView(ListView):
-    model = Product
-    template_name = 'app/author_profile.html'
-    context_object_name = 'products'
-
-    def get_queryset(self):
-        author = get_object_or_404(get_user_model(), id=self.kwargs['author_id'])
-        return Product.objects.filter(author=author, status=3) 
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        author = get_object_or_404(get_user_model(), id=self.kwargs['author_id'])
-        context['author'] = author
-        context['is_own_profile'] = self.request.user == author
-        if context['is_own_profile']:
-            context['pending_products'] = Product.objects.filter(
-                author=author, 
-                status=0
-            )
-        return context
