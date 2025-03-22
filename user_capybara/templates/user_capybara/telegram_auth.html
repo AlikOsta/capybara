@@ -1,0 +1,35 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Авторизация через Telegram{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-telegram text-primary" style="font-size: 5rem;"></i>
+                    
+                    <h2 class="mt-4 mb-3">Авторизация через Telegram</h2>
+                    
+                    <p class="mb-4">
+                        Для полноценной работы с приложением Capybara необходимо авторизоваться через наш Telegram бот.
+                    </p>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="https://t.me/CapybaraCambioRobot" class="btn btn-primary btn-lg">
+                            <i class="bi bi-telegram me-2"></i>
+                            Перейти к боту
+                        </a>
+                        
+                        <a href="{% url 'app:index' %}" class="btn btn-outline-secondary mt-2">
+                            Вернуться на главную
+                        </a>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,12 +6,16 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from .forms import ProductForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
 
 
 class ProductListView(ListView):
     model = Product
     template_name = 'app/index.html'
     context_object_name = 'products'
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Product.objects.filter(status=3)
@@ -89,6 +93,7 @@ class CategoryDetailView(ListView):
         return context
     
 
+@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
@@ -99,4 +104,29 @@ class ProductCreateView(CreateView):
         form.instance.author = self.request.user
         return super().form_valid(form)
     
+
+@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'app/product_form.html'
+    slug_url_kwarg = 'product_slug'
+    
+    def get_success_url(self):
+        return reverse_lazy('app:product_detail', kwargs={'product_slug': self.object.slug})
+    
+    def get_queryset(self):
+        return Product.objects.filter(author=self.request.user)
+
+
+@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+class ProductDeleteView(DeleteView):
+    model = Product
+    template_name = 'app/product_confirm_delete.html'
+    success_url = reverse_lazy('app:index')
+    slug_url_kwarg = 'product_slug'
+    
+    def get_queryset(self):
+        return Product.objects.filter(author=self.request.user)
+
 

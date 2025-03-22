@@ -32,14 +32,14 @@
                 </div>
             </a>
 
-            <a href="{% url 'app:product_create' %}" class="text-decoration-none">
+            <a href="{% if user.is_authenticated %}{% url 'app:product_create' %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" class="text-decoration-none">
                 <div class="p-2 rounded-circle {% if request.resolver_match.url_name == 'add' %}bg-light{% endif %}">
                     <i class="bi bi-plus-square fs-4"></i>
                 </div>
             </a>
 
-            <a href="#" class="text-decoration-none">
-                <div class="p-2 rounded-circle {% if request.resolver_match.url_name == 'profile' %}bg-light{% endif %}">
+            <a href="{% if user.is_authenticated %}{% url 'user:author_profile' user.id %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" class="text-decoration-none">
+                <div class="p-2 rounded-circle {% if request.resolver_match.url_name == 'author_profile' and request.resolver_match.kwargs.author_id == user.id|stringformat:'s' %}bg-light{% endif %}">
                     <i class="bi bi-person fs-4"></i>
                 </div>
             </a>

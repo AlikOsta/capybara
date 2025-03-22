@@ -87,3 +87,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# MEDIA_URL = 'media/'
+
+# MEDIA_ROOT = BASE_DIR / 'media'
+
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 

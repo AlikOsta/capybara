@@ -1,4 +1,4 @@
-<a href="{% url 'app:product_detail' product.slug %}" class="text-decoration-none text-dark">
+<a href="{% url 'app:product_detail' pk=product.pk  %}" class="text-decoration-none text-dark">
     <div class="card h-100">
         <img src="{{ product.image.url }}" class="card-img-top object-fit-cover" style="height: 200px;" alt="{{ product.title }}">
         <div class="card-body p-2">
