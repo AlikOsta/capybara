@@ -89,5 +89,25 @@ class Currency(models.Model):
 class City(models.Model):
     name = models.CharField(max_length=50, db_index=True, verbose_name="Название")
 
+    class Meta:
+        verbose_name_plural = "Города"
+        verbose_name = "Город"
+        ordering = ['name']
+
     def __str__(self):
         return self.name
+    
+
+class Favorite(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='favorites', verbose_name='Пользователь')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='favorited_by', verbose_name='Объявление')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Добавлено')
+
+    class Meta:
+        verbose_name_plural = "Избранное"
+        verbose_name = "Избранное"
+        unique_together = ('user', 'product')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.title}"

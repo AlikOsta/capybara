@@ -5,8 +5,10 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import Http404
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse, HttpResponseRedirect
 
-from .models import Product, Category, Currency, City
+from .models import Product, Category, Currency, City, Favorite
 from .forms import ProductForm
 
 # Миксин для фильтрации опубликованных объявлений
@@ -67,6 +69,12 @@ class ProductDetailView(DetailView):
         if obj.status != 3 and obj.author != self.request.user and not self.request.user.is_staff:
             raise Http404("Объявление не найдено")
         return obj
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Добавляем информацию о том, находится ли объявление в избранном
+        context['is_favorite'] = is_favorite(self.request, self.object)
+        return context
 
 
 # Список объявлений в категории
@@ -170,4 +178,57 @@ class ProductDeleteView(AuthorRequiredMixin, DeleteView):
     
 
 
+# Добавить класс представления для списка избранных объявлений
+@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+class FavoriteListView(ListView):
+    model = Product
+    template_name = 'app/favorites.html'
+    context_object_name = 'products'
+    paginate_by = 10
 
+    def get_queryset(self):
+        # Получаем только избранные объявления текущего пользователя
+        return Product.objects.filter(
+            favorited_by__user=self.request.user,
+            status=3  # Только опубликованные
+        ).select_related('category', 'city', 'currency', 'author')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Избранное'
+        return context
+    
+# Добавить функцию для добавления/удаления из избранного
+@login_required(login_url='user:telegram_auth')
+@require_POST
+def toggle_favorite(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+     # Проверяем, есть ли уже это объявление в избранном
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+        product=product
+    )
+    
+    # Если объявление уже было в избранном, удаляем его
+    if not created:
+        favorite.delete()
+        is_favorite = False
+    else:
+        is_favorite = True
+    
+    # Если запрос через AJAX, возвращаем JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'is_favorite': is_favorite,
+            'count': product.favorited_by.count()
+        })
+    
+    # Иначе перенаправляем обратно на страницу объявления
+    return redirect('app:product_detail', pk=pk)
+
+# Добавить функцию для проверки, находится ли объявление в избранном
+def is_favorite(request, product):
+    if not request.user.is_authenticated:
+        return False
+    return Favorite.objects.filter(user=request.user, product=product).exists()
