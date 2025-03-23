@@ -143,3 +143,8 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'user_capybara.TelegramUser'
 
 # CORS_ALLOW_ALL_ORIGINS = True  # Только для разработки!
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
