@@ -14,10 +14,8 @@ def product_post_save(sender, instance, created, **kwargs):
         # Запускаем модерацию
         if moderate_goods(goods_text):
             instance.status = 1  # Одобрено
-            print("Объявление прошло модерацию.")
         else:
             instance.status = 2  # Отклонено
-            print("Объявление не прошло модерацию.")
             
         # Важно: используем update для предотвращения рекурсивного вызова сигнала
         type(instance).objects.filter(pk=instance.pk).update(status=instance.status)

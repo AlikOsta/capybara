@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app',
     'user_capybara',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'app.context_processors.favorites_processor',
+                'user_capybara.context_processors.telegram_user',  
             ],
         },
     },
@@ -77,6 +79,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
+
 LANGUAGE_CODE = os.getenv('LANGUAGE_CODE')
 
 TIME_ZONE = os.getenv('TIME_ZONE')
@@ -89,8 +97,38 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# MEDIA_URL = 'media/'
-
-# MEDIA_ROOT = BASE_DIR / 'media'
-
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 
+
+# Указываем кастомную модель пользователя
+AUTH_USER_MODEL = 'user_capybara.TelegramUser'
+
+# Настройки для работы с Telegram
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME')
+
+# Настройки для Mini App
+TELEGRAM_MINI_APP_URL = os.getenv('TELEGRAM_MINI_APP_URL')
+
+# Настройки для загрузки медиафайлов
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Настройки для REST API
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+# Настройки JWT
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
