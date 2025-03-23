@@ -77,3 +77,7 @@ class AuthorProfileView(AuthorProfileMixin, TemplateView):
 class TelegramAuthView(TemplateView):
     """Представление для авторизации через Telegram"""
     template_name = 'user_capybara/telegram_auth.html'
+    
+class MiniAppView(TemplateView):
+    """Представление для Telegram Mini App"""
+    template_name = 'user_capybara/mini_app.html'

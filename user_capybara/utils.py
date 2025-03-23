@@ -42,7 +42,7 @@ def verify_telegram_data(init_data):
     if calculated_hash != received_hash:
         return None
     
-    # Проверяем, не устарели ли данные
+    # Проверяем, не устарели ли данные (опционально)
     auth_date = int(data_dict.get('auth_date', 0))
     if time.time() - auth_date > 86400:  # 24 часа
         return None
@@ -69,8 +69,8 @@ def extract_telegram_user_data(user_data):
     return {
         'telegram_id': user_data.get('id'),
         'username': user_data.get('username'),
-        'first_name_tg': user_data.get('first_name'),
-        'last_name_tg': user_data.get('last_name'),
+        'first_name': user_data.get('first_name'),
+        'last_name': user_data.get('last_name'),
         'photo_url': user_data.get('photo_url'),
         'auth_date': user_data.get('auth_date')
     }

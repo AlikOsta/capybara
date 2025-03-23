@@ -128,6 +128,17 @@
     });
 </script>
 
+<script>
+    // Проверяем авторизацию при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Если страница не является страницей авторизации и пользователь не авторизован
+        if (!window.location.pathname.includes('/user/auth/') && !isAuthenticated()) {
+            // Перенаправляем на страницу авторизации
+            window.location.href = '{% url "user:telegram_auth" %}';
+        }
+    });
+</script>
+
 
     {% endblock %}
 </body>
