@@ -39,37 +39,11 @@ class TelegramUser(AbstractUser):
     """Кастомная модель пользователя для авторизации через Telegram"""
     
     # Telegram-специфичные поля
-    telegram_id = models.BigIntegerField(
-        unique=True, 
-        verbose_name=_('Telegram ID'),
-        help_text=_('Уникальный идентификатор пользователя в Telegram')
-    )
-    first_name_tg = models.CharField(
-        max_length=64, 
-        blank=True, 
-        null=True,
-        verbose_name=_('Имя в Telegram'),
-        help_text=_('Имя пользователя из Telegram')
-    )
-    last_name_tg = models.CharField(
-        max_length=64, 
-        blank=True, 
-        null=True,
-        verbose_name=_('Фамилия в Telegram'),
-        help_text=_('Фамилия пользователя из Telegram')
-    )
-    photo_url = models.URLField(
-        blank=True, 
-        null=True,
-        verbose_name=_('URL фото'),
-        help_text=_('URL фотографии пользователя из Telegram')
-    )
-    auth_date = models.IntegerField(
-        blank=True, 
-        null=True,
-        verbose_name=_('Дата авторизации'),
-        help_text=_('Timestamp последней авторизации через Telegram')
-    )
+    telegram_id = models.BigIntegerField(unique=True, verbose_name='Telegram ID')
+    first_name = models.CharField(max_length=64, blank=True, null=True,verbose_name='Имя в Telegram')
+    last_name = models.CharField(max_length=64, blank=True, null=True,verbose_name='Фамилия в Telegram')
+    photo_url = models.URLField(blank=True, null=True,verbose_name='URL фото')
+    auth_date = models.IntegerField(blank=True, null=True,verbose_name='Дата авторизации')
     
     # Указываем кастомный менеджер
     objects = TelegramUserManager()
@@ -85,18 +59,18 @@ class TelegramUser(AbstractUser):
     
     def get_full_name(self):
         """Возвращает полное имя пользователя"""
-        if self.first_name_tg and self.last_name_tg:
-            return f"{self.first_name_tg} {self.last_name_tg}"
-        elif self.first_name_tg:
-            return self.first_name_tg
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.first_name:
+            return self.first_name
         elif self.username:
             return f"@{self.username}"
         return f"User {self.telegram_id}"
     
     def get_short_name(self):
         """Возвращает короткое имя пользователя"""
-        if self.first_name_tg:
-            return self.first_name_tg
+        if self.first_name:
+            return self.first_name
         elif self.username:
             return f"@{self.username}"
         return f"User {self.telegram_id}"
