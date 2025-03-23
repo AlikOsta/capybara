@@ -20,13 +20,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
     'app',
     'user_capybara',
-    'rest_framework',
+    'bot_capybara',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -99,21 +103,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 
 
-# Указываем кастомную модель пользователя
-AUTH_USER_MODEL = 'user_capybara.TelegramUser'
 
-# Настройки для работы с Telegram
+# Настройки для Telegram бота
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME')
-
-# Настройки для Mini App
 TELEGRAM_MINI_APP_URL = os.getenv('TELEGRAM_MINI_APP_URL')
 
 # Настройки для загрузки медиафайлов
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Настройки для REST API
+# Настройки для CORS
+CORS_ALLOWED_ORIGINS = [
+    "https://web.telegram.org",
+]
+CORS_ALLOW_CREDENTIALS = True
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -132,3 +137,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
+
+AUTH_USER_MODEL = 'user_capybara.TelegramUser'
+

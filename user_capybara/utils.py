@@ -6,7 +6,6 @@ from urllib.parse import parse_qsl
 from django.conf import settings
 
 
-
 def verify_telegram_data(init_data):
     """
     Проверяет подлинность данных, полученных от Telegram Mini App.
@@ -43,7 +42,7 @@ def verify_telegram_data(init_data):
     if calculated_hash != received_hash:
         return None
     
-    # Проверяем, не устарели ли данные (опционально)
+    # Проверяем, не устарели ли данные
     auth_date = int(data_dict.get('auth_date', 0))
     if time.time() - auth_date > 86400:  # 24 часа
         return None
@@ -52,7 +51,7 @@ def verify_telegram_data(init_data):
     user_data = json.loads(data_dict.get('user', '{}'))
     
     # Добавляем auth_date к данным пользователя
-    user_data['auth_date'] = int(data_dict.get('auth_date', 0))
+    user_data['auth_date'] = auth_date
     
     return user_data
 
