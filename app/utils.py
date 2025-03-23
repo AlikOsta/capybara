@@ -1,7 +1,7 @@
 from mistralai import Mistral
 from django.conf import settings
 
-def moderate_review(text):
+def moderate_goods(text):
     client = Mistral(api_key=settings.MISTRAL_API_KEY)
     
     response = client.classifiers.moderate_chat(

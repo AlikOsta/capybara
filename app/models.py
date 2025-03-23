@@ -38,7 +38,7 @@ class Product(models.Model):
         super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("app:post_detail", args=[self.slug])
+        return reverse("app:product_detail", kwargs={"pk": self.pk})
 
     class Meta:
         verbose_name_plural = "Объявления"

@@ -9,8 +9,9 @@ class ProductForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-control'}),
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'price': forms.NumberInput(attrs={'class': 'form-control'}),
             'city': forms.Select(attrs={'class': 'form-control'}),
             'currency': forms.Select(attrs={'class': 'form-control'}),
         }
+

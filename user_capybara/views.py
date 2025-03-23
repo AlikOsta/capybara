@@ -1,36 +1,79 @@
-from django.shortcuts import render
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
+from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView, TemplateView
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
-from app.models import Product
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.db.models import Count
+
+from app.models import Product
+
+User = get_user_model()
+
+class AuthorProfileMixin:
+    """Миксин для получения автора профиля и проверки прав доступа"""
+    
+    def get_author(self):
+        return get_object_or_404(User, id=self.kwargs['author_id'])
+    
+    def is_own_profile(self):
+        return self.request.user.is_authenticated and self.request.user == self.get_author()
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-class AuthorProfileView(ListView):
-    model = Product
+class AuthorProfileView(AuthorProfileMixin, TemplateView):
+    """Представление профиля автора с его объявлениями, разделенными по статусам"""
     template_name = 'user_capybara/author_profile.html'
-    context_object_name = 'products'
-
-    def get_queryset(self):
-        author = get_object_or_404(get_user_model(), id=self.kwargs['author_id'])
-        return Product.objects.filter(author=author, status=3) 
-
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        author = get_object_or_404(get_user_model(), id=self.kwargs['author_id'])
+        author = self.get_author()
+        
         context['author'] = author
-        context['is_own_profile'] = self.request.user == author
-        if context['is_own_profile']:
-            context['pending_products'] = Product.objects.filter(
+        context['is_own_profile'] = self.is_own_profile()
+        
+        # Для других пользователей показываем только опубликованные объявления
+        if not context['is_own_profile']:
+            context['published_products'] = Product.objects.filter(
                 author=author, 
-                status=0
-            )
+                status=3
+            ).select_related('category', 'city', 'currency')
+            return context
+        
+        # Для собственного профиля показываем объявления по статусам
+        # Опубликованные (статус 3)
+        context['published_products'] = Product.objects.filter(
+            author=author, 
+            status=3
+        ).select_related('category', 'city', 'currency')
+        
+        # На модерации (статус 0)
+        context['pending_products'] = Product.objects.filter(
+            author=author, 
+            status=0
+        ).select_related('category', 'city', 'currency')
+        
+        # Одобренные, но не опубликованные (статус 1)
+        context['approved_products'] = Product.objects.filter(
+            author=author, 
+            status=1
+        ).select_related('category', 'city', 'currency')
+        
+        # Заблокированные (статус 2)
+        context['rejected_products'] = Product.objects.filter(
+            author=author, 
+            status=2
+        ).select_related('category', 'city', 'currency')
+        
+        # Архивные (статус 4)
+        context['archived_products'] = Product.objects.filter(
+            author=author, 
+            status=4
+        ).select_related('category', 'city', 'currency')
+        
         return context
 
 
 class TelegramAuthView(TemplateView):
+    """Представление для авторизации через Telegram"""
     template_name = 'user_capybara/telegram_auth.html'

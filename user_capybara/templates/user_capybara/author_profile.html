@@ -21,52 +21,170 @@
         </div>
     </div>
 
+    <!-- Опубликованные объявления - показываем только если есть -->
+    {% if published_products %}
+    <div class="mb-4">
+        <h5 class="d-flex align-items-center">
+            <span>Опубликованные</span>
+            <span class="ms-2 badge bg-primary">{{ published_products|length }}</span>
+        </h5>
+        
+        <div class="row g-3">
+            {% for product in published_products %}
+            <div class="col-6">
+                <div class="position-relative">
+                    {% include 'app/includes/product_card.html' with product=product %}
+                    
+                    {% if is_own_profile %}
+                        <!-- Кнопки управления объявлением -->
+                        <div class="mt-1 d-flex justify-content-end gap-1">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% elif not is_own_profile %}
+    <!-- Если нет опубликованных объявлений и это чужой профиль -->
+    <div class="text-center py-5">
+        <i class="bi bi-inbox fs-1 text-muted"></i>
+        <p class="mt-3">У пользователя пока нет объявлений</p>
+    </div>
+    {% endif %}
+
     {% if is_own_profile %}
-        <!-- Объявления на модерации -->
+        <!-- На модерации - показываем только если есть -->
         {% if pending_products %}
         <div class="mb-4">
-            <h5>На модерации ({{ pending_products|length }})</h5>
+            <h5 class="d-flex align-items-center">
+                <span>На модерации</span>
+                <span class="ms-2 badge bg-warning text-dark">{{ pending_products|length }}</span>
+            </h5>
+            
             <div class="row g-3">
                 {% for product in pending_products %}
                 <div class="col-6">
-                    {% include 'app/includes/product_card.html' with product=product %}
+                    <div class="position-relative">
+                        {% include 'app/includes/product_card.html' with product=product %}
+                        
+                        <!-- Кнопки управления объявлением -->
+                        <div class="mt-1 d-flex justify-content-end gap-1">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-    {% endif %}
 
-    <!-- Активные объявления -->
-    <h5>
-        {% if is_own_profile %}
-            Мои объявления
-        {% else %}
-            Объявления {{ author.username }}
+        <!-- Одобренные, но не опубликованные - показываем только если есть -->
+        {% if approved_products %}
+        <div class="mb-4">
+            <h5 class="d-flex align-items-center">
+                <span>Одобренные</span>
+                <span class="ms-2 badge bg-info">{{ approved_products|length }}</span>
+            </h5>
+            
+            <div class="row g-3">
+                {% for product in approved_products %}
+                <div class="col-6">
+                    <div class="position-relative">
+                        {% include 'app/includes/product_card.html' with product=product %}
+                        
+                        <!-- Кнопки управления объявлением -->
+                        <div class="mt-1 d-flex justify-content-end gap-1">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
         {% endif %}
-        ({{ products|length }})
-    </h5>
-    
-    <div class="row g-3">
-        {% for product in products %}
-        <div class="col-6">
-            {% include 'app/includes/product_card.html' with product=product %}
+
+        <!-- Заблокированные - показываем только если есть -->
+        {% if rejected_products %}
+        <div class="mb-4">
+            <h5 class="d-flex align-items-center">
+                <span>Заблокированные</span>
+                <span class="ms-2 badge bg-danger">{{ rejected_products|length }}</span>
+            </h5>
+            
+            <div class="row g-3">
+                {% for product in rejected_products %}
+                <div class="col-6">
+                    <div class="position-relative">
+                        {% include 'app/includes/product_card.html' with product=product %}
+                        
+                        <!-- Для заблокированных объявлений только кнопка удаления -->
+                        <div class="mt-1 d-flex justify-content-end">
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
+        {% endif %}
+
+        <!-- Архивные - показываем только если есть -->
+        {% if archived_products %}
+        <div class="mb-4">
+            <h5 class="d-flex align-items-center">
+                <span>Архив</span>
+                <span class="ms-2 badge bg-secondary">{{ archived_products|length }}</span>
+            </h5>
+            
+            <div class="row g-3">
+                {% for product in archived_products %}
+                <div class="col-6">
+                    <div class="position-relative">
+                        {% include 'app/includes/product_card.html' with product=product %}
+                        
+                        <!-- Кнопки управления объявлением -->
+                        <div class="mt-1 d-flex justify-content-end gap-1">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Если у пользователя вообще нет объявлений -->
+        {% if not published_products and not pending_products and not approved_products and not rejected_products and not archived_products %}
+        <div class="text-center py-5">
             <i class="bi bi-inbox fs-1 text-muted"></i>
-            <p class="mt-3">
-                {% if is_own_profile %}
-                    У вас пока нет объявлений
-                {% else %}
-                    У пользователя пока нет объявлений
-                {% endif %}
-            </p>
-            {% if is_own_profile %}
-                <a href="{% url 'app:product_create' %}" class="btn btn-primary">Создать объявление</a>
-            {% endif %}
+            <p class="mt-3">У вас пока нет объявлений</p>
         </div>
-        {% endfor %}
-    </div>
+        {% endif %}
+
+    {% endif %}
 </div>
 {% endblock %}
