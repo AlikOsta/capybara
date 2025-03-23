@@ -39,6 +39,10 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse("app:product_detail", kwargs={"pk": self.pk})
+     
+    def get_view_count(self):
+        """Возвращает количество уникальных просмотров объявления"""
+        return self.views.count()
 
     class Meta:
         verbose_name_plural = "Объявления"
@@ -111,3 +115,34 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.product.title}"
+    
+
+class ProductView(models.Model):
+    """Модель для хранения просмотров объявлений"""
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='views', verbose_name='Объявление')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, blank=True, null=True, verbose_name='Пользователь')
+    ip_address = models.GenericIPAddressField(verbose_name='IP адрес', blank=True, null=True)
+    session_key = models.CharField(max_length=40, blank=True, null=True, verbose_name='Ключ сессии')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата просмотра')
+
+    class Meta:
+        verbose_name = 'Просмотр объявления'
+        verbose_name_plural = 'Просмотры объявлений'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['product', 'user'],
+                condition=models.Q(user__isnull=False),
+                name='unique_product_user_view'
+            ),
+            models.UniqueConstraint(
+                fields=['product', 'ip_address', 'session_key'],
+                condition=models.Q(user__isnull=True, ip_address__isnull=False, session_key__isnull=False),
+                name='unique_product_ip_session_view'
+            ),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        if self.user:
+            return f"{self.product.title} - {self.user.username}"
+        return f"{self.product.title} - {self.ip_address}"

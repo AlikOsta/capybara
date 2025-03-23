@@ -8,7 +8,7 @@ from django.http import Http404
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponseRedirect
 
-from .models import Product, Category, Currency, City, Favorite
+from .models import Product, Category, Currency, City, Favorite, ProductView
 from .forms import ProductForm
 
 # Миксин для фильтрации опубликованных объявлений
@@ -62,7 +62,7 @@ class ProductDetailView(DetailView):
     template_name = 'app/product_detail.html'
     context_object_name = 'product'
     pk_url_kwarg = 'pk'
-
+    
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
         # Проверяем, может ли пользователь просматривать это объявление
@@ -75,6 +75,49 @@ class ProductDetailView(DetailView):
         # Добавляем информацию о том, находится ли объявление в избранном
         context['is_favorite'] = is_favorite(self.request, self.object)
         return context
+    
+    def get(self, request, *args, **kwargs):
+        # Получаем объект
+        self.object = self.get_object()
+        
+        # Учитываем просмотр, только если это не автор объявления
+        if request.user != self.object.author:
+            # Получаем IP-адрес и ключ сессии
+            ip_address = self.get_client_ip(request)
+            session_key = request.session.session_key
+            
+            # Если сессия не создана, создаем ее
+            if not session_key:
+                request.session.save()
+                session_key = request.session.session_key
+            
+            # Создаем запись о просмотре, если она еще не существует
+            if request.user.is_authenticated:
+                # Для авторизованных пользователей
+                ProductView.objects.get_or_create(
+                    product=self.object,
+                    user=request.user
+                )
+            else:
+                # Для анонимных пользователей
+                ProductView.objects.get_or_create(
+                    product=self.object,
+                    ip_address=ip_address,
+                    session_key=session_key
+                )
+        
+        # Продолжаем стандартную обработку запроса
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+    
+    def get_client_ip(self, request):
+        """Получает IP-адрес клиента из запроса"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
 
 
 # Список объявлений в категории
@@ -141,7 +184,7 @@ class ProductCreateView(CreateView):
 
 # Обновление объявления
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(AuthorRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
     template_name = 'app/product_form.html'
@@ -175,7 +218,6 @@ class ProductDeleteView(AuthorRequiredMixin, DeleteView):
     
     def get_queryset(self):
         return Product.objects.filter(author=self.request.user)
-    
 
 
 # Добавить класс представления для списка избранных объявлений
@@ -197,6 +239,7 @@ class FavoriteListView(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Избранное'
         return context
+    
     
 # Добавить функцию для добавления/удаления из избранного
 @login_required(login_url='user:telegram_auth')

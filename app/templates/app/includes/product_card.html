@@ -1,4 +1,4 @@
-<!-- Обновить app/templates/app/includes/product_card.html -->
+
 <div class="position-relative">
     <a href="{% url 'app:product_detail' pk=product.pk %}" class="text-decoration-none text-dark">
         <div class="card h-100">
@@ -11,6 +11,12 @@
                     <small class="text-muted">{{ product.created_at|date:"d.m.Y" }}</small>
                 </div>
             </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">{{ product.city }}</small>
+            <small class="text-muted">
+                <i class="bi bi-eye"></i> {{ product.get_view_count }}
+            </small>
         </div>
     </a>
     
