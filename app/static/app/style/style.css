@@ -205,3 +205,457 @@ footer {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 }
+
+/* Добавьте эти стили к существующему файлу style.css */
+
+/* Стили для карточки товара */
+.product-card {
+    margin-bottom: 15px;
+}
+
+.product-card-inner {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.product-card-inner:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.product-image-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-image {
+    height: 180px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card-inner:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-status-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: white;
+    z-index: 1;
+}
+
+.badge-pending {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-approved {
+    background-color: #0dcaf0;
+}
+
+.badge-rejected {
+    background-color: #dc3545;
+}
+
+.badge-archived {
+    background-color: #6c757d;
+}
+
+.favorite-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.favorite-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.favorite-btn i {
+    font-size: 1.1rem;
+}
+
+/* Добавьте эти стили к существующему файлу style.css */
+
+/* Стили для страницы детального просмотра товара */
+.product-detail .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.product-detail .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.main-image-container {
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.main-product-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 4/3;
+}
+
+.product-title {
+    font-weight: 600;
+}
+
+.product-price {
+    color: var(--tg-theme-text-color);
+}
+
+.product-meta {
+    font-size: 0.9rem;
+}
+
+.section-title {
+    position: relative;
+    padding-bottom: 8px;
+}
+
+.section-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--tg-theme-button-color);
+    border-radius: 3px;
+}
+
+.description-content {
+    line-height: 1.6;
+}
+
+.seller-info .card {
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.seller-info .card:hover {
+    transform: translateY(-2px);
+}
+
+.author-actions .btn {
+    border-radius: 8px;
+    padding: 10px 16px;
+}
+
+/* Стили для алертов статуса */
+.alert {
+    border-radius: 12px;
+    border: none;
+}
+
+/* Добавьте эти стили к существующему файлу style.css */
+
+/* Стили для страницы категории */
+.category-page .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.category-page .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.filters-section .form-select {
+    border-radius: 8px;
+    padding: 10px 12px;
+    background-color: var(--tg-theme-secondary-bg-color);
+    border: none;
+}
+
+.active-filters .badge {
+    border-radius: 20px;
+    font-weight: normal;
+    font-size: 0.85rem;
+}
+
+.active-filters .badge:hover {
+    background-color: #e2e2e2 !important;
+}
+
+.active-filters .badge.bg-danger:hover {
+    background-color: #bb2d3b !important;
+}
+
+/* Улучшения для пустого состояния */
+.empty-state {
+    padding: 40px 0;
+}
+
+.empty-state .bi {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Добавьте эти стили к существующему файлу style.css */
+
+/* Стили для страницы формы создания/редактирования объявления */
+.product-form-page .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.product-form-page .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.product-form .form-control,
+.product-form .form-select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background-color: var(--tg-theme-bg-color);
+}
+
+.product-form .form-control:focus,
+.product-form .form-select:focus {
+    border-color: var(--tg-theme-button-color);
+    box-shadow: 0 0 0 0.25rem rgba(var(--tg-theme-button-color-rgb), 0.25);
+}
+
+.product-form textarea.form-control {
+    min-height: 120px;
+}
+
+.product-form .form-label {
+    margin-bottom: 0.5rem;
+}
+
+.product-form .form-text {
+    font-size: 0.8rem;
+    color: var(--tg-theme-hint-color);
+    margin-top: 0.25rem;
+}
+
+.current-image-preview {
+    border-radius: 8px;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.product-form .btn-primary {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-info {
+    background-color: rgba(var(--bs-info-rgb), 0.1);
+    color: var(--bs-info);
+}
+
+.alert i {
+    color: var(--bs-info);
+}
+
+/* Добавьте эти стили к существующему файлу style.css */
+
+/* Стили для страницы подтверждения удаления */
+.delete-confirmation-page .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.delete-confirmation-page .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.delete-confirmation-page .card {
+    border-radius: 12px;
+}
+
+.delete-icon {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-confirmation-page .btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+/* Добавьте эти стили к существующему файлу style.css */
+
+/* Стили для предпросмотра изображения */
+.image-preview-container {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.img-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.img-preview-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.custom-file-upload label {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.2s ease;
+}
+
+.custom-file-upload label:hover {
+    background-color: rgba(var(--tg-theme-button-color-rgb), 0.1);
+}
+
+
+/* Обновите стили для страницы подтверждения удаления */
+.delete-confirmation-page .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.delete-confirmation-page .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.delete-confirmation-content {
+    padding: 20px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.delete-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+}
+
+.delete-confirmation-page .btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+
+/* Добавьте эти стили к существующему файлу style.css */
+
+/* Стили для страницы избранного */
+.favorites-page .empty-favorites {
+    padding: 30px 20px;
+}
+
+.empty-favorites .empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+}
+
+.empty-favorites h5 {
+    font-weight: 600;
+}
+
+.empty-favorites p {
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-favorites .btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+}
+
+/* Стили для пагинации */
+.pagination .page-link {
+    border-radius: 4px;
+    margin: 0 2px;
+    border: none;
+    color: var(--tg-theme-text-color);
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(var(--tg-theme-button-color-rgb), 0.1);
+}
+
+.pagination .page-item.active .page-link:hover {
+    background-color: var(--tg-theme-button-color);
+}

@@ -9,15 +9,15 @@
 {% endblock %}
 
 {% block content %}
-<div class="mt-3">
+<div class="product-form-page mt-3">
     <!-- Верхний блок с навигацией -->
     <div class="mb-3">
         <div class="d-flex align-items-center mb-3">
-            <a href="{% if is_edit %}{% url 'app:product_detail' object.pk %}{% else %}{% url 'app:index' %}{% endif %}" class="text-decoration-none">
+            <a href="{% if is_edit %}{% url 'app:product_detail' object.pk %}{% else %}{% url 'app:index' %}{% endif %}" class="text-decoration-none btn-back me-2">
                 <i class="bi bi-arrow-left fs-4"></i>
             </a>
-            <div class="ms-3">
-                <h5 class="mb-0">
+            <div>
+                <h5 class="mb-0 fw-bold">
                     {% if is_edit %}
                         Редактирование объявления
                     {% else %}
@@ -29,79 +29,100 @@
     </div>
 
     {% if is_edit %}
-    <div class="alert alert-info mb-3">
-        <i class="bi bi-info-circle me-2"></i>
-        После редактирования объявление будет отправлено на повторную модерацию.
+    <div class="alert alert-info mb-4 d-flex align-items-center">
+        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+        <div>После редактирования объявление будет отправлено на повторную модерацию.</div>
     </div>
     {% endif %}
 
     <!-- Форма -->
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" class="product-form">
         {% csrf_token %}
         
-        <div class="mb-3">
-            <label class="form-label">Категория</label>
+        <div class="form-group mb-3">
+            <label class="form-label fw-medium">Категория</label>
             {{ form.category }}
             {% if form.category.errors %}
-                <div class="text-danger">{{ form.category.errors }}</div>
+                <div class="text-danger mt-1 small">{{ form.category.errors }}</div>
             {% endif %}
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Название</label>
+        <div class="form-group mb-3">
+            <label class="form-label fw-medium">Название</label>
             {{ form.title }}
             {% if form.title.errors %}
-                <div class="text-danger">{{ form.title.errors }}</div>
+                <div class="text-danger mt-1 small">{{ form.title.errors }}</div>
             {% endif %}
+            <div class="form-text">Укажите краткое и точное название товара</div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Описание</label>
+        <div class="form-group mb-3">
+            <label class="form-label fw-medium">Описание</label>
             {{ form.description }}
             {% if form.description.errors %}
-                <div class="text-danger">{{ form.description.errors }}</div>
+                <div class="text-danger mt-1 small">{{ form.description.errors }}</div>
             {% endif %}
+            <div class="form-text">Подробно опишите товар, его состояние и особенности</div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Фото</label>
-            {% if is_edit and object.image %}
-                <div class="mb-2">
-                    <img src="{{ object.image.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-height: 200px;">
-                </div>
-            {% endif %}
-            {{ form.image }}
+        <div class="form-group mb-3">
+            <label class="form-label fw-medium">Фото</label>
+            
+            <!-- Контейнер для предпросмотра изображения -->
+            <div class="image-preview-container mb-2">
+                {% if is_edit and object.image %}
+                    <img src="{{ object.image.url }}" alt="{{ object.title }}" class="img-preview img-fluid rounded">
+                {% else %}
+                    <div class="img-preview-placeholder d-flex align-items-center justify-content-center rounded">
+                        <i class="bi bi-image text-muted fs-1"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Кастомный элемент для загрузки файла -->
+            <div class="custom-file-upload">
+                <label for="{{ form.image.id_for_label }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-upload me-2"></i>Выбрать фото
+                </label>
+                <input type="file" id="{{ form.image.id_for_label }}" name="{{ form.image.html_name }}" class="d-none" accept="image/*">
+            </div>
+            
             {% if form.image.errors %}
-                <div class="text-danger">{{ form.image.errors }}</div>
+                <div class="text-danger mt-1 small">{{ form.image.errors }}</div>
             {% endif %}
+            <div class="form-text">Загрузите качественное фото товара</div>
         </div>
 
         <div class="row mb-3">
             <div class="col-8">
-                <label class="form-label">Цена</label>
-                {{ form.price }}
-                {% if form.price.errors %}
-                    <div class="text-danger">{{ form.price.errors }}</div>
-                {% endif %}
+                <div class="form-group">
+                    <label class="form-label fw-medium">Цена</label>
+                    {{ form.price }}
+                    {% if form.price.errors %}
+                        <div class="text-danger mt-1 small">{{ form.price.errors }}</div>
+                    {% endif %}
+                </div>
             </div>
             <div class="col-4">
-                <label class="form-label">Валюта</label>
-                {{ form.currency }}
-                {% if form.currency.errors %}
-                    <div class="text-danger">{{ form.currency.errors }}</div>
-                {% endif %}
+                <div class="form-group">
+                    <label class="form-label fw-medium">Валюта</label>
+                    {{ form.currency }}
+                    {% if form.currency.errors %}
+                        <div class="text-danger mt-1 small">{{ form.currency.errors }}</div>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Город</label>
+        <div class="form-group mb-4">
+            <label class="form-label fw-medium">Город</label>
             {{ form.city }}
             {% if form.city.errors %}
-                <div class="text-danger">{{ form.city.errors }}</div>
+                <div class="text-danger mt-1 small">{{ form.city.errors }}</div>
             {% endif %}
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 mb-5">
+        <button type="submit" class="btn btn-primary w-100 py-2 mb-5">
             {% if is_edit %}
                 Сохранить изменения
             {% else %}
@@ -110,4 +131,47 @@
         </button>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Получаем элементы
+    const fileInput = document.getElementById('{{ form.image.id_for_label }}');
+    const previewContainer = document.querySelector('.image-preview-container');
+    
+    // Обработчик изменения файла
+    fileInput.addEventListener('change', function() {
+        // Очищаем контейнер
+        previewContainer.innerHTML = '';
+        
+        // Проверяем, выбран ли файл
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            
+            // Создаем элемент img для предпросмотра
+            const img = document.createElement('img');
+            img.classList.add('img-preview', 'img-fluid', 'rounded');
+            
+            // Создаем URL для предпросмотра
+            const objectUrl = URL.createObjectURL(file);
+            img.src = objectUrl;
+            
+            // Добавляем изображение в контейнер
+            previewContainer.appendChild(img);
+            
+            // Освобождаем URL после загрузки изображения
+            img.onload = function() {
+                URL.revokeObjectURL(objectUrl);
+            };
+        } else {
+            // Если файл не выбран, показываем плейсхолдер
+            const placeholder = document.createElement('div');
+            placeholder.classList.add('img-preview-placeholder', 'd-flex', 'align-items-center', 'justify-content-center', 'rounded');
+            placeholder.innerHTML = '<i class="bi bi-image text-muted fs-1"></i>';
+            previewContainer.appendChild(placeholder);
+        }
+    });
+});
+</script>
 {% endblock %}

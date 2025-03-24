@@ -1,0 +1,217 @@
+/* Стили для страницы профиля */
+.profile-page .profile-avatar {
+    width: 70px;
+    height: 70px;
+}
+
+.profile-page .avatar-placeholder {
+    width: 70px;
+    height: 70px;
+}
+
+.profile-tabs .nav-pills {
+    background-color: var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.profile-tabs .nav-link {
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: var(--tg-theme-text-color);
+    transition: all 0.2s ease;
+}
+
+.profile-tabs .nav-link.active {
+    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.profile-tabs .badge {
+    font-size: 0.7rem;
+    padding: 0.25em 0.5em;
+}
+
+/* Стили для пустого состояния */
+.empty-state {
+    padding: 20px;
+    border-radius: 8px;
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.empty-state .empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.empty-state h5 {
+    font-weight: 600;
+}
+
+.empty-state p {
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-state .btn {
+    border-radius: 8px;
+    padding: 8px 16px;
+}
+
+/* Стили для статуса объявления */
+.product-status {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    z-index: 1;
+}
+
+/* Стили для кнопок управления объявлением */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+}
+
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading:after {
+    content: '';
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    top: calc(50% - 0.5rem);
+    left: calc(50% - 0.5rem);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Стили для страницы авторизации через Telegram */
+.telegram-auth-page {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.telegram-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.telegram-logo i {
+    font-size: 4rem;
+}
+
+.auth-card {
+    background-color: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.auth-card-body {
+    padding: 24px;
+}
+
+.auth-features {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.auth-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.auth-feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.auth-feature-text h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.auth-feature-text p {
+    font-size: 0.9rem;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 0;
+}
+
+.telegram-auth-page .btn {
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 500;
+}
+
+.telegram-auth-page .btn-primary {
+    background-color: #0088cc;
+    border-color: #0088cc;
+}
+
+.telegram-auth-page .btn-primary:hover {
+    background-color: #0077b3;
+    border-color: #0077b3;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 576px) {
+    .profile-tabs .nav-link {
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+    
+    .profile-tabs .badge {
+        font-size: 0.65rem;
+    }
+    
+    .auth-feature-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .auth-feature-text h5 {
+        font-size: 1rem;
+    }
+    
+    .auth-feature-text p {
+        font-size: 0.85rem;
+    }
+}

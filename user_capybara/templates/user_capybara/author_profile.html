@@ -1,4 +1,5 @@
 {% extends 'app/base.html' %}
+{% load static %}
 
 {% block title %}
     {% if is_own_profile %}
@@ -9,74 +10,122 @@
 {% endblock %}
 
 {% block content %}
-<div class="mt-3">
-    <!-- Профиль -->
-    <div class="mb-4">
+<div class="profile-page mt-3">
+    <!-- Профиль пользователя -->
+    <div class="profile-header mb-4">
         <div class="d-flex align-items-center">
-            <i class="bi bi-person-circle fs-1 me-3"></i>
-            <div>
-                <h4 class="mb-1">{{ author.username }}</h4>
-                <p class="text-muted mb-0">На сайте с {{ author.date_joined|date:"d.m.Y" }}</p>
+            <div class="profile-avatar me-3">
+                {% if author.photo_url %}
+                    <img src="{{ author.photo_url }}" alt="{{ author.username }}" class="rounded-circle" width="70" height="70">
+                {% else %}
+                    <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                        <i class="bi bi-person-fill fs-2"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h4 class="mb-1 fw-bold">{{ author.get_full_name }}</h4>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-calendar3 me-1"></i> На сайте с {{ author.date_joined|date:"d.m.Y" }}
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Опубликованные объявления - показываем только если есть -->
-    {% if published_products %}
-    <div class="mb-4">
-        <h5 class="d-flex align-items-center">
-            <span>Опубликованные</span>
-            <span class="ms-2 badge bg-primary">{{ published_products|length }}</span>
-        </h5>
-        
-        <div class="row g-3">
-            {% for product in published_products %}
-            <div class="col-6">
-                <div class="position-relative">
-                    {% include 'app/includes/product_card.html' with product=product %}
-                    
-                    {% if is_own_profile %}
+    <!-- Вкладки для собственного профиля -->
+    {% if is_own_profile %}
+    <div class="profile-tabs mb-4">
+        <ul class="nav nav-pills nav-fill" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="published-tab" data-bs-toggle="tab" data-bs-target="#published" type="button" role="tab" aria-controls="published" aria-selected="true">
+                    Опубликованные
+                    {% if published_products %}
+                    <span class="badge bg-primary ms-1">{{ published_products|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+                    На модерации
+                    {% if pending_products or approved_products %}
+                    <span class="badge bg-warning text-dark ms-1">{{ pending_products|length|add:approved_products|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived" type="button" role="tab" aria-controls="archived" aria-selected="false">
+                    Архив
+                    {% if archived_products %}
+                    <span class="badge bg-secondary ms-1">{{ archived_products|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" aria-controls="rejected" aria-selected="false">
+                    Заблокированные
+                    {% if rejected_products %}
+                    <span class="badge bg-danger ms-1">{{ rejected_products|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content" id="profileTabsContent">
+        <!-- Опубликованные объявления (статус 3) -->
+        <div class="tab-pane fade show active" id="published" role="tabpanel" aria-labelledby="published-tab">
+            {% if published_products %}
+            <div class="row g-3">
+                {% for product in published_products %}
+                <div class="col-6">
+                    <div class="position-relative">
+                        {% include 'app/includes/product_card.html' with product=product %}
+                        
                         <!-- Кнопки управления объявлением -->
                         <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="#" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
                                 <i class="bi bi-trash"></i>
                             </a>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            {% else %}
+            <div class="empty-state text-center py-4">
+                <div class="empty-icon mb-3">
+                    <i class="bi bi-megaphone text-primary fs-1"></i>
+                </div>
+                <h5 class="mb-2">У вас нет опубликованных объявлений</h5>
+                <p class="text-muted mb-3">Создайте новое объявление или дождитесь одобрения модератора</p>
+                <a href="{% url 'app:product_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Создать объявление
+                </a>
+            </div>
+            {% endif %}
         </div>
-    </div>
-    {% elif not is_own_profile %}
-    <!-- Если нет опубликованных объявлений и это чужой профиль -->
-    <div class="text-center py-5">
-        <i class="bi bi-inbox fs-1 text-muted"></i>
-        <p class="mt-3">У пользователя пока нет объявлений</p>
-    </div>
-    {% endif %}
-
-    {% if is_own_profile %}
-        <!-- На модерации - показываем только если есть -->
-        {% if pending_products %}
-        <div class="mb-4">
-            <h5 class="d-flex align-items-center">
-                <span>На модерации</span>
-                <span class="ms-2 badge bg-warning text-dark">{{ pending_products|length }}</span>
-            </h5>
-            
+        
+        <!-- Объявления на модерации (статусы 0, 1) -->
+        <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+            {% if pending_products or approved_products %}
             <div class="row g-3">
+                <!-- Сначала показываем объявления со статусом 0 (на проверке) -->
                 {% for product in pending_products %}
                 <div class="col-6">
                     <div class="position-relative">
                         {% include 'app/includes/product_card.html' with product=product %}
                         
+                        <!-- Статус объявления -->
+                        <div class="product-status bg-warning text-dark">
+                            <i class="bi bi-hourglass-split me-1"></i> На проверке
+                        </div>
+                        
                         <!-- Кнопки управления объявлением -->
                         <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="#" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
@@ -86,27 +135,21 @@
                     </div>
                 </div>
                 {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Одобренные, но не опубликованные - показываем только если есть -->
-        {% if approved_products %}
-        <div class="mb-4">
-            <h5 class="d-flex align-items-center">
-                <span>Одобренные</span>
-                <span class="ms-2 badge bg-info">{{ approved_products|length }}</span>
-            </h5>
-            
-            <div class="row g-3">
+                
+                <!-- Затем показываем объявления со статусом 1 (одобрено, но не опубликовано) -->
                 {% for product in approved_products %}
                 <div class="col-6">
                     <div class="position-relative">
                         {% include 'app/includes/product_card.html' with product=product %}
                         
+                        <!-- Статус объявления -->
+                        <div class="product-status bg-info text-white">
+                            <i class="bi bi-check-circle me-1"></i> Одобрено
+                        </div>
+                        
                         <!-- Кнопки управления объявлением -->
                         <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="#" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
@@ -117,22 +160,68 @@
                 </div>
                 {% endfor %}
             </div>
+            {% else %}
+            <div class="empty-state text-center py-4">
+                <div class="empty-icon mb-3">
+                    <i class="bi bi-hourglass-split text-warning fs-1"></i>
+                </div>
+                <h5 class="mb-2">У вас нет объявлений на модерации</h5>
+                <p class="text-muted mb-3">Все ваши объявления уже проверены модераторами</p>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
-
-        <!-- Заблокированные - показываем только если есть -->
-        {% if rejected_products %}
-        <div class="mb-4">
-            <h5 class="d-flex align-items-center">
-                <span>Заблокированные</span>
-                <span class="ms-2 badge bg-danger">{{ rejected_products|length }}</span>
-            </h5>
-            
+        
+        <!-- Архивные объявления (статус 4) -->
+        <div class="tab-pane fade" id="archived" role="tabpanel" aria-labelledby="archived-tab">
+            {% if archived_products %}
+            <div class="row g-3">
+                {% for product in archived_products %}
+                <div class="col-6">
+                    <div class="position-relative">
+                        {% include 'app/includes/product_card.html' with product=product %}
+                        
+                        <!-- Статус объявления -->
+                        <div class="product-status bg-secondary text-white">
+                            <i class="bi bi-archive me-1"></i> В архиве
+                        </div>
+                        
+                        <!-- Кнопки управления объявлением -->
+                        <div class="mt-1 d-flex justify-content-end gap-1">
+                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state text-center py-4">
+                <div class="empty-icon mb-3">
+                    <i class="bi bi-archive text-secondary fs-1"></i>
+                </div>
+                <h5 class="mb-2">У вас нет архивных объявлений</h5>
+                <p class="text-muted mb-3">Здесь будут отображаться объявления, которые вы перенесли в архив</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Заблокированные объявления (статус 2) -->
+        <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
+            {% if rejected_products %}
             <div class="row g-3">
                 {% for product in rejected_products %}
                 <div class="col-6">
                     <div class="position-relative">
                         {% include 'app/includes/product_card.html' with product=product %}
+                        
+                        <!-- Статус объявления -->
+                        <div class="product-status bg-danger text-white">
+                            <i class="bi bi-x-circle me-1"></i> Отклонено
+                        </div>
                         
                         <!-- Для заблокированных объявлений только кнопка удаления -->
                         <div class="mt-1 d-flex justify-content-end">
@@ -144,47 +233,48 @@
                 </div>
                 {% endfor %}
             </div>
-        </div>
-        {% endif %}
-
-        <!-- Архивные - показываем только если есть -->
-        {% if archived_products %}
-        <div class="mb-4">
-            <h5 class="d-flex align-items-center">
-                <span>Архив</span>
-                <span class="ms-2 badge bg-secondary">{{ archived_products|length }}</span>
-            </h5>
-            
-            <div class="row g-3">
-                {% for product in archived_products %}
-                <div class="col-6">
-                    <div class="position-relative">
-                        {% include 'app/includes/product_card.html' with product=product %}
-                        
-                        <!-- Кнопки управления объявлением -->
-                        <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="#" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </div>
-                    </div>
+            {% else %}
+            <div class="empty-state text-center py-4">
+                <div class="empty-icon mb-3">
+                    <i class="bi bi-x-circle text-danger fs-1"></i>
                 </div>
-                {% endfor %}
+                <h5 class="mb-2">У вас нет заблокированных объявлений</h5>
+                <p class="text-muted mb-3">Отлично! Все ваши объявления соответствуют правилам сервиса</p>
             </div>
+            {% endif %}
         </div>
-        {% endif %}
-
-        <!-- Если у пользователя вообще нет объявлений -->
-        {% if not published_products and not pending_products and not approved_products and not rejected_products and not archived_products %}
-        <div class="text-center py-5">
-            <i class="bi bi-inbox fs-1 text-muted"></i>
-            <p class="mt-3">У вас пока нет объявлений</p>
+    </div>
+    
+    {% else %}
+    <!-- Для чужого профиля показываем только опубликованные объявления -->
+    <div class="mb-3">
+        <h5 class="section-title mb-3">Объявления пользователя</h5>
+    </div>
+    
+    {% if published_products %}
+    <div class="row g-3">
+        {% for product in published_products %}
+        <div class="col-6">
+            {% include 'app/includes/product_card.html' with product=product %}
         </div>
-        {% endif %}
-
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state text-center py-4">
+        <div class="empty-icon mb-3">
+            <i class="bi bi-inbox text-muted fs-1"></i>
+        </div>
+        <h5 class="mb-2">У пользователя пока нет объявлений</h5>
+        <p class="text-muted mb-3">Возможно, они появятся позже</p>
+        <a href="{% url 'app:index' %}" class="btn btn-primary">
+            <i class="bi bi-search me-2"></i>Смотреть все объявления
+        </a>
+    </div>
+    {% endif %}
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'user_capybara/js/profile.js' %}"></script>
 {% endblock %}
