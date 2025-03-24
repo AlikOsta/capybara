@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_q',
     'app',
     'user_capybara',
     'bot_capybara',
@@ -148,3 +149,13 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+Q_CLUSTER = {
+    'name': 'capybara',
+    'workers': 4,
+    'timeout': 60,
+    'django_redis': None,  # используем django-redis, если это необходимо
+    'save_limit': 250,
+    'retry': 500,
+    'catch_up': False,
+}
