@@ -215,3 +215,18 @@
         font-size: 0.85rem;
     }
 }
+
+/* Стили для логотипа Telegram */
+.telegram-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.telegram-logo i {
+    font-size: 5rem !important; /* Увеличенный размер иконки */
+}
