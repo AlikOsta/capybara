@@ -275,3 +275,35 @@ def is_favorite(request, product):
     if not request.user.is_authenticated:
         return False
     return Favorite.objects.filter(user=request.user, product=product).exists()
+
+
+@login_required(login_url='user:telegram_auth')
+@require_POST
+def change_product_status(request, pk, status):
+    """
+    Изменяет статус объявления.
+    Доступные статусы:
+    0 - На модерации
+    1 - Одобрено
+    2 - Отклонено
+    3 - Опубликовано
+    4 - Архив
+    """
+    product = get_object_or_404(Product, pk=pk)
+    
+    # Проверяем, что пользователь является автором объявления
+    if request.user != product.author:
+        return redirect('app:product_detail', pk=pk)
+    
+    # Проверяем допустимость перехода между статусами
+    valid_transitions = {
+        3: [4],  # Из "Опубликовано" можно перейти только в "Архив"
+        4: [0],  # Из "Архив" можно перейти только на "Модерацию" (0)
+    }
+    
+    # Если текущий статус есть в словаре и новый статус допустим
+    if product.status in valid_transitions and status in valid_transitions[product.status]:
+        product.status = status
+        product.save()
+    
+    return redirect('app:product_detail', pk=pk)

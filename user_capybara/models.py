@@ -39,9 +39,9 @@ class TelegramUser(AbstractUser):
     
     # Telegram-специфичные поля
     telegram_id = models.BigIntegerField(unique=True, verbose_name='Telegram ID')
-    username = models.CharField(max_length=30, unique=True, verbose_name='Имя пользователя')
-    first_name = models.CharField(max_length=64, blank=True, null=True,verbose_name='Имя в Telegram')
-    last_name = models.CharField(max_length=64, blank=True, null=True,verbose_name='Фамилия в Telegram')
+    username = models.CharField(max_length=30, unique=True, verbose_name='Телеграм ник')
+    first_name = models.CharField(max_length=64, blank=True, null=True,verbose_name='Ваше имя')
+    last_name = models.CharField(max_length=64, blank=True, null=True,verbose_name='Ваша фамилия')
     photo_url = models.URLField(blank=True, null=True,verbose_name='URL фото')
     auth_date = models.IntegerField(blank=True, null=True,verbose_name='Дата авторизации')
 
@@ -60,5 +60,8 @@ class TelegramUser(AbstractUser):
             return f"@{self.username}"
         return f"User {self.telegram_id}"
     
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
-
+    def get_tg_name(self):
+        return f"@{self.username}"

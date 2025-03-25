@@ -21,32 +21,28 @@
 
     <footer class="fixed-bottom bg-white border-top shadow-sm">
         <nav class="container d-flex justify-content-around py-2">
-            <a href="{% url 'app:index' %}" class="text-decoration-none text-primary d-flex flex-column align-items-center">
-                <div class="nav-item p-2 rounded-circle {% if request.resolver_match.url_name == 'index' %}bg-light{% endif %}">
-                    <i class="bi bi-search fs-5"></i>
-                </div>
+            <a href="{% url 'app:index' %}" class="text-decoration-none {% if request.resolver_match.url_name == 'index' %}text-primary{% else %}text-muted{% endif %} d-flex flex-column align-items-center">
+                <i class="bi bi-search fs-5"></i>
             </a>
-
-            <a href="{% if user.is_authenticated %}{% url 'app:favorites' %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" class="text-decoration-none {% if user.is_authenticated %}text-primary{% else %}text-muted{% endif %} d-flex flex-column align-items-center">
-                <div class="nav-item p-2 rounded-circle {% if request.resolver_match.url_name == 'favorites' %}bg-light{% endif %}">
-                    <i class="bi bi-heart fs-5"></i>
-                </div>
+    
+            <a href="{% if user.is_authenticated %}{% url 'app:favorites' %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" 
+               class="text-decoration-none {% if request.resolver_match.url_name == 'favorites' %}text-primary{% else %}{% if user.is_authenticated %}text-muted{% else %}text-muted opacity-50{% endif %}{% endif %} d-flex flex-column align-items-center">
+                <i class="bi bi-heart fs-5"></i>
             </a>
-
-            <a href="{% if user.is_authenticated %}{% url 'app:product_create' %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" class="text-decoration-none {% if user.is_authenticated %}text-primary{% else %}text-muted{% endif %} d-flex flex-column align-items-center">
-                <div class="nav-item p-2 rounded-circle {% if request.resolver_match.url_name == 'product_create' %}bg-light{% endif %}">
-                    <i class="bi bi-plus-square fs-5"></i>
-                </div>
+    
+            <a href="{% if user.is_authenticated %}{% url 'app:product_create' %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" 
+               class="text-decoration-none {% if request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_edit' %}text-primary{% else %}{% if user.is_authenticated %}text-muted{% else %}text-muted opacity-50{% endif %}{% endif %} d-flex flex-column align-items-center">
+                <i class="bi bi-plus-square fs-5"></i>
             </a>
-
-            <a href="{% if user.is_authenticated %}{% url 'user:author_profile' user.id %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" class="text-decoration-none {% if user.is_authenticated %}text-primary{% else %}text-muted{% endif %} d-flex flex-column align-items-center">
-                <div class="nav-item p-2 rounded-circle {% if request.resolver_match.url_name == 'author_profile' and request.resolver_match.kwargs.author_id == user.id|stringformat:'s' %}bg-light{% endif %}">
-                    <i class="bi bi-person fs-5"></i>
-                </div>
+    
+            <a href="{% if user.is_authenticated %}{% url 'user:author_profile' user.id %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" 
+               class="text-decoration-none {% if request.resolver_match.url_name == 'author_profile' %}text-primary{% else %}{% if user.is_authenticated %}text-muted{% else %}text-muted opacity-50{% endif %}{% endif %} d-flex flex-column align-items-center">
+                <i class="bi bi-person fs-5"></i>
             </a>
         </nav>
     </footer>
-
+    
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'app/js/main.js' %}"></script>
     {% block scripts %}{% endblock %}

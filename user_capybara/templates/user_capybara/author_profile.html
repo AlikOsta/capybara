@@ -11,26 +11,48 @@
 
 {% block content %}
 <div class="profile-page mt-3">
-    <!-- Профиль пользователя -->
-    <div class="profile-header mb-4">
-        <div class="d-flex align-items-center">
-            <div class="profile-avatar me-3">
-                {% if author.photo_url %}
-                    <img src="{{ author.photo_url }}" alt="{{ author.username }}" class="rounded-circle" width="70" height="70">
-                {% else %}
-                    <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
-                        <i class="bi bi-person-fill fs-2"></i>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="profile-info">
-                <h4 class="mb-1 fw-bold">{{ author.get_full_name }}</h4>
-                <p class="text-muted mb-0">
-                    <i class="bi bi-calendar3 me-1"></i> На сайте с {{ author.date_joined|date:"d.m.Y" }}
-                </p>
-            </div>
+<!-- Профиль пользователя -->
+<div class="profile-header mb-4">
+    <div class="d-flex align-items-start">
+        <div class="profile-avatar me-3">
+            {% if author.photo_url %}
+                <img src="{{ author.photo_url }}" alt="{{ author.username }}" class="rounded-circle" width="100" height="100">
+            {% else %}
+                <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                    <i class="bi bi-person-fill fs-1"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="profile-info flex-grow-1">
+            <h4 class="mb-1 fw-bold">{{ author.get_full_name }}</h4>
+            <p class="text-muted mb-1">
+                <i class="bi bi-telegram me-1"></i>{{ author.get_tg_name }}
+            </p>
+            <p class="text-muted mb-1">
+                <i class="bi bi-star-fill me-1"></i> Рейтинг 4.7
+            </p>
+            <p class="text-muted mb-1">
+                <i class="bi bi-calendar3 me-1"></i> На сайте с {{ author.date_joined|date:"d.m.Y" }}
+            </p>
+
         </div>
     </div>
+    
+    {% if is_own_profile %}
+    <div class="mt-3">
+        <button class="btn btn-outline-primary w-100">
+            <i class="bi bi-pencil me-2"></i>Редактировать профиль
+        </button>
+    </div>
+    {% else %}
+    <div class="mt-3">
+        <a href="https://t.me/{{ author.username }}" class="btn btn-outline-primary w-100">
+            <i class="bi bi-telegram me-2"></i>Связаться с продавцом
+        </a>
+    </div>
+    {% endif %}
+    
+</div>
 
     <!-- Вкладки для собственного профиля -->
     {% if is_own_profile %}
@@ -48,7 +70,11 @@
                 <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
                     На модерации
                     {% if pending_products or approved_products %}
-                    <span class="badge bg-warning text-dark ms-1">{{ pending_products|length|add:approved_products|length }}</span>
+                    <span class="badge bg-warning text-dark ms-1">
+                        {% with pending_count=pending_products|length approved_count=approved_products|length %}
+                            {{ pending_count|add:approved_count }}
+                        {% endwith %}
+                    </span>
                     {% endif %}
                 </button>
             </li>
@@ -82,12 +108,18 @@
                         {% include 'app/includes/product_card.html' with product=product %}
                         
                         <!-- Кнопки управления объявлением -->
-                        <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
+                        <form method="post" action="{% url 'app:change_status' product.id 4 %}" class="flex-grow-1">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+                                <i class="bi bi-archive me-1"></i> В архив
+                            </button>
+                        </form>
+                        <div class="mt-1 d-flex gap-1">
+                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                <i class="bi bi-pencil me-1"></i> 
                             </a>
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger flex-grow-1">
+                                <i class="bi bi-trash me-1"></i>
                             </a>
                         </div>
                     </div>
@@ -95,67 +127,31 @@
                 {% endfor %}
             </div>
             {% else %}
-            <div class="empty-state text-center py-4">
-                <div class="empty-icon mb-3">
-                    <i class="bi bi-megaphone text-primary fs-1"></i>
+
+            <div class="col-12">
+                <div class="empty-favorites text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-megaphone text-primary fs-1"></i>
+                    </div>
+                    <h5 class="mb-3">У вас нет опубликованных объявлений</h5>
+                    <p class="text-muted mb-4">Создайте новое объявление или дождитесь одобрения модератора</p>
+                    <a href="{% url 'app:index' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-2"></i>Создать объявление
+                    </a>
                 </div>
-                <h5 class="mb-2">У вас нет опубликованных объявлений</h5>
-                <p class="text-muted mb-3">Создайте новое объявление или дождитесь одобрения модератора</p>
-                <a href="{% url 'app:product_create' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2"></i>Создать объявление
-                </a>
             </div>
             {% endif %}
         </div>
         
-        <!-- Объявления на модерации (статусы 0, 1) -->
+        <!-- Объявления на модерации (статус 1) -->
         <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
             {% if pending_products or approved_products %}
             <div class="row g-3">
-                <!-- Сначала показываем объявления со статусом 0 (на проверке) -->
-                {% for product in pending_products %}
-                <div class="col-6">
-                    <div class="position-relative">
-                        {% include 'app/includes/product_card.html' with product=product %}
-                        
-                        <!-- Статус объявления -->
-                        <div class="product-status bg-warning text-dark">
-                            <i class="bi bi-hourglass-split me-1"></i> На проверке
-                        </div>
-                        
-                        <!-- Кнопки управления объявлением -->
-                        <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-                
                 <!-- Затем показываем объявления со статусом 1 (одобрено, но не опубликовано) -->
                 {% for product in approved_products %}
                 <div class="col-6">
                     <div class="position-relative">
                         {% include 'app/includes/product_card.html' with product=product %}
-                        
-                        <!-- Статус объявления -->
-                        <div class="product-status bg-info text-white">
-                            <i class="bi bi-check-circle me-1"></i> Одобрено
-                        </div>
-                        
-                        <!-- Кнопки управления объявлением -->
-                        <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -180,20 +176,22 @@
                     <div class="position-relative">
                         {% include 'app/includes/product_card.html' with product=product %}
                         
-                        <!-- Статус объявления -->
-                        <div class="product-status bg-secondary text-white">
-                            <i class="bi bi-archive me-1"></i> В архиве
-                        </div>
-                        
                         <!-- Кнопки управления объявлением -->
-                        <div class="mt-1 d-flex justify-content-end gap-1">
-                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
+                        <form method="post" action="{% url 'app:change_status' product.id 0 %}" class="flex-grow-1">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="bi bi-arrow-up-circle me-1"></i> Опубликовать
+                            </button>
+                        </form>
+                        <div class="mt-1 d-flex gap-1">
+                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                <i class="bi bi-pencil me-1"></i> 
                             </a>
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
+                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger flex-grow-1">
+                                <i class="bi bi-trash me-1"></i>
                             </a>
                         </div>
+
                     </div>
                 </div>
                 {% endfor %}
@@ -218,17 +216,12 @@
                     <div class="position-relative">
                         {% include 'app/includes/product_card.html' with product=product %}
                         
-                        <!-- Статус объявления -->
-                        <div class="product-status bg-danger text-white">
-                            <i class="bi bi-x-circle me-1"></i> Отклонено
-                        </div>
-                        
-                        <!-- Для заблокированных объявлений только кнопка удаления -->
-                        <div class="mt-1 d-flex justify-content-end">
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </div>
+                       <!-- Кнопки управления объявлением -->
+                       <div class="mt-1 d-flex gap-1">
+                        <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger flex-grow-1">
+                            <i class="bi bi-trash me-1"></i>
+                        </a>
+                    </div>
                     </div>
                 </div>
                 {% endfor %}
