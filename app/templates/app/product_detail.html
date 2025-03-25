@@ -27,6 +27,9 @@
                                     </button>
                                 </form>
                             </li>
+                            <li><a class="dropdown-item" href="#" onclick="shareProduct(event, {{ product.id }}, '{{ product.title|escapejs }}')">
+                                <i class="bi bi-share me-2"></i>Поделиться
+                            </a></li>
                             <li><a class="dropdown-item" href="{% url 'app:product_edit' product.pk %}">
                                 <i class="bi bi-pencil me-2"></i>Редактировать
                             </a></li>
@@ -172,28 +175,15 @@
         </a>
     </div>
     
-    <!-- Кнопки действий -->
+
+    <!-- Кнопки действий для не-автора -->
     {% if user.is_authenticated and user != product.author %}
     <div class="action-buttons mb-4">
-        <div class="row g-2">
-            <div class="col-6">
-                <form method="post" action="{% url 'app:toggle_favorite' product.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} w-100">
-                        <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} me-2"></i>
-                        {% if is_favorite %}
-                            Удалить из избранного
-                        {% else %}
-                            В избранное
-                        {% endif %}
-                    </button>
-                </form>
-            </div>
-            <div class="col-6">
-                <button onclick="shareProduct(event, {{ product.id }}, '{{ product.title|escapejs }}')" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-share me-2"></i>Поделиться
-                </button>
-            </div>
+        <!-- Кнопка связи с продавцом -->
+        <div class="mt-2">
+            <button onclick="contactSeller(event, '{{ product.author.username }}', {{ product.id }}, '{{ product.title|escapejs }}', '{{ product.price }} {{ product.currency }}')" class="btn btn-primary w-100">
+                <i class="bi bi-telegram me-2"></i>Связаться с продавцом
+            </button>
         </div>
     </div>
     {% endif %}

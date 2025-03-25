@@ -46,9 +46,9 @@
     </div>
     {% else %}
     <div class="mt-3">
-        <a href="https://t.me/{{ author.username }}" class="btn btn-outline-primary w-100">
+        <button onclick="contactSeller(event, '{{ author.username }}', null, null, null)" class="btn btn-primary w-100">
             <i class="bi bi-telegram me-2"></i>Связаться с продавцом
-        </a>
+        </button>
     </div>
     {% endif %}
     
