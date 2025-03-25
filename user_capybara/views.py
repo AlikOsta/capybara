@@ -1,12 +1,14 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, TemplateView
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, TemplateView, UpdateView
 from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import Count
+from django.urls import reverse_lazy, reverse
 
 from app.models import Product
+from .forms import UserProfileForm
 
 User = get_user_model()
 
@@ -81,3 +83,18 @@ class TelegramAuthView(TemplateView):
 class MiniAppView(TemplateView):
     """Представление для Telegram Mini App"""
     template_name = 'user_capybara/mini_app.html'
+
+
+@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+class UserProfileEditView(UpdateView):
+    """Представление для редактирования профиля пользователя"""
+    model = User
+    form_class = UserProfileForm
+    template_name = 'user_capybara/profile_edit.html'
+    
+    def get_object(self, queryset=None):
+        # Редактировать можно только свой профиль
+        return self.request.user
+    
+    def get_success_url(self):
+        return reverse('user:author_profile', kwargs={'author_id': self.request.user.id})

@@ -40,9 +40,9 @@
     
     {% if is_own_profile %}
     <div class="mt-3">
-        <button class="btn btn-outline-primary w-100">
+        <a href="{% url 'user:profile_edit' %}" class="btn btn-outline-primary w-100">
             <i class="bi bi-pencil me-2"></i>Редактировать профиль
-        </button>
+        </a>
     </div>
     {% else %}
     <div class="mt-3">

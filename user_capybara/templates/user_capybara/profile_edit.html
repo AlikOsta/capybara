@@ -1,0 +1,79 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div class="profile-edit-page mt-3">
+    <!-- Верхний блок с навигацией -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'user:author_profile' user.id %}" class="text-decoration-none btn-back me-2">
+                <i class="bi bi-arrow-left fs-4"></i>
+            </a>
+            <div>
+                <h5 class="mb-0 fw-bold">Редактирование профиля</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о пользователе -->
+    <div class="profile-header mb-4">
+        <div class="d-flex align-items-start">
+            <div class="profile-avatar me-3">
+                {% if user.photo_url %}
+                    <img src="{{ user.photo_url }}" alt="{{ user.username }}" class="rounded-circle" width="100" height="100">
+                {% else %}
+                    <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <i class="bi bi-person-fill fs-1"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-info flex-grow-1">
+                <h4 class="mb-1 fw-bold">{{ user.get_full_name }}</h4>
+                <p class="text-muted mb-1">
+                    <i class="bi bi-telegram me-1"></i>@{{ user.username }}
+                </p>
+                <p class="text-muted mb-0">
+                    <i class="bi bi-calendar3 me-1"></i> На сайте с {{ user.date_joined|date:"d.m.Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Форма редактирования -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                                
+                <div class="mb-3">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <div class="text-danger mt-1 small">{{ form.first_name.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <div class="text-danger mt-1 small">{{ form.last_name.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary py-2">Сохранить изменения</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="mb-5">
+        <p class="text-muted small text-center">
+            Некоторые данные профиля можно изменить только в Telegram.
+        </p>
+    </div>
+</div>
+{% endblock %}
