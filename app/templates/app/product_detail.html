@@ -73,7 +73,7 @@
                                 </button>
                             </form>
                         </li>
-                        <li><a class="dropdown-item" href="#" onclick="shareProduct(event)">
+                        <li><a class="dropdown-item" href="#" onclick="shareProduct(event, {{ product.id }}, '{{ product.title|escapejs }}')">
                             <i class="bi bi-share me-2"></i>Поделиться
                         </a></li>
                         <li><a class="dropdown-item" href="#" onclick="reportProduct(event)">
@@ -172,14 +172,27 @@
         </a>
     </div>
     
-    <!-- Кнопки управления -->
+    <!-- Кнопки действий -->
     {% if user.is_authenticated and user != product.author %}
-    <div class="author-actions mb-5">
-        <div class="row">
-            <div class="col-12">
-                <a href="https://t.me/{{ product.author.username }}" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-telegram me-2"></i>Связаться с продавцом
-                </a>
+    <div class="action-buttons mb-4">
+        <div class="row g-2">
+            <div class="col-6">
+                <form method="post" action="{% url 'app:toggle_favorite' product.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if is_favorite %}btn-danger{% else %}btn-outline-danger{% endif %} w-100">
+                        <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %} me-2"></i>
+                        {% if is_favorite %}
+                            Удалить из избранного
+                        {% else %}
+                            В избранное
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+            <div class="col-6">
+                <button onclick="shareProduct(event, {{ product.id }}, '{{ product.title|escapejs }}')" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-share me-2"></i>Поделиться
+                </button>
             </div>
         </div>
     </div>
