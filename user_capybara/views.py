@@ -6,9 +6,12 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.db.models import Count
 from django.urls import reverse_lazy, reverse
+import logging
+logger = logging.getLogger(__name__)
 
 from app.models import Product
 from .forms import UserProfileForm
+
 
 User = get_user_model()
 
@@ -27,54 +30,78 @@ class AuthorProfileView(AuthorProfileMixin, TemplateView):
     """Представление профиля автора с его объявлениями, разделенными по статусам"""
     template_name = 'user_capybara/author_profile.html'
     
+    def get_author(self):
+        try:
+            author_id = self.kwargs.get('author_id')
+            logger.info(f"Getting author with ID: {author_id}")
+            author = get_object_or_404(User, id=author_id)
+            logger.info(f"Found author: {author.username}")
+            return author
+        except Exception as e:
+            logger.error(f"Error getting author: {e}")
+            raise
+    
+    def is_own_profile(self):
+        try:
+            result = self.request.user.is_authenticated and self.request.user.id == self.get_author().id
+            logger.info(f"Is own profile: {result}")
+            return result
+        except Exception as e:
+            logger.error(f"Error checking if own profile: {e}")
+            return False
+    
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        author = self.get_author()
-        
-        context['author'] = author
-        context['is_own_profile'] = self.is_own_profile()
-        
-        # Для других пользователей показываем только опубликованные объявления
-        if not context['is_own_profile']:
+        try:
+            context = super().get_context_data(**kwargs)
+            author = self.get_author()
+            
+            context['author'] = author
+            context['is_own_profile'] = self.is_own_profile()
+            
+            # Для других пользователей показываем только опубликованные объявления
+            if not context['is_own_profile']:
+                context['published_products'] = Product.objects.filter(
+                    author=author, 
+                    status=3
+                ).select_related('category', 'city', 'currency')
+                return context
+            
+            # Для собственного профиля показываем объявления по статусам
+            # Опубликованные (статус 3)
             context['published_products'] = Product.objects.filter(
                 author=author, 
                 status=3
             ).select_related('category', 'city', 'currency')
+            
+            # На модерации (статус 0)
+            context['pending_products'] = Product.objects.filter(
+                author=author, 
+                status=0
+            ).select_related('category', 'city', 'currency')
+            
+            # Одобренные, но не опубликованные (статус 1)
+            context['approved_products'] = Product.objects.filter(
+                author=author, 
+                status=1
+            ).select_related('category', 'city', 'currency')
+            
+            # Заблокированные (статус 2)
+            context['rejected_products'] = Product.objects.filter(
+                author=author, 
+                status=2
+            ).select_related('category', 'city', 'currency')
+            
+            # Архивные (статус 4)
+            context['archived_products'] = Product.objects.filter(
+                author=author, 
+                status=4
+            ).select_related('category', 'city', 'currency')
+            
             return context
-        
-        # Для собственного профиля показываем объявления по статусам
-        # Опубликованные (статус 3)
-        context['published_products'] = Product.objects.filter(
-            author=author, 
-            status=3
-        ).select_related('category', 'city', 'currency')
-        
-        # На модерации (статус 0)
-        context['pending_products'] = Product.objects.filter(
-            author=author, 
-            status=0
-        ).select_related('category', 'city', 'currency')
-        
-        # Одобренные, но не опубликованные (статус 1)
-        context['approved_products'] = Product.objects.filter(
-            author=author, 
-            status=1
-        ).select_related('category', 'city', 'currency')
-        
-        # Заблокированные (статус 2)
-        context['rejected_products'] = Product.objects.filter(
-            author=author, 
-            status=2
-        ).select_related('category', 'city', 'currency')
-        
-        # Архивные (статус 4)
-        context['archived_products'] = Product.objects.filter(
-            author=author, 
-            status=4
-        ).select_related('category', 'city', 'currency')
-        
-        return context
-
+        except Exception as e:
+            logger.error(f"Error in get_context_data: {e}")
+            # Возвращаем минимальный контекст, чтобы избежать 500 ошибки
+            return {'author': self.get_author(), 'is_own_profile': False}
 
 class TelegramAuthView(TemplateView):
     """Представление для авторизации через Telegram"""

@@ -1,10 +1,12 @@
 import jwt
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
 from django.utils.functional import SimpleLazyObject
 from rest_framework_simplejwt.authentication import JWTAuthentication
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 def get_user_from_jwt(request):
     """
@@ -35,8 +37,20 @@ def get_user_from_jwt(request):
         
         # Кэшируем пользователя
         request._cached_user = user
+        
+        # Если пользователь найден, но не авторизован через сессию,
+        # авторизуем его через сессию Django
+        if user and not request.user.is_authenticated:
+            try:
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+                logger.info(f"User {user.username} logged in via JWT")
+            except Exception as e:
+                logger.error(f"Error logging in user via JWT: {e}")
+        
         return user
-    except Exception:
+    except Exception as e:
+        logger.error(f"JWT authentication error: {e}")
         return None
 
 
