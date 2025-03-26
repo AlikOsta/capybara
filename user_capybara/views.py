@@ -58,7 +58,6 @@ class AuthorProfileView(AuthorProfileMixin, TemplateView):
             context['author'] = author
             context['is_own_profile'] = self.is_own_profile()
             
-            # Для других пользователей показываем только опубликованные объявления
             if not context['is_own_profile']:
                 context['published_products'] = Product.objects.filter(
                     author=author, 
@@ -66,32 +65,26 @@ class AuthorProfileView(AuthorProfileMixin, TemplateView):
                 ).select_related('category', 'city', 'currency')
                 return context
             
-            # Для собственного профиля показываем объявления по статусам
-            # Опубликованные (статус 3)
             context['published_products'] = Product.objects.filter(
                 author=author, 
                 status=3
             ).select_related('category', 'city', 'currency')
             
-            # На модерации (статус 0)
             context['pending_products'] = Product.objects.filter(
                 author=author, 
                 status=0
             ).select_related('category', 'city', 'currency')
             
-            # Одобренные, но не опубликованные (статус 1)
             context['approved_products'] = Product.objects.filter(
                 author=author, 
                 status=1
             ).select_related('category', 'city', 'currency')
             
-            # Заблокированные (статус 2)
             context['rejected_products'] = Product.objects.filter(
                 author=author, 
                 status=2
             ).select_related('category', 'city', 'currency')
-            
-            # Архивные (статус 4)
+
             context['archived_products'] = Product.objects.filter(
                 author=author, 
                 status=4
@@ -100,13 +93,15 @@ class AuthorProfileView(AuthorProfileMixin, TemplateView):
             return context
         except Exception as e:
             logger.error(f"Error in get_context_data: {e}")
-            # Возвращаем минимальный контекст, чтобы избежать 500 ошибки
+
             return {'author': self.get_author(), 'is_own_profile': False}
+
 
 class TelegramAuthView(TemplateView):
     """Представление для авторизации через Telegram"""
     template_name = 'user_capybara/telegram_auth.html'
     
+
 class MiniAppView(TemplateView):
     """Представление для Telegram Mini App"""
     template_name = 'user_capybara/mini_app.html'
@@ -120,7 +115,6 @@ class UserProfileEditView(UpdateView):
     template_name = 'user_capybara/profile_edit.html'
     
     def get_object(self, queryset=None):
-        # Редактировать можно только свой профиль
         return self.request.user
     
     def get_success_url(self):

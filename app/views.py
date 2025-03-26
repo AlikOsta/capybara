@@ -40,18 +40,16 @@ class AuthorRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-# Список всех объявлений
 class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
+    """Представление для списка объявлений."""
     model = Product
     template_name = 'app/index.html'
     context_object_name = 'products'
-    paginate_by = 10  # Начальное количество объявлений
+    paginate_by = 10 
 
     def get_queryset(self):
-        # Базовый QuerySet: только опубликованные объявления
         queryset = Product.objects.filter(status=3)
 
-        # Применяем поиск, если есть запрос
         query = self.request.GET.get('q', '')
         if query:
             queryset = queryset.filter(
@@ -63,15 +61,11 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Добавляем категории
         context['categories'] = Category.objects.all()
-        # Добавляем поисковый запрос
         context['query'] = self.request.GET.get('q', '')
-        # Получаем общее количество объявлений
         context['total_count'] = self.get_queryset().count()
-        # Определяем, есть ли еще объявления для загрузки
         context['has_more'] = context['total_count'] > len(context['products'])
-        # Избранное для текущего пользователя
+
         if self.request.user.is_authenticated:
             context['favorite_products'] = list(
                 self.request.user.favorites.values_list('product_id', flat=True)
@@ -81,9 +75,9 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
         return context
 
 
-# Детальное представление объявления
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductDetailView(DetailView):
+    """Представление для детального просмотра объявления."""
     model = Product
     template_name = 'app/product_detail.html'
     context_object_name = 'product'
@@ -91,26 +85,27 @@ class ProductDetailView(DetailView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
-        # Проверяем, может ли пользователь просматривать это объявление
+
         if obj.status != 3 and obj.author != self.request.user and not self.request.user.is_staff:
             raise Http404("Объявление не найдено")
         return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Добавляем информацию о том, находится ли объявление в избранном
         context['is_favorite'] = is_favorite(self.request, self.object)
         return context
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        # Регистрируем просмотр, если пользователь не является автором объявления
+
         if request.user != self.object.author:
             ip_address = self.get_client_ip(request)
             session_key = request.session.session_key
+
             if not session_key:
                 request.session.save()
                 session_key = request.session.session_key
+
             if request.user.is_authenticated:
                 ProductView.objects.get_or_create(
                     product=self.object,
@@ -122,6 +117,7 @@ class ProductDetailView(DetailView):
                     ip_address=ip_address,
                     session_key=session_key
                 )
+
         return self.render_to_response(self.get_context_data(object=self.object))
 
     def get_client_ip(self, request):
@@ -132,35 +128,35 @@ class ProductDetailView(DetailView):
         return request.META.get('REMOTE_ADDR')
 
 
-# Список объявлений в категории
 class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
+    """Представление для детального просмотра категории."""
     model = Product
     template_name = 'app/category_detail.html'
     context_object_name = 'products'
-    paginate_by = 10  # Начальное количество объявлений
+    paginate_by = 10 
 
     def get_queryset(self):
-        # Получаем категорию по slug
         self.category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
         queryset = Product.objects.filter(status=3, category=self.category)
 
-        # Применяем поиск, если есть запрос
         query = self.request.GET.get('q', '')
+
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query)
             )
 
-        # Применяем фильтры
         city_id = self.request.GET.get('city')
+
         if city_id and city_id.isdigit():
             queryset = queryset.filter(city_id=city_id)
+
         currency_id = self.request.GET.get('currency')
+
         if currency_id and currency_id.isdigit():
             queryset = queryset.filter(currency_id=currency_id)
 
-        # Применяем сортировку
         sort = self.request.GET.get('sort')
         if sort == 'price_asc':
             queryset = queryset.order_by('price')
@@ -168,7 +164,7 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
             queryset = queryset.order_by('-price')
         elif sort == 'date_asc':
             queryset = queryset.order_by('created_at')
-        else:  # date_desc или по умолчанию
+        else: 
             queryset = queryset.order_by('-created_at')
 
         return queryset
@@ -193,9 +189,9 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
         return context
 
 
-# Создание объявления
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductCreateView(CreateView):
+    """Представление для создания нового объявления."""
     model = Product
     form_class = ProductForm
     template_name = 'app/product_form.html'
@@ -206,21 +202,19 @@ class ProductCreateView(CreateView):
         return super().form_valid(form)
 
 
-# Обновление объявления
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductUpdateView(AuthorRequiredMixin, UpdateView):
+    """Представление для редактирования объявления."""
     model = Product
     form_class = ProductForm
     template_name = 'app/product_form.html'
     pk_url_kwarg = 'pk'
 
     def get_queryset(self):
-        # Пользователь может редактировать только свои объявления
         return Product.objects.filter(author=self.request.user)
 
     def form_valid(self, form):
-        # При редактировании объявление отправляется на модерацию
-        form.instance.status = 0  # "На модерации"
+        form.instance.status = 0 
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -228,13 +222,13 @@ class ProductUpdateView(AuthorRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['is_edit'] = True  # Флаг для шаблона
+        context['is_edit'] = True 
         return context
 
 
-# Удаление объявления
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductDeleteView(AuthorRequiredMixin, DeleteView):
+    """Представление для удаления объявления."""
     model = Product
     template_name = 'app/product_confirm_delete.html'
     success_url = reverse_lazy('app:index')
@@ -244,9 +238,10 @@ class ProductDeleteView(AuthorRequiredMixin, DeleteView):
         return Product.objects.filter(author=self.request.user)
 
 
-# Список избранных объявлений
+
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class FavoriteListView(ListView):
+    """Представление для отображения избранных объявлений."""
     model = Product
     template_name = 'app/favorites.html'
     context_object_name = 'products'
@@ -255,7 +250,7 @@ class FavoriteListView(ListView):
     def get_queryset(self):
         return Product.objects.filter(
             favorited_by__user=self.request.user,
-            status=3  # Только опубликованные
+            status=3 
         ).select_related('category', 'city', 'currency', 'author')
 
     def get_context_data(self, **kwargs):
@@ -264,10 +259,11 @@ class FavoriteListView(ListView):
         return context
 
 
-# Функция для добавления/удаления из избранного
+
 @login_required(login_url='user:telegram_auth')
 @require_POST
 def toggle_favorite(request, pk):
+    """Добавляет или удаляет объявление из избранного."""
     product = get_object_or_404(Product, pk=pk)
     favorite, created = Favorite.objects.get_or_create(
         user=request.user,
@@ -388,7 +384,7 @@ class CategoryProductsAPIView(View):
             queryset = queryset.order_by('-price')
         elif sort == 'date_asc':
             queryset = queryset.order_by('created_at')
-        else:  # 'date_desc' или по умолчанию
+        else:  
             queryset = queryset.order_by('-created_at')
 
         total_count = queryset.count()
