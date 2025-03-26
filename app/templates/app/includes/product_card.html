@@ -2,7 +2,8 @@
     <a href="{% url 'app:product_detail' pk=product.pk %}" class="text-decoration-none text-dark">
         <div class="card h-100 product-card-inner">
             <div class="product-image-container">
-                <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.title }}" loading="lazy">
+
                 {% if product.status != 3 %}
                 <div class="product-status-badge 
                     {% if product.status == 0 %}badge-pending{% endif %}

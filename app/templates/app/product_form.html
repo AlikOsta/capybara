@@ -134,44 +134,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Получаем элементы
-    const fileInput = document.getElementById('{{ form.image.id_for_label }}');
-    const previewContainer = document.querySelector('.image-preview-container');
-    
-    // Обработчик изменения файла
-    fileInput.addEventListener('change', function() {
-        // Очищаем контейнер
-        previewContainer.innerHTML = '';
-        
-        // Проверяем, выбран ли файл
-        if (this.files && this.files[0]) {
-            const file = this.files[0];
-            
-            // Создаем элемент img для предпросмотра
-            const img = document.createElement('img');
-            img.classList.add('img-preview', 'img-fluid', 'rounded');
-            
-            // Создаем URL для предпросмотра
-            const objectUrl = URL.createObjectURL(file);
-            img.src = objectUrl;
-            
-            // Добавляем изображение в контейнер
-            previewContainer.appendChild(img);
-            
-            // Освобождаем URL после загрузки изображения
-            img.onload = function() {
-                URL.revokeObjectURL(objectUrl);
-            };
-        } else {
-            // Если файл не выбран, показываем плейсхолдер
-            const placeholder = document.createElement('div');
-            placeholder.classList.add('img-preview-placeholder', 'd-flex', 'align-items-center', 'justify-content-center', 'rounded');
-            placeholder.innerHTML = '<i class="bi bi-image text-muted fs-1"></i>';
-            previewContainer.appendChild(placeholder);
-        }
-    });
-});
-</script>
+
 {% endblock %}

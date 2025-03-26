@@ -1,95 +1,116 @@
 /**
-  * Бесконечная лента для загрузки объявлений
-  */
-document.addEventListener('DOMContentLoaded', function() {
-    // Элементы DOM
-    const productsContainer = document.getElementById('products-container');
-    const loaderElement = document.getElementById('loader');
-    const endMessageElement = document.getElementById('end-message');
-    const errorElement = document.getElementById('error-message');
-    const backToTopButton = document.getElementById('back-to-top');
-    
-    
+ * Модуль бесконечной ленты для загрузки объявлений
+ * Зависит от функций из main.js
+ */
+
+const InfiniteScrollModule = {
     // Параметры
-    let isLoading = false;
-    let offset = productsContainer ? parseInt(productsContainer.dataset.offset || 20) : 20;
-    let limit = 6; // Изменено с 10 на 20
-    let hasMore = productsContainer ? productsContainer.dataset.hasMore === 'true' : true;
-
-    // Получаем текущие параметры URL
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Создаем Intersection Observer для отслеживания прокрутки
-    if (productsContainer && loaderElement) {
+    settings: {
+        isLoading: false,
+        offset: 0,
+        limit: 6,
+        hasMore: true,
+        loadThreshold: 80, // Процент прокрутки для загрузки
+        observerThreshold: 0.2, // Порог видимости для IntersectionObserver
+        animationDelay: 10, // Задержка для анимации появления элементов
+        loadingTimeout: null // Таймаут для предотвращения частых запросов
+    },
+    
+    // Элементы DOM
+    elements: {
+        productsContainer: null,
+        loaderElement: null,
+        endMessageElement: null,
+        errorElement: null,
+        backToTopButton: null,
+        retryButton: null
+    },
+    
+    // Инициализация модуля
+    init: function() {
+        // Получаем элементы DOM
+        this.elements.productsContainer = document.getElementById('products-container');
+        this.elements.loaderElement = document.getElementById('loader');
+        this.elements.endMessageElement = document.getElementById('end-message');
+        this.elements.errorElement = document.getElementById('error-message');
+        this.elements.backToTopButton = document.getElementById('back-to-top');
+        this.elements.retryButton = document.getElementById('retry-button');
+        
+        // Если нет контейнера для продуктов, выходим
+        if (!this.elements.productsContainer) return;
+        
+        // Получаем параметры из data-атрибутов
+        this.settings.offset = parseInt(this.elements.productsContainer.dataset.offset || 20);
+        this.settings.hasMore = this.elements.productsContainer.dataset.hasMore === 'true';
+        
+        // Инициализируем Intersection Observer
+        this.initIntersectionObserver();
+        
+        // Инициализируем обработчики событий
+        this.initEventListeners();
+    },
+    
+    // Инициализация Intersection Observer
+    initIntersectionObserver: function() {
+        if (!this.elements.loaderElement) return;
+        
         const observer = new IntersectionObserver((entries) => {
             // Если загрузчик виден и не идет загрузка и есть еще объявления
-            if (entries[0].isIntersecting && !isLoading && hasMore) {
-                loadMoreProducts();
+            if (entries[0].isIntersecting && !this.settings.isLoading && this.settings.hasMore) {
+                this.loadMoreProducts();
             }
-        }, { threshold: 0.2 }); // Изменено с 0.1 на 0.2
+        }, { threshold: this.settings.observerThreshold });
         
         // Начинаем наблюдение за загрузчиком
-        observer.observe(loaderElement);
-    }
-
-    // Добавляем отслеживание процента прокрутки страницы
-    window.addEventListener('scroll', function() {
+        observer.observe(this.elements.loaderElement);
+    },
+    
+    // Инициализация обработчиков событий
+    initEventListeners: function() {
+        // Отслеживание прокрутки страницы
+        window.addEventListener('scroll', this.handleScroll.bind(this));
+        
+        // Обработчик для кнопки повторной попытки
+        if (this.elements.retryButton) {
+            this.elements.retryButton.addEventListener('click', () => {
+                if (this.elements.errorElement) {
+                    this.elements.errorElement.style.display = 'none';
+                }
+                this.loadMoreProducts();
+            });
+        }
+    },
+    
+    // Обработчик прокрутки
+    handleScroll: function() {
         // Вычисляем процент прокрутки
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const scrollHeight = document.documentElement.scrollHeight;
         const clientHeight = document.documentElement.clientHeight;
         const scrollPercentage = (scrollTop / (scrollHeight - clientHeight)) * 100;
         
-        // Если прокручено 80% страницы и не идет загрузка и есть еще объявления
-        if (scrollPercentage >= 80 && !isLoading && hasMore) {
-            loadMoreProducts();
+        // Если прокручено достаточно и не идет загрузка и есть еще объявления
+        if (scrollPercentage >= this.settings.loadThreshold && !this.settings.isLoading && this.settings.hasMore) {
+            // Используем debounce для предотвращения частых запросов
+            clearTimeout(this.settings.loadingTimeout);
+            this.settings.loadingTimeout = setTimeout(() => {
+                this.loadMoreProducts();
+            }, 100);
         }
-        
-        // Показываем/скрываем кнопку "Наверх"
-        if (backToTopButton) {
-            if (scrollTop > 1000) {
-                backToTopButton.style.display = 'block';
-            } else {
-                backToTopButton.style.display = 'none';
-            }
-        }
-    });
+    },
     
     // Функция для загрузки дополнительных объявлений
-    function loadMoreProducts() {
-        if (isLoading || !hasMore) return;
+    loadMoreProducts: function() {
+        if (this.settings.isLoading || !this.settings.hasMore) return;
         
-        isLoading = true;
-        showLoader();
+        this.settings.isLoading = true;
+        this.showLoader();
         
         // Определяем URL для запроса в зависимости от текущей страницы
-        let apiUrl;
-        let params = new URLSearchParams();
-        
-        // Добавляем параметры пагинации
-        params.append('offset', offset);
-        params.append('limit', limit);
-        
-        // Добавляем все текущие параметры URL
-        for (const [key, value] of urlParams.entries()) {
-            if (key !== 'page') { // Исключаем параметр page, так как используем offset
-                params.append(key, value);
-            }
-        }
-        
-        // Определяем URL API в зависимости от текущей страницы
-        const path = window.location.pathname;
-        if (path.includes('/category/')) {
-            const categorySlug = path.split('/category/')[1].replace('/', '');
-            apiUrl = `/api/category/${categorySlug}/products/?${params.toString()}`;
-        } else if (path === '/' || path === '') {
-            apiUrl = `/api/products/?${params.toString()}`;
-        } else if (path.includes('/favorites/')) {
-            apiUrl = `/api/favorites/?${params.toString()}`;
-        } else {
-            // Если мы на странице, которая не поддерживает бесконечную ленту
-            hideLoader();
-            isLoading = false;
+        const apiUrl = this.getApiUrl();
+        if (!apiUrl) {
+            this.hideLoader();
+            this.settings.isLoading = false;
             return;
         }
         
@@ -104,158 +125,112 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 // Если есть HTML для добавления
                 if (data.html) {
-                    // Создаем временный контейнер для парсинга HTML
-                    const tempContainer = document.createElement('div');
-                    tempContainer.innerHTML = data.html;
-                    
-                    // Добавляем новые элементы с анимацией
-                    const productItems = tempContainer.querySelectorAll('.product-item');
-                    productItems.forEach(item => {
-                        item.style.opacity = '0';
-                        item.style.transform = 'translateY(20px)';
-                        productsContainer.appendChild(item);
-                        
-                        // Анимируем появление
-                        setTimeout(() => {
-                            item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            item.style.opacity = '1';
-                            item.style.transform = 'translateY(0)';
-                        }, 10);
-                    });
-                    
-                    // Инициализируем обработчики для кнопок избранного
-                    initFavoriteButtons();
+                    this.appendNewProducts(data.html);
                     
                     // Обновляем параметры
-                    offset = data.next_offset || offset;
-                    hasMore = data.has_more;
+                    this.settings.offset = data.next_offset || this.settings.offset;
+                    this.settings.hasMore = data.has_more;
                     
                     // Показываем сообщение о конце списка, если больше нет объявлений
-                    if (!hasMore && endMessageElement) {
-                        endMessageElement.style.display = 'block';
-                    }
-                    
-                    // Показываем кнопку "Наверх", если прокрутили достаточно далеко
-                    if (backToTopButton && window.pageYOffset > 1000) {
-                        backToTopButton.style.display = 'block';
+                    if (!this.settings.hasMore && this.elements.endMessageElement) {
+                        this.elements.endMessageElement.style.display = 'block';
                     }
                 }
             })
             .catch(error => {
                 console.error('Ошибка:', error);
-                if (errorElement) {
-                    errorElement.style.display = 'block';
+                if (this.elements.errorElement) {
+                    this.elements.errorElement.style.display = 'block';
                 }
             })
             .finally(() => {
-                hideLoader();
-                isLoading = false;
+                this.hideLoader();
+                this.settings.isLoading = false;
             });
-    }
+    },
+    
+    // Получение URL API в зависимости от текущей страницы
+    getApiUrl: function() {
+        // Получаем текущие параметры URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams();
+        
+        // Добавляем параметры пагинации
+        params.append('offset', this.settings.offset);
+        params.append('limit', this.settings.limit);
+        
+        // Добавляем все текущие параметры URL
+        for (const [key, value] of urlParams.entries()) {
+            if (key !== 'page') { // Исключаем параметр page, так как используем offset
+                params.append(key, value);
+            }
+        }
+        
+        // Определяем URL API в зависимости от текущей страницы
+        const path = window.location.pathname;
+        let apiUrl;
+        
+        if (path.includes('/category/')) {
+            const categorySlug = path.split('/category/')[1].replace('/', '');
+            apiUrl = `/api/category/${categorySlug}/products/?${params.toString()}`;
+        } else if (path === '/' || path === '') {
+            apiUrl = `/api/products/?${params.toString()}`;
+        } else if (path.includes('/favorites/')) {
+            apiUrl = `/api/favorites/?${params.toString()}`;
+        } else {
+            // Если мы на странице, которая не поддерживает бесконечную ленту
+            return null;
+        }
+        
+        return apiUrl;
+    },
+    
+    // Добавление новых продуктов на страницу
+    appendNewProducts: function(html) {
+        // Создаем временный контейнер для парсинга HTML
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = html;
+        
+        // Добавляем новые элементы с анимацией
+        const productItems = tempContainer.querySelectorAll('.product-item');
+        productItems.forEach((item, index) => {
+            // Начальное состояние для анимации
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(20px)';
+            
+            // Добавляем элемент в контейнер
+            this.elements.productsContainer.appendChild(item);
+            
+            // Анимируем появление с небольшой задержкой для каждого элемента
+            setTimeout(() => {
+                item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, this.settings.animationDelay * (index + 1));
+        });
+        
+        // Инициализируем обработчики для кнопок избранного
+        if (typeof window.initFavoriteButtons === 'function') {
+            window.initFavoriteButtons();
+        }
+    },
     
     // Функция для показа индикатора загрузки
-    function showLoader() {
-        if (loaderElement) {
-            loaderElement.style.display = 'block';
+    showLoader: function() {
+        if (this.elements.loaderElement) {
+            this.elements.loaderElement.style.display = 'block';
         }
-    }
+    },
     
     // Функция для скрытия индикатора загрузки
-    function hideLoader() {
-        if (loaderElement) {
-            loaderElement.style.display = 'none';
+    hideLoader: function() {
+        if (this.elements.loaderElement) {
+            this.elements.loaderElement.style.display = 'none';
         }
     }
-    
-    // Обработчик для кнопки "Наверх"
-    if (backToTopButton) {
-        backToTopButton.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-        
-        // Показываем/скрываем кнопку "Наверх" при прокрутке
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 1000) {
-                backToTopButton.style.display = 'block';
-            } else {
-                backToTopButton.style.display = 'none';
-            }
-        });
-    }
-    
-    // Обработчик для кнопки повторной попытки
-    const retryButton = document.getElementById('retry-button');
-    if (retryButton) {
-        retryButton.addEventListener('click', function() {
-            errorElement.style.display = 'none';
-            loadMoreProducts();
-        });
-    }
+};
+
+// Инициализация модуля при загрузке DOM
+document.addEventListener('DOMContentLoaded', function() {
+    InfiniteScrollModule.init();
 });
-
-// Функция для инициализации кнопок избранного для новых элементов
-function initFavoriteButtons() {
-    const newFavoriteButtons = document.querySelectorAll('.favorite-btn:not(.initialized)');
-    
-    newFavoriteButtons.forEach(btn => {
-        btn.classList.add('initialized');
-        
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const productId = this.dataset.productId;
-            const isFavorite = this.dataset.isFavorite === 'true';
-            
-            // Отправляем AJAX запрос
-            fetch(`/product/${productId}/favorite/`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Обновляем состояние кнопки
-                    this.dataset.isFavorite = data.is_favorite.toString();
-                    
-                    // Обновляем иконку
-                    const icon = this.querySelector('i');
-                    if (data.is_favorite) {
-                        icon.classList.remove('bi-heart');
-                        icon.classList.add('bi-heart-fill');
-                    } else {
-                        icon.classList.remove('bi-heart-fill');
-                        icon.classList.add('bi-heart');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-            });
-        });
-    });
-}
-
-// Функция для получения CSRF токена из cookies
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}

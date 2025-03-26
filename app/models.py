@@ -4,6 +4,9 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from slugify import slugify
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 
 class Product(models.Model):
@@ -21,15 +24,16 @@ class Product(models.Model):
 
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Автор')
     category = models.ForeignKey('Category', on_delete=models.PROTECT, verbose_name='Категория')
-    title = models.CharField(max_length=50, verbose_name='Товар')
+    title = models.CharField(max_length=50, verbose_name='Товар', db_index=True) 
     description = models.TextField(max_length=350, verbose_name='Описание')
     image = models.ImageField(upload_to='media/images/', verbose_name='Изображение')
-    price = models.IntegerField(verbose_name='Цена')
+    price = models.IntegerField(verbose_name='Цена', db_index=True) 
     currency = models.ForeignKey('Currency', null=True, on_delete=models.PROTECT, verbose_name='Валюта')
     city = models.ForeignKey('City', null=True, on_delete=models.PROTECT, verbose_name='Город')
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Опубликовано')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
-    status = models.IntegerField(choices=STATUS_CHOICES, default=0, verbose_name='Статус')
+    status = models.IntegerField(choices=STATUS_CHOICES, default=0, verbose_name='Статус', db_index=True) 
+
 
     def __str__(self):
         return self.title
@@ -52,14 +56,38 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse("app:product_detail", kwargs={"pk": self.pk})
 
+
     def get_view_count(self):
         """Возвращает количество уникальных просмотров объявления."""
         return self.views.count()
+    
+    def save(self, *args, **kwargs):
+
+        if self.image and not self.id:  
+            img = Image.open(self.image)
+            
+            if img.height > 1200 or img.width > 1200:
+                output_size = (1200, 1200)
+                img.thumbnail(output_size)
+            
+            output = BytesIO()
+            img.save(output, format=img.format, quality=85, optimize=True)
+            output.seek(0)
+            
+            self.image = ContentFile(output.read(), name=self.image.name)
+        
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Объявление"
         verbose_name_plural = "Объявления"
         ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['title', 'status']),  
+            models.Index(fields=['category', 'status']),  
+            models.Index(fields=['price', 'status']), 
+            models.Index(fields=['created_at', 'status']),  
+        ]
 
 
 class Category(models.Model):
@@ -75,7 +103,6 @@ class Category(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        # Если slug не установлен, генерируем его из имени
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)

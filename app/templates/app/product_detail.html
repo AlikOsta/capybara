@@ -28,7 +28,7 @@
                                     </button>
                                 </form>
                             </li>
-                            <li><a class="dropdown-item" href="#" onclick="shareProduct(event, {{ product.id }}, '{{ product.title|escapejs }}')">
+                            <li><a class="dropdown-item" href="#" data-action="share" data-product-id="{{ product.id }}" data-product-title="{{ product.title|escapejs }}">
                                 <i class="bi bi-share me-2"></i>Поделиться
                             </a></li>
                             <li><a class="dropdown-item" href="{% url 'app:product_edit' product.pk %}">
@@ -121,7 +121,7 @@
     <!-- Изображение с кнопкой избранного -->
     <div class="product-gallery mb-4">
         <div class="main-image-container rounded overflow-hidden position-relative">
-            <img src="{{ product.image.url }}" class="img-fluid w-100 main-product-image" alt="{{ product.title }}">
+            <img src="{{ product.image.url }}" class="img-fluid w-100 main-product-image" alt="{{ product.title }}" loading="lazy">
             
             <!-- Кнопка избранного поверх фото -->
             {% if user.is_authenticated and user != product.author %}
@@ -181,12 +181,14 @@
     {% if user.is_authenticated and user != product.author %}
     <div class="action-buttons mb-4">
         <!-- Кнопка связи с продавцом -->
-        <div class="mt-2">
-            <button onclick="contactSeller(event, '{{ product.author.username }}', {{ product.id }}, '{{ product.title|escapejs }}', '{{ product.price }} {{ product.currency }}')" class="btn btn-primary w-100">
-                <i class="bi bi-telegram me-2"></i>Связаться с продавцом
-            </button>
-        </div>
-    </div>
+        <button data-action="contact" 
+        data-username="{{ product.author.username }}" 
+        data-product-id="{{ product.id }}" 
+        data-product-title="{{ product.title|escapejs }}" 
+        data-product-price="{{ product.price }} {{ product.currency }}" 
+        class="btn btn-primary w-100">
+    <i class="bi bi-telegram me-2"></i>Связаться с продавцом
+</button>
     {% endif %}
     
 </div>
@@ -211,5 +213,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'app/js/favorites.js' %}"></script>
+
 {% endblock %}

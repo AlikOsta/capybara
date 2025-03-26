@@ -29,9 +29,10 @@
                         <div class="category-card card h-100 border-0 position-relative overflow-hidden bg-light">
                             <div class="card-body p-3 text-center">
                                 {% if category.image %}
-                                <div class="category-icon mb-2">
-                                    <img src="{{ category.image.url }}" class="img-fluid" alt="{{ category.name }}" style="max-height: 40px;">
-                                </div>
+                                    <!-- Обновляем теги img для категорий -->
+                                    <div class="category-icon mb-2">
+                                        <img src="{{ category.image.url }}" class="img-fluid" alt="{{ category.name }}" style="max-height: 40px;" loading="lazy">
+                                    </div>
                                 {% else %}
                                 <div class="category-icon mb-2">
                                     <i class="bi bi-grid fs-3"></i>
@@ -93,5 +94,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'app/js/infinite-scroll.js' %}"></script>
+
 {% endblock %}

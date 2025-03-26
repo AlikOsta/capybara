@@ -7,6 +7,8 @@ from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 from .models import Product, Category, Currency, City, Favorite, ProductView
 from .forms import ProductForm
@@ -40,6 +42,8 @@ class AuthorRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+# Кэширование главной страницы на 15 минут
+@method_decorator(cache_page(60 * 2), name='dispatch')
 class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для списка объявлений."""
     model = Product
@@ -48,7 +52,10 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     paginate_by = 10 
 
     def get_queryset(self):
-        queryset = Product.objects.filter(status=3)
+        # Используем select_related для загрузки связанных объектов за один запрос
+        queryset = Product.objects.filter(status=3).select_related(
+            'author', 'category', 'currency', 'city'
+        )
 
         query = self.request.GET.get('q', '')
         if query:
@@ -82,6 +89,10 @@ class ProductDetailView(DetailView):
     template_name = 'app/product_detail.html'
     context_object_name = 'product'
     pk_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        # Используем select_related для загрузки связанных объектов за один запрос
+        return Product.objects.select_related('author', 'category', 'currency', 'city')
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -128,6 +139,8 @@ class ProductDetailView(DetailView):
         return request.META.get('REMOTE_ADDR')
 
 
+# Кэширование страницы категории на 15 минут
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для детального просмотра категории."""
     model = Product
@@ -137,7 +150,10 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
 
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
-        queryset = Product.objects.filter(status=3, category=self.category)
+        # Используем select_related для загрузки связанных объектов за один запрос
+        queryset = Product.objects.filter(status=3, category=self.category).select_related(
+            'author', 'category', 'currency', 'city'
+        )
 
         query = self.request.GET.get('q', '')
 
@@ -248,6 +264,7 @@ class FavoriteListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
+        # Используем prefetch_related для оптимизации запроса избранных объявлений
         return Product.objects.filter(
             favorited_by__user=self.request.user,
             status=3 
@@ -323,14 +340,19 @@ class ProductListAPIView(View):
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 10))
         query = request.GET.get('q', '')
-        queryset = Product.objects.filter(status=3)
+        queryset = Product.objects.filter(status=3).select_related(
+            'author', 'category', 'currency', 'city'
+        )
+        
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query)
             )
+        
         total_count = queryset.count()
         products = queryset.order_by('-created_at')[offset:offset + limit]
+        
         favorite_products = []
         if request.user.is_authenticated:
             favorite_products = list(request.user.favorites.values_list('product_id', flat=True))
@@ -353,6 +375,7 @@ class ProductListAPIView(View):
 
 class CategoryProductsAPIView(View):
     """API представление для получения списка объявлений в категории."""
+
     def get(self, request, *args, **kwargs):
         category_slug = kwargs.get('category_slug')
         try:
@@ -362,12 +385,11 @@ class CategoryProductsAPIView(View):
 
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 10))
-        query = request.GET.get('q', '')
-        sort = request.GET.get('sort', '')
-        city_id = request.GET.get('city', '')
-        currency_id = request.GET.get('currency', '')
-
-        queryset = Product.objects.filter(status=3, category=category)
+        
+        # Используем select_related для загрузки связанных объектов за один запрос
+        queryset = Product.objects.filter(status=3, category=category).select_related(
+            'author', 'category', 'currency', 'city'
+        )
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query) |

@@ -177,3 +177,14 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SECURE = not DEBUG  # True в продакшене
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
+
+# Настройки кэширования
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+# Время кэширования в секундах
+CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 минут
