@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 from .views import AuthorProfileView, TelegramAuthView, MiniAppView, UserProfileEditView
-from .api import TelegramAuthView as TelegramAuthAPIView
+from .api import TelegramAuthView as TelegramAuthAPIView, check_auth
 
 
 app_name = 'user'
@@ -15,4 +15,5 @@ urlpatterns = [
         # JWT Token endpoints
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/auth/check/', check_auth, name='check_auth'),
 ]

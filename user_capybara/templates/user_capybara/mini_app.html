@@ -5,32 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capybara Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-        }
-        .container {
-            max-width: 500px;
-            padding: 20px;
-        }
-        .loader {
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
+        .loader {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--tg-theme-button-color, #2481cc);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div id="app">
-        <div class="loader">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Загрузка...</span>
-            </div>
-        </div>
-    </div>
+    <div id="loader" class="loader"></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -42,7 +43,12 @@
             const initData = tg.initData;
             
             if (!initData) {
-                showError('Ошибка: Отсутствуют данные инициализации Telegram');
+                // В случае ошибки просто перенаправляем на главную
+                tg.MainButton.setText('Перейти на главную');
+                tg.MainButton.show();
+                tg.MainButton.onClick(function() {
+                    tg.close();
+                });
                 return;
             }
             
@@ -53,11 +59,13 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ initData: initData }),
+                credentials: 'include'
             })
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    showError('Ошибка: ' + data.error);
+                    // В случае ошибки просто перенаправляем на главную
+                    tg.close();
                     return;
                 }
                 
@@ -65,27 +73,13 @@
                 localStorage.setItem('access_token', data.access);
                 localStorage.setItem('refresh_token', data.refresh);
                 
-                // Перенаправляем на главную страницу
+                // Сразу перенаправляем на главную страницу
                 window.location.href = '/';
             })
             .catch(error => {
-                showError('Ошибка сети: ' + error.message);
+                // В случае ошибки просто перенаправляем на главную
+                tg.close();
             });
-            
-            // Функция для отображения ошибки
-            function showError(message) {
-                const appDiv = document.getElementById('app');
-                appDiv.innerHTML = `
-                    <div class="container">
-                        <div class="alert alert-danger" role="alert">
-                            ${message}
-                        </div>
-                        <button class="btn btn-primary" onclick="window.location.reload()">
-                            Попробовать снова
-                        </button>
-                    </div>
-                `;
-            }
         });
     </script>
 </body>

@@ -1,14 +1,9 @@
 """
-Скрипт для запуска Telegram бота.
-
-Этот скрипт настраивает Django окружение и запускает Telegram бота.
-Может быть запущен как отдельный процесс.
+Django management команда для запуска Telegram бота.
 """
-import os
-import sys
-import django
 import logging
-from pathlib import Path
+from django.core.management.base import BaseCommand
+from bot_capybara.bot import start_bot
 
 # Настройка логирования
 logging.basicConfig(
@@ -17,53 +12,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def setup_django():
+class Command(BaseCommand):
     """
-    Настраивает Django окружение для запуска бота вне Django сервера.
-    
-    Returns:
-        bool: True, если настройка прошла успешно, иначе False
+    Django management команда для запуска Telegram бота.
     """
-    try:
-        # Получаем путь к корневой директории проекта
-        BASE_DIR = Path(__file__).resolve().parent.parent
-        
-        # Добавляем корневую директорию в sys.path
-        sys.path.append(str(BASE_DIR))
-        
-        # Устанавливаем переменную окружения для настроек Django
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'capybara.settings')
-        
-        # Настраиваем Django
-        django.setup()
-        
-        return True
-    except Exception as e:
-        logger.error(f"Ошибка при настройке Django: {e}")
-        return False
+    help = 'Запускает Telegram бота'
 
-def main():
-    """
-    Основная функция для запуска бота.
-    
-    Returns:
-        int: 0 в случае успеха, 1 в случае ошибки
-    """
-    # Настраиваем Django
-    if not setup_django():
-        return 1
-    
-    try:
-        # Импортируем функцию запуска бота после настройки Django
-        from bot_capybara.bot import start_bot
-        
-        # Запускаем бота
-        start_bot()
-        
-        return 0
-    except Exception as e:
-        logger.error(f"Ошибка при запуске бота: {e}")
-        return 1
-
-if __name__ == "__main__":
-    sys.exit(main())
+    def handle(self, *args, **options):
+        """
+        Метод, который вызывается при выполнении команды.
+        """
+        self.stdout.write(self.style.SUCCESS('Запуск Telegram бота...'))
+        try:
+            start_bot()
+            return 0
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Ошибка при запуске бота: {e}'))
+            return 1

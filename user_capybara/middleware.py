@@ -8,7 +8,7 @@ User = get_user_model()
 
 def get_user_from_jwt(request):
     """
-    Получает пользователя из JWT-токена в заголовке Authorization.
+    Получает пользователя из JWT-токена в заголовке Authorization или в cookies.
     """
     # Проверяем, есть ли уже аутентифицированный пользователь
     if hasattr(request, '_cached_user'):
@@ -16,10 +16,16 @@ def get_user_from_jwt(request):
     
     # Пытаемся получить токен из заголовка
     auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-    if not auth_header.startswith('Bearer '):
-        return None
+    token = None
     
-    token = auth_header.split(' ')[1]
+    if auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+    else:
+        # Если токена нет в заголовке, проверяем cookies
+        token = request.COOKIES.get('jwt_access')
+    
+    if not token:
+        return None
     
     try:
         # Проверяем токен

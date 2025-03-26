@@ -8,7 +8,7 @@ def archive_old_products():
     которые не обновлялись более 1 дня
     """
     # Получаем время, которое было 1 день назад
-    one_day_ago = timezone.now() - timedelta(days=1)
+    one_day_ago = timezone.now() - timedelta(days=28)
     
     # Находим все объявления со статусом "Опубликовано" (3), 
     # которые не обновлялись более 1 дня

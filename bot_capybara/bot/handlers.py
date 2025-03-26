@@ -71,7 +71,7 @@ def get_webapp_button(url=None):
     Returns:
         InlineKeyboardMarkup: разметка с кнопкой
     """
-    app_url = url or settings.TELEGRAM_MINI_APP_URL
+    app_url = 'https://capybarashop.store/user/mini-app/'
     keyboard = [
         [InlineKeyboardButton(
             "Открыть Capybara", 

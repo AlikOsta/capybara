@@ -166,3 +166,14 @@ Q_CLUSTER = {
     'orm': 'default',
 }
 
+# CORS настройки
+CORS_ALLOWED_ORIGINS = [
+    "https://web.telegram.org",
+    "https://capybarashop.store",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# Настройки сессий
+SESSION_COOKIE_SECURE = not DEBUG  # True в продакшене
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
