@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Параметры
     let isLoading = false;
     let offset = productsContainer ? parseInt(productsContainer.dataset.offset || 20) : 20;
-    let limit = 6; // Изменено с 10 на 20
+    let limit = 20; // Изменено с 10 на 20
     let hasMore = productsContainer ? productsContainer.dataset.hasMore === 'true' : true;
 
     // Получаем текущие параметры URL

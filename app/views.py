@@ -45,7 +45,7 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     model = Product
     template_name = 'app/index.html'
     context_object_name = 'products'
-    paginate_by = 6  # Начальное количество объявлений
+    paginate_by = 10  # Начальное количество объявлений
     
     def get_queryset(self):
         queryset = Product.objects.filter(status=3)  # Только опубликованные
@@ -156,7 +156,7 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     model = Product
     template_name = 'app/category_detail.html'
     context_object_name = 'products'
-    paginate_by = 6  # Начальное количество объявлений
+    paginate_by = 10  # Начальное количество объявлений
     
     def get_queryset(self):
         # Получаем категорию по slug

@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     ProductListView, ProductDetailView, CategoryDetailView, 
     ProductCreateView, ProductUpdateView, ProductDeleteView,
-    FavoriteListView, toggle_favorite, ProductListAPIView, CategoryProductsAPIView
+    FavoriteListView, toggle_favorite, ProductListAPIView, CategoryProductsAPIView, change_product_status
 )
 
 app_name = 'app'
@@ -16,6 +16,7 @@ urlpatterns = [
     path('product/<int:pk>/favorite/', toggle_favorite, name='toggle_favorite'),
     path('favorites/', FavoriteListView.as_view(), name='favorites'),
     path('category/<slug:category_slug>/', CategoryDetailView.as_view(), name='category_detail'),
+    path('product/<int:pk>/status/<int:status>/', change_product_status, name='change_status'),
     
     # API эндпоинты для бесконечной ленты
     path('api/products/', ProductListAPIView.as_view(), name='api_products'),

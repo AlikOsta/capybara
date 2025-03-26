@@ -42,6 +42,24 @@ a {
     background-color: var(--tg-theme-secondary-bg-color) !important;
 }
 
+/* Анимации для кнопок */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.nav-item {
+    transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+/* Стили для карточек */
 .card {
     border-radius: 12px;
     overflow: hidden;
@@ -53,67 +71,6 @@ a {
 .card:hover {
     transform: translateY(-3px);
 }
-
-.nav-item {
-    transition: all 0.2s ease;
-}
-
-.nav-item:hover {
-    background-color: var(--tg-theme-secondary-bg-color);
-}
-
-/* Анимации для кнопок */
-.btn {
-    transition: all 0.2s ease;
-}
-
-.btn:active {
-    transform: scale(0.97);
-}
-
-/* Стили для категорий на главной странице */
-.category-card {
-    border-radius: 12px;
-    transition: all 0.2s ease;
-}
-
-.category-card:hover {
-    transform: translateY(-3px);
-}
-
-/* Стили для карточек товаров */
-.product-image {
-    height: 200px;
-    object-fit: cover;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-}
-
-/* Стили для избранного */
-.favorite-btn {
-    opacity: 0.8;
-    transition: all 0.2s ease;
-}
-
-.favorite-btn:hover {
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-/* Стили для футера */
-footer {
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-}
-
-/* Адаптация для Telegram Mini App */
-@media (max-width: 576px) {
-    .container {
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-}
-
-/* Добавьте эти стили к существующему файлу style.css */
 
 /* Стили для поисковой строки */
 .search-form .input-group {
@@ -136,21 +93,11 @@ footer {
     position: relative;
 }
 
-.categories-container:after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 40px;
-    background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
-    pointer-events: none;
-}
-
 .category-card {
     border-radius: 12px;
     transition: all 0.2s ease;
-    height: 100px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: var(--tg-theme-secondary-bg-color);
 }
 
 .category-card:hover {
@@ -158,55 +105,26 @@ footer {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.category-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 40px;
+.category-image-container {
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-/* Стили для пустого состояния */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px 0;
+.category-image {
+    transition: transform 0.3s ease;
 }
 
-/* Стили для пагинации */
-.pagination .page-link {
-    border-radius: 8px;
-    margin: 0 2px;
-    border: none;
-    background-color: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
+.category-card:hover .category-image {
+    transform: scale(1.05);
 }
 
-.pagination .page-item.active .page-link {
-    background-color: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
+.category-overlay {
+    z-index: 2;
 }
 
-/* Улучшения для скроллбара в категориях */
-.row.flex-nowrap.overflow-auto {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+.category-gradient {
+    z-index: 1;
 }
-
-.row.flex-nowrap.overflow-auto::-webkit-scrollbar {
-    height: 4px;
-}
-
-.row.flex-nowrap.overflow-auto::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.row.flex-nowrap.overflow-auto::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-}
-
-/* Добавьте эти стили к существующему файлу style.css */
 
 /* Стили для карточки товара */
 .product-card {
@@ -270,6 +188,7 @@ footer {
     background-color: #6c757d;
 }
 
+/* Стили для избранного */
 .favorite-btn {
     width: 36px;
     height: 36px;
@@ -290,10 +209,11 @@ footer {
     font-size: 1.1rem;
 }
 
-/* Добавьте эти стили к существующему файлу style.css */
-
 /* Стили для страницы детального просмотра товара */
-.product-detail .btn-back {
+.product-detail .btn-back, 
+.category-page .btn-back,
+.product-form-page .btn-back,
+.delete-confirmation-page .btn-back {
     width: 40px;
     height: 40px;
     display: flex;
@@ -303,7 +223,10 @@ footer {
     transition: background-color 0.2s ease;
 }
 
-.product-detail .btn-back:hover {
+.product-detail .btn-back:hover,
+.category-page .btn-back:hover,
+.product-form-page .btn-back:hover,
+.delete-confirmation-page .btn-back:hover {
     background-color: var(--tg-theme-secondary-bg-color);
 }
 
@@ -322,10 +245,6 @@ footer {
 
 .product-title {
     font-weight: 600;
-}
-
-.product-price {
-    color: var(--tg-theme-text-color);
 }
 
 .product-meta {
@@ -372,23 +291,7 @@ footer {
     border: none;
 }
 
-/* Добавьте эти стили к существующему файлу style.css */
-
-/* Стили для страницы категории */
-.category-page .btn-back {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-.category-page .btn-back:hover {
-    background-color: var(--tg-theme-secondary-bg-color);
-}
-
+/* Стили для фильтров на странице категории */
 .filters-section .form-select {
     border-radius: 8px;
     padding: 10px 12px;
@@ -410,8 +313,11 @@ footer {
     background-color: #bb2d3b !important;
 }
 
-/* Улучшения для пустого состояния */
+/* Стили для пустого состояния */
 .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 40px 0;
 }
 
@@ -425,23 +331,7 @@ footer {
     margin-bottom: 1.5rem;
 }
 
-/* Добавьте эти стили к существующему файлу style.css */
-
-/* Стили для страницы формы создания/редактирования объявления */
-.product-form-page .btn-back {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-.product-form-page .btn-back:hover {
-    background-color: var(--tg-theme-secondary-bg-color);
-}
-
+/* Стили для формы создания/редактирования объявления */
 .product-form .form-control,
 .product-form .form-select {
     padding: 12px;
@@ -453,7 +343,7 @@ footer {
 .product-form .form-control:focus,
 .product-form .form-select:focus {
     border-color: var(--tg-theme-button-color);
-    box-shadow: 0 0 0 0.25rem rgba(var(--tg-theme-button-color-rgb), 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(36, 129, 204, 0.25);
 }
 
 .product-form textarea.form-control {
@@ -469,71 +359,6 @@ footer {
     color: var(--tg-theme-hint-color);
     margin-top: 0.25rem;
 }
-
-.current-image-preview {
-    border-radius: 8px;
-    overflow: hidden;
-    display: inline-block;
-}
-
-.product-form .btn-primary {
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 1rem;
-}
-
-.alert {
-    border-radius: 8px;
-    border: none;
-}
-
-.alert-info {
-    background-color: rgba(var(--bs-info-rgb), 0.1);
-    color: var(--bs-info);
-}
-
-.alert i {
-    color: var(--bs-info);
-}
-
-/* Добавьте эти стили к существующему файлу style.css */
-
-/* Стили для страницы подтверждения удаления */
-.delete-confirmation-page .btn-back {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-.delete-confirmation-page .btn-back:hover {
-    background-color: var(--tg-theme-secondary-bg-color);
-}
-
-.delete-confirmation-page .card {
-    border-radius: 12px;
-}
-
-.delete-icon {
-    display: inline-block;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background-color: rgba(var(--bs-danger-rgb), 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.delete-confirmation-page .btn {
-    border-radius: 8px;
-    padding: 10px 20px;
-}
-
-/* Добавьте эти стили к существующему файлу style.css */
 
 /* Стили для предпросмотра изображения */
 .image-preview-container {
@@ -564,25 +389,10 @@ footer {
 }
 
 .custom-file-upload label:hover {
-    background-color: rgba(var(--tg-theme-button-color-rgb), 0.1);
+    background-color: rgba(36, 129, 204, 0.1);
 }
 
-
-/* Обновите стили для страницы подтверждения удаления */
-.delete-confirmation-page .btn-back {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-.delete-confirmation-page .btn-back:hover {
-    background-color: var(--tg-theme-secondary-bg-color);
-}
-
+/* Стили для страницы подтверждения удаления */
 .delete-confirmation-content {
     padding: 20px;
     max-width: 400px;
@@ -597,16 +407,13 @@ footer {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    background-color: rgba(220, 53, 69, 0.1);
 }
 
 .delete-confirmation-page .btn {
     border-radius: 8px;
     padding: 10px 20px;
 }
-
-
-/* Добавьте эти стили к существующему файлу style.css */
 
 /* Стили для страницы избранного */
 .favorites-page .empty-favorites {
@@ -620,7 +427,7 @@ footer {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    background-color: rgba(220, 53, 69, 0.1);
 }
 
 .empty-favorites h5 {
@@ -653,7 +460,7 @@ footer {
 }
 
 .pagination .page-link:hover {
-    background-color: rgba(var(--tg-theme-button-color-rgb), 0.1);
+    background-color: rgba(36, 129, 204, 0.1);
 }
 
 .pagination .page-item.active .page-link:hover {
@@ -663,6 +470,7 @@ footer {
 /* Стили для бесконечной ленты */
 .product-item {
     transition: opacity 0.3s ease, transform 0.3s ease;
+    animation: fadeIn 0.3s ease forwards;
 }
 
 #loader {
@@ -678,7 +486,7 @@ footer {
 
 #error-message {
     padding: 15px 0;
-    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    background-color: rgba(220, 53, 69, 0.1);
     border-radius: 8px;
     margin-top: 20px;
 }
@@ -703,6 +511,19 @@ footer {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.product-item {
-    animation: fadeIn 0.3s ease forwards;
+/* Адаптивные стили */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
+    .product-image {
+        height: 150px;
+    }
+    
+    .pagination .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
 }
