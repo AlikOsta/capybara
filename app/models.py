@@ -1,12 +1,15 @@
-from django.db import models
+# app/models.py
 import os
-from slugify import slugify
+from django.db import models
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from slugify import slugify
 
 
-# Модель объявления
 class Product(models.Model):
+    """
+    Модель объявления.
+    """
 
     STATUS_CHOICES = [
         (0, 'Не проверено'),
@@ -27,31 +30,42 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Опубликовано')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
     status = models.IntegerField(choices=STATUS_CHOICES, default=0, verbose_name='Статус')
- 
+
     def __str__(self):
         return self.title
 
     def delete(self, *args, **kwargs):
+        """
+        Переопределённый метод удаления. Удаляет физический файл изображения,
+        если он существует, перед вызовом стандартного удаления записи.
+        """
         if self.image:
-            if os.path.isfile(self.image.path):
-                os.remove(self.image.path)
+            image_path = self.image.path
+            if os.path.isfile(image_path):
+                try:
+                    os.remove(image_path)
+                except Exception as e:
+                    # Если не удалось удалить файл, логируем ошибку или игнорируем её
+                    pass
         super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("app:product_detail", kwargs={"pk": self.pk})
-     
+
     def get_view_count(self):
-        """Возвращает количество уникальных просмотров объявления"""
+        """Возвращает количество уникальных просмотров объявления."""
         return self.views.count()
 
     class Meta:
-        verbose_name_plural = "Объявления"
         verbose_name = "Объявление"
+        verbose_name_plural = "Объявления"
         ordering = ['-updated_at']
 
 
-# Модель категории
 class Category(models.Model):
+    """
+    Модель категории.
+    """
     name = models.CharField(max_length=50, unique=True, verbose_name='Категория')
     order = models.SmallIntegerField(default=0, db_index=True, verbose_name='Порядок')
     slug = models.SlugField(max_length=200, verbose_name='Слаг')
@@ -61,21 +75,24 @@ class Category(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        # Если slug не установлен, генерируем его из имени
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("app:category_detail", args=[self.slug])
-    
+
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['order']
 
 
-# Модель для валют
 class Currency(models.Model):
+    """
+    Модель для валют.
+    """
     name = models.CharField(max_length=20, db_index=True, verbose_name="Название")
     code = models.CharField(max_length=8, db_index=True, verbose_name="Код")
     order = models.SmallIntegerField(default=0, db_index=True, verbose_name='Порядок')
@@ -84,46 +101,58 @@ class Currency(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = "Валюты"
         verbose_name = "Валюта"
+        verbose_name_plural = "Валюты"
         ordering = ['order']
 
 
-# Модель для городов
 class City(models.Model):
+    """
+    Модель для городов.
+    """
     name = models.CharField(max_length=50, db_index=True, verbose_name="Название")
-
-    class Meta:
-        verbose_name_plural = "Города"
-        verbose_name = "Город"
-        ordering = ['name']
 
     def __str__(self):
         return self.name
-    
+
+    class Meta:
+        verbose_name = "Город"
+        verbose_name_plural = "Города"
+        ordering = ['name']
+
 
 class Favorite(models.Model):
+    """
+    Модель избранного объявления для пользователя.
+    """
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='favorites', verbose_name='Пользователь')
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='favorited_by', verbose_name='Объявление')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Добавлено')
 
+    def __str__(self):
+        return f"{self.user.username} - {self.product.title}"
+
     class Meta:
-        verbose_name_plural = "Избранное"
         verbose_name = "Избранное"
+        verbose_name_plural = "Избранное"
         unique_together = ('user', 'product')
         ordering = ['-created_at']
 
-    def __str__(self):
-        return f"{self.user.username} - {self.product.title}"
-    
 
 class ProductView(models.Model):
-    """Модель для хранения просмотров объявлений"""
+    """
+    Модель для хранения просмотров объявлений.
+    """
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='views', verbose_name='Объявление')
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, blank=True, null=True, verbose_name='Пользователь')
     ip_address = models.GenericIPAddressField(verbose_name='IP адрес', blank=True, null=True)
     session_key = models.CharField(max_length=40, blank=True, null=True, verbose_name='Ключ сессии')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата просмотра')
+
+    def __str__(self):
+        if self.user:
+            return f"{self.product.title} - {self.user.username}"
+        return f"{self.product.title} - {self.ip_address}"
 
     class Meta:
         verbose_name = 'Просмотр объявления'
@@ -141,8 +170,3 @@ class ProductView(models.Model):
             ),
         ]
         ordering = ['-created_at']
-
-    def __str__(self):
-        if self.user:
-            return f"{self.product.title} - {self.user.username}"
-        return f"{self.product.title} - {self.ip_address}"
