@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.db.models import Q
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from django.views.generic import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -42,21 +45,49 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     model = Product
     template_name = 'app/index.html'
     context_object_name = 'products'
-    paginate_by = 10
-
+    paginate_by = 6  # Начальное количество объявлений
+    
     def get_queryset(self):
-        queryset = super().get_queryset().select_related('author', 'category', 'city', 'currency')
-        queryset, _ = self.apply_search_filter(queryset)
-        return queryset
-
+        queryset = Product.objects.filter(status=3)  # Только опубликованные
+        
+        # Применяем поиск, если есть запрос
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) | 
+                Q(description__icontains=query)
+            )
+        
+        return queryset.order_by('-created_at')
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Добавляем категории
         context['categories'] = Category.objects.all()
+        
+        # Добавляем поисковый запрос
         context['query'] = self.request.GET.get('q', '')
+        
+        # Получаем общее количество объявлений
+        context['total_count'] = self.get_queryset().count()
+        
+        # Определяем, есть ли еще объявления для загрузки
+        context['has_more'] = context['total_count'] > len(context['products'])
+        
+        # Получаем список ID избранных объявлений для текущего пользователя
+        if self.request.user.is_authenticated:
+            context['favorite_products'] = list(
+                self.request.user.favorites.values_list('product_id', flat=True)
+            )
+        else:
+            context['favorite_products'] = []
+        
         return context
 
 
 # Детальное представление объявления
+@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductDetailView(DetailView):
     model = Product
     template_name = 'app/product_detail.html'
@@ -125,48 +156,79 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     model = Product
     template_name = 'app/category_detail.html'
     context_object_name = 'products'
-    paginate_by = 10
+    paginate_by = 6  # Начальное количество объявлений
     
     def get_queryset(self):
-        queryset = super().get_queryset().filter(
-            category__slug=self.kwargs['category_slug']
-        ).select_related('category', 'city', 'currency', 'author')
-
-        # Поиск
-        queryset, _ = self.apply_search_filter(queryset)
+        # Получаем категорию по slug
+        self.category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
         
-        # Сортировка
-        sort_options = {
-            'price_asc': 'price',
-            'price_desc': '-price',
-            'date_desc': '-created_at',
-            'date_asc': 'created_at'
-        }
+        # Базовый QuerySet
+        queryset = Product.objects.filter(status=3, category=self.category)
+        
+        # Применяем поиск, если есть запрос
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) | 
+                Q(description__icontains=query)
+            )
+        
+        # Применяем фильтры
+        city_id = self.request.GET.get('city')
+        if city_id and city_id.isdigit():
+            queryset = queryset.filter(city_id=city_id)
+        
+        currency_id = self.request.GET.get('currency')
+        if currency_id and currency_id.isdigit():
+            queryset = queryset.filter(currency_id=currency_id)
+        
+        # Применяем сортировку
         sort = self.request.GET.get('sort')
-        if sort in sort_options:
-            queryset = queryset.order_by(sort_options[sort])
+        if sort == 'price_asc':
+            queryset = queryset.order_by('price')
+        elif sort == 'price_desc':
+            queryset = queryset.order_by('-price')
+        elif sort == 'date_asc':
+            queryset = queryset.order_by('created_at')
+        elif sort == 'date_desc':
+            queryset = queryset.order_by('-created_at')
+        else:
+            queryset = queryset.order_by('-created_at')
         
-        # Фильтры
-        filters = {}
-        if city := self.request.GET.get('city'):
-            filters['city__id'] = city
-        if currency := self.request.GET.get('currency'):
-            filters['currency__id'] = currency
-
-        return queryset.filter(**filters)
+        return queryset
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['category'] = get_object_or_404(Category, slug=self.kwargs['category_slug'])
-        context.update({
-            'query': self.request.GET.get('q', ''),
-            'current_sort': self.request.GET.get('sort'),
-            'current_city': self.request.GET.get('city'),
-            'current_currency': self.request.GET.get('currency'),
-            'cities': City.objects.all(),
-            'currencies': Currency.objects.all(),
-        })
+        
+        # Добавляем категорию
+        context['category'] = self.category
+        
+        # Добавляем города и валюты для фильтров
+        context['cities'] = City.objects.all()
+        context['currencies'] = Currency.objects.all()
+        
+        # Добавляем текущие параметры фильтрации
+        context['query'] = self.request.GET.get('q', '')
+        context['current_sort'] = self.request.GET.get('sort', '')
+        context['current_city'] = self.request.GET.get('city', '')
+        context['current_currency'] = self.request.GET.get('currency', '')
+        
+        # Получаем общее количество объявлений
+        context['total_count'] = self.get_queryset().count()
+        
+        # Определяем, есть ли еще объявления для загрузки
+        context['has_more'] = context['total_count'] > len(context['products'])
+        
+        # Получаем список ID избранных объявлений для текущего пользователя
+        if self.request.user.is_authenticated:
+            context['favorite_products'] = list(
+                self.request.user.favorites.values_list('product_id', flat=True)
+            )
+        else:
+            context['favorite_products'] = []
+        
         return context
+
     
 
 # Создание объявления
@@ -307,3 +369,135 @@ def change_product_status(request, pk, status):
         product.save()
     
     return redirect('app:product_detail', pk=pk)
+
+
+class ProductListAPIView(View):
+    """API представление для получения списка объявлений"""
+    
+    def get(self, request, *args, **kwargs):
+        # Получаем параметры запроса
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 10))
+        query = request.GET.get('q', '')
+        
+        # Базовый QuerySet
+        queryset = Product.objects.filter(status=3)  # Только опубликованные
+        
+        # Применяем поиск, если есть запрос
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) | 
+                Q(description__icontains=query)
+            )
+        
+        # Получаем общее количество объявлений
+        total_count = queryset.count()
+        
+        # Применяем пагинацию
+        products = queryset.order_by('-created_at')[offset:offset+limit]
+        
+        # Получаем список ID избранных объявлений для текущего пользователя
+        favorite_products = []
+        if request.user.is_authenticated:
+            favorite_products = list(request.user.favorites.values_list('product_id', flat=True))
+        
+        # Рендерим HTML для карточек объявлений
+        html = render_to_string(
+            'app/includes/product_cards_list.html',
+            {
+                'products': products,
+                'favorite_products': favorite_products,
+                'request': request
+            }
+        )
+        
+        # Определяем, есть ли еще объявления для загрузки
+        has_more = (offset + limit) < total_count
+        
+        # Возвращаем JSON-ответ
+        return JsonResponse({
+            'html': html,
+            'has_more': has_more,
+            'total_count': total_count,
+            'next_offset': offset + limit if has_more else None
+        })
+
+class CategoryProductsAPIView(View):
+    """API представление для получения списка объявлений в категории"""
+    
+    def get(self, request, *args, **kwargs):
+        # Получаем категорию по slug
+        category_slug = kwargs.get('category_slug')
+        try:
+            category = Category.objects.get(slug=category_slug)
+        except Category.DoesNotExist:
+            return JsonResponse({'error': 'Категория не найдена'}, status=404)
+        
+        # Получаем параметры запроса
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 10))
+        query = request.GET.get('q', '')
+        sort = request.GET.get('sort', '')
+        city_id = request.GET.get('city', '')
+        currency_id = request.GET.get('currency', '')
+        
+        # Базовый QuerySet
+        queryset = Product.objects.filter(status=3, category=category)
+        
+        # Применяем поиск, если есть запрос
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) | 
+                Q(description__icontains=query)
+            )
+        
+        # Применяем фильтры
+        if city_id and city_id.isdigit():
+            queryset = queryset.filter(city_id=city_id)
+        
+        if currency_id and currency_id.isdigit():
+            queryset = queryset.filter(currency_id=currency_id)
+        
+        # Применяем сортировку
+        if sort == 'price_asc':
+            queryset = queryset.order_by('price')
+        elif sort == 'price_desc':
+            queryset = queryset.order_by('-price')
+        elif sort == 'date_asc':
+            queryset = queryset.order_by('created_at')
+        elif sort == 'date_desc':
+            queryset = queryset.order_by('-created_at')
+        else:
+            queryset = queryset.order_by('-created_at')
+        
+        # Получаем общее количество объявлений
+        total_count = queryset.count()
+        
+        # Применяем пагинацию
+        products = queryset[offset:offset+limit]
+        
+        # Получаем список ID избранных объявлений для текущего пользователя
+        favorite_products = []
+        if request.user.is_authenticated:
+            favorite_products = list(request.user.favorites.values_list('product_id', flat=True))
+        
+        # Рендерим HTML для карточек объявлений
+        html = render_to_string(
+            'app/includes/product_cards_list.html',
+            {
+                'products': products,
+                'favorite_products': favorite_products,
+                'request': request
+            }
+        )
+        
+        # Определяем, есть ли еще объявления для загрузки
+        has_more = (offset + limit) < total_count
+        
+        # Возвращаем JSON-ответ
+        return JsonResponse({
+            'html': html,
+            'has_more': has_more,
+            'total_count': total_count,
+            'next_offset': offset + limit if has_more else None
+        })

@@ -1,0 +1,5 @@
+{% for product in products %}
+<div class="col-6 product-item">
+    {% include 'app/includes/product_card.html' with product=product %}
+</div>
+{% endfor %}

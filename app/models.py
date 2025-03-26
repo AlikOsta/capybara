@@ -18,7 +18,7 @@ class Product(models.Model):
 
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Автор')
     category = models.ForeignKey('Category', on_delete=models.PROTECT, verbose_name='Категория')
-    title = models.CharField(max_length=50, unique=True, verbose_name='Товар')
+    title = models.CharField(max_length=50, verbose_name='Товар')
     description = models.TextField(max_length=350, verbose_name='Описание')
     image = models.ImageField(upload_to='media/images/', verbose_name='Изображение')
     price = models.IntegerField(verbose_name='Цена')

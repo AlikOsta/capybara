@@ -1,4 +1,5 @@
 {% extends 'app/base.html' %}
+{% load static %}
 
 {% block title %}Главная - Объявления{% endblock %}
 
@@ -49,13 +50,13 @@
     <!-- Заголовок с количеством -->
     <div class="d-flex align-items-center mb-3">
         <h5 class="mb-0 fw-bold">Новые объявления</h5>
-        <span class="ms-2 badge bg-light text-dark rounded-pill">{{ products|length }}</span>
+        <span class="ms-2 badge bg-light text-dark rounded-pill">{{ total_count }}</span>
     </div>
 
     <!-- Список объявлений -->
-    <div class="row g-3">
+    <div id="products-container" class="row g-3" data-offset="{{ products|length }}" data-has-more="{{ has_more|lower }}">
         {% for product in products %}
-        <div class="col-6">
+        <div class="col-6 product-item">
             {% include 'app/includes/product_card.html' with product=product %}
         </div>
         {% empty %}
@@ -71,47 +72,31 @@
         {% endfor %}
     </div>
 
-    <!-- Пагинация -->
-    {% if is_paginated %}
-    <div class="pagination-container mt-4 d-flex justify-content-center">
-        <nav aria-label="Навигация по страницам">
-            <ul class="pagination">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}" aria-label="Первая">
-                        <span aria-hidden="true">&laquo;&laquo;</span>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Предыдущая">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a></li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Следующая">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}" aria-label="Последняя">
-                        <span aria-hidden="true">&raquo;&raquo;</span>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
+    <!-- Индикатор загрузки -->
+    <div id="loader" class="text-center py-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
     </div>
-    {% endif %}
+
+    <!-- Сообщение о конце списка -->
+    <div id="end-message" class="text-center py-4" style="display: none;">
+        <p class="text-muted mb-0">Вы просмотрели все объявления</p>
+    </div>
+
+    <!-- Сообщение об ошибке -->
+    <div id="error-message" class="text-center py-4" style="display: none;">
+        <p class="text-danger mb-2">Не удалось загрузить объявления</p>
+        <button id="retry-button" class="btn btn-outline-primary">Попробовать снова</button>
+    </div>
+
+    <!-- Кнопка "Наверх" -->
+    <button id="back-to-top" class="btn btn-primary rounded-circle position-fixed" style="bottom: 80px; right: 20px; display: none; width: 50px; height: 50px;">
+        <i class="bi bi-arrow-up"></i>
+    </button>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'app/js/infinite-scroll.js' %}"></script>
 {% endblock %}
