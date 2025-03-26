@@ -1,4 +1,10 @@
+/**
+ * Основные стили приложения Capybara
+ */
+
+/* Переменные темы */
 :root {
+    /* Основные цвета темы */
     --tg-theme-bg-color: #ffffff;
     --tg-theme-text-color: #000000;
     --tg-theme-hint-color: #999999;
@@ -6,16 +12,44 @@
     --tg-theme-button-color: #2481cc;
     --tg-theme-button-text-color: #ffffff;
     --tg-theme-secondary-bg-color: #f0f0f0;
+    
+    /* Дополнительные переменные */
+    --card-border-radius: 12px;
+    --button-border-radius: 8px;
+    --transition-duration: 0.2s;
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --hover-transform: translateY(-3px);
 }
 
+/* Основные стили */
 body {
     background-color: var(--tg-theme-bg-color);
     color: var(--tg-theme-text-color);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 a {
     color: var(--tg-theme-link-color);
+    text-decoration: none;
+    transition: color var(--transition-duration) ease;
+}
+
+a:hover {
+    color: var(--tg-theme-link-color);
+    opacity: 0.9;
+}
+
+/* Стили для кнопок */
+.btn {
+    transition: all var(--transition-duration) ease;
+    border-radius: var(--button-border-radius);
+}
+
+.btn:active {
+    transform: scale(0.97);
 }
 
 .btn-primary {
@@ -34,58 +68,93 @@ a {
     color: var(--tg-theme-button-text-color);
 }
 
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading:after {
+    content: '';
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    top: calc(50% - 0.5rem);
+    left: calc(50% - 0.5rem);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Стили для текста */
 .text-muted {
     color: var(--tg-theme-hint-color) !important;
+}
+
+.section-title {
+    position: relative;
+    padding-bottom: 8px;
+    font-weight: 600;
+}
+
+.section-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--tg-theme-button-color);
+    border-radius: 3px;
+}
+
+/* Стили для карточек */
+.card {
+    border-radius: var(--card-border-radius);
+    overflow: hidden;
+    border: none;
+    box-shadow: var(--box-shadow);
+    transition: transform var(--transition-duration) ease-in-out;
+}
+
+.card:hover {
+    transform: var(--hover-transform);
 }
 
 .bg-light {
     background-color: var(--tg-theme-secondary-bg-color) !important;
 }
 
-/* Анимации для кнопок */
-.btn {
-    transition: all 0.2s ease;
-}
-
-.btn:active {
-    transform: scale(0.97);
-}
-
+/* Стили для навигации */
 .nav-item {
-    transition: all 0.2s ease;
+    transition: all var(--transition-duration) ease;
 }
 
 .nav-item:hover {
     background-color: var(--tg-theme-secondary-bg-color);
 }
 
-/* Стили для карточек */
-.card {
-    border-radius: 12px;
-    overflow: hidden;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease-in-out;
-}
-
-.card:hover {
-    transform: translateY(-3px);
-}
-
 /* Стили для поисковой строки */
 .search-form .input-group {
-    border-radius: 12px;
+    border-radius: var(--card-border-radius);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow);
 }
 
 .search-form .form-control {
     border-radius: 0;
     height: 48px;
+    border: none;
 }
 
 .search-form .input-group-text {
     border-radius: 0;
+    border: none;
+    background-color: white;
 }
 
 /* Стили для категорий */
@@ -93,37 +162,33 @@ a {
     position: relative;
 }
 
+.categories-container:after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 40px;
+    background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+    pointer-events: none;
+}
+
 .category-card {
-    border-radius: 12px;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    background-color: var(--tg-theme-secondary-bg-color);
+    border-radius: var(--card-border-radius);
+    transition: all var(--transition-duration) ease;
+    height: 100px;
 }
 
 .category-card:hover {
-    transform: translateY(-3px);
+    transform: var(--hover-transform);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.category-image-container {
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.category-image {
-    transition: transform 0.3s ease;
-}
-
-.category-card:hover .category-image {
-    transform: scale(1.05);
-}
-
-.category-overlay {
-    z-index: 2;
-}
-
-.category-gradient {
-    z-index: 1;
+.category-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
 }
 
 /* Стили для карточки товара */
@@ -132,15 +197,15 @@ a {
 }
 
 .product-card-inner {
-    border-radius: 12px;
+    border-radius: var(--card-border-radius);
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all var(--transition-duration) ease;
     border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--box-shadow);
 }
 
 .product-card-inner:hover {
-    transform: translateY(-3px);
+    transform: var(--hover-transform);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
@@ -188,7 +253,6 @@ a {
     background-color: #6c757d;
 }
 
-/* Стили для избранного */
 .favorite-btn {
     width: 36px;
     height: 36px;
@@ -196,7 +260,7 @@ a {
     align-items: center;
     justify-content: center;
     opacity: 0.9;
-    transition: all 0.2s ease;
+    transition: all var(--transition-duration) ease;
     z-index: 2;
 }
 
@@ -207,110 +271,6 @@ a {
 
 .favorite-btn i {
     font-size: 1.1rem;
-}
-
-/* Стили для страницы детального просмотра товара */
-.product-detail .btn-back, 
-.category-page .btn-back,
-.product-form-page .btn-back,
-.delete-confirmation-page .btn-back {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-.product-detail .btn-back:hover,
-.category-page .btn-back:hover,
-.product-form-page .btn-back:hover,
-.delete-confirmation-page .btn-back:hover {
-    background-color: var(--tg-theme-secondary-bg-color);
-}
-
-.main-image-container {
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.main-product-image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    aspect-ratio: 4/3;
-}
-
-.product-title {
-    font-weight: 600;
-}
-
-.product-meta {
-    font-size: 0.9rem;
-}
-
-.section-title {
-    position: relative;
-    padding-bottom: 8px;
-}
-
-.section-title:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 40px;
-    height: 3px;
-    background-color: var(--tg-theme-button-color);
-    border-radius: 3px;
-}
-
-.description-content {
-    line-height: 1.6;
-}
-
-.seller-info .card {
-    border-radius: 12px;
-    transition: transform 0.2s ease;
-}
-
-.seller-info .card:hover {
-    transform: translateY(-2px);
-}
-
-.author-actions .btn {
-    border-radius: 8px;
-    padding: 10px 16px;
-}
-
-/* Стили для алертов статуса */
-.alert {
-    border-radius: 12px;
-    border: none;
-}
-
-/* Стили для фильтров на странице категории */
-.filters-section .form-select {
-    border-radius: 8px;
-    padding: 10px 12px;
-    background-color: var(--tg-theme-secondary-bg-color);
-    border: none;
-}
-
-.active-filters .badge {
-    border-radius: 20px;
-    font-weight: normal;
-    font-size: 0.85rem;
-}
-
-.active-filters .badge:hover {
-    background-color: #e2e2e2 !important;
-}
-
-.active-filters .badge.bg-danger:hover {
-    background-color: #bb2d3b !important;
 }
 
 /* Стили для пустого состояния */
@@ -331,11 +291,147 @@ a {
     margin-bottom: 1.5rem;
 }
 
-/* Стили для формы создания/редактирования объявления */
+/* Стили для пагинации */
+.pagination .page-link {
+    border-radius: 4px;
+    margin: 0 2px;
+    border: none;
+    color: var(--tg-theme-text-color);
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(var(--tg-theme-button-color-rgb), 0.1);
+}
+
+.pagination .page-item.active .page-link:hover {
+    background-color: var(--tg-theme-button-color);
+}
+
+/* Стили для страницы детального просмотра товара */
+.product-detail .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color var(--transition-duration) ease;
+}
+
+.product-detail .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.main-image-container {
+    overflow: hidden;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.main-product-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 4/3;
+}
+
+.product-title {
+    font-weight: 600;
+}
+
+.product-price {
+    color: var(--tg-theme-text-color);
+}
+
+.product-meta {
+    font-size: 0.9rem;
+}
+
+.description-content {
+    line-height: 1.6;
+}
+
+.seller-info .card {
+    border-radius: var(--card-border-radius);
+    transition: transform var(--transition-duration) ease;
+}
+
+.seller-info .card:hover {
+    transform: translateY(-2px);
+}
+
+.author-actions .btn {
+    border-radius: var(--button-border-radius);
+    padding: 10px 16px;
+}
+
+/* Стили для алертов статуса */
+.alert {
+    border-radius: var(--card-border-radius);
+    border: none;
+}
+
+/* Стили для страницы категории */
+.category-page .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color var(--transition-duration) ease;
+}
+
+.category-page .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+.filters-section .form-select {
+    border-radius: var(--button-border-radius);
+    padding: 10px 12px;
+    background-color: var(--tg-theme-secondary-bg-color);
+    border: none;
+}
+
+.active-filters .badge {
+    border-radius: 20px;
+    font-weight: normal;
+    font-size: 0.85rem;
+}
+
+.active-filters .badge:hover {
+    background-color: #e2e2e2 !important;
+}
+
+.active-filters .badge.bg-danger:hover {
+    background-color: #bb2d3b !important;
+}
+
+/* Стили для страницы формы создания/редактирования объявления */
+.product-form-page .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color var(--transition-duration) ease;
+}
+
+.product-form-page .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
 .product-form .form-control,
 .product-form .form-select {
     padding: 12px;
-    border-radius: 8px;
+    border-radius: var(--button-border-radius);
     border: 1px solid #dee2e6;
     background-color: var(--tg-theme-bg-color);
 }
@@ -343,7 +439,7 @@ a {
 .product-form .form-control:focus,
 .product-form .form-select:focus {
     border-color: var(--tg-theme-button-color);
-    box-shadow: 0 0 0 0.25rem rgba(36, 129, 204, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(var(--tg-theme-button-color-rgb), 0.25);
 }
 
 .product-form textarea.form-control {
@@ -360,11 +456,23 @@ a {
     margin-top: 0.25rem;
 }
 
+.current-image-preview {
+    border-radius: var(--button-border-radius);
+    overflow: hidden;
+    display: inline-block;
+}
+
+.product-form .btn-primary {
+    border-radius: var(--button-border-radius);
+    font-weight: 500;
+    font-size: 1rem;
+}
+
 /* Стили для предпросмотра изображения */
 .image-preview-container {
     width: 100%;
     height: 200px;
-    border-radius: 8px;
+    border-radius: var(--button-border-radius);
     overflow: hidden;
     background-color: var(--tg-theme-secondary-bg-color);
 }
@@ -383,16 +491,30 @@ a {
 
 .custom-file-upload label {
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: var(--button-border-radius);
     padding: 10px;
-    transition: all 0.2s ease;
+    transition: all var(--transition-duration) ease;
 }
 
 .custom-file-upload label:hover {
-    background-color: rgba(36, 129, 204, 0.1);
+    background-color: rgba(var(--tg-theme-button-color-rgb), 0.1);
 }
 
 /* Стили для страницы подтверждения удаления */
+.delete-confirmation-page .btn-back {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color var(--transition-duration) ease;
+}
+
+.delete-confirmation-page .btn-back:hover {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
 .delete-confirmation-content {
     padding: 20px;
     max-width: 400px;
@@ -407,11 +529,11 @@ a {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: rgba(220, 53, 69, 0.1);
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
 }
 
 .delete-confirmation-page .btn {
-    border-radius: 8px;
+    border-radius: var(--button-border-radius);
     padding: 10px 20px;
 }
 
@@ -427,7 +549,7 @@ a {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background-color: rgba(220, 53, 69, 0.1);
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
 }
 
 .empty-favorites h5 {
@@ -441,74 +563,107 @@ a {
 }
 
 .empty-favorites .btn {
-    border-radius: 8px;
+    border-radius: var(--button-border-radius);
     padding: 10px 20px;
 }
 
-/* Стили для пагинации */
-.pagination .page-link {
-    border-radius: 4px;
-    margin: 0 2px;
-    border: none;
-    color: var(--tg-theme-text-color);
-    background-color: var(--tg-theme-secondary-bg-color);
+/* Стили для футера */
+footer {
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.pagination .page-item.active .page-link {
+/* Стили для индикатора загрузки страницы */
+#page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.page-loader-spinner {
+    padding: 20px;
+    background-color: white;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+/* Стили для кнопки "Наверх" */
+#back-to-top {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     background-color: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
-}
-
-.pagination .page-link:hover {
-    background-color: rgba(36, 129, 204, 0.1);
-}
-
-.pagination .page-item.active .page-link:hover {
-    background-color: var(--tg-theme-button-color);
-}
-
-/* Стили для бесконечной ленты */
-.product-item {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    animation: fadeIn 0.3s ease forwards;
-}
-
-#loader {
-    padding: 20px 0;
-}
-
-#end-message {
-    padding: 15px 0;
-    background-color: var(--tg-theme-secondary-bg-color);
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-#error-message {
-    padding: 15px 0;
-    background-color: rgba(220, 53, 69, 0.1);
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-#back-to-top {
     display: flex;
-    align-items: center;
     justify-content: center;
-    z-index: 1000;
+    align-items: center;
+    cursor: pointer;
+    z-index: 99;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    transition: all var(--transition-duration) ease;
 }
 
 #back-to-top:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-/* Анимация для индикатора загрузки */
+/* Стили для анимаций */
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.fade-out {
+    animation: fadeOut 0.5s ease forwards;
+}
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Стили для кнопок шеринга */
+.share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.share-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all var(--transition-duration) ease;
+}
+
+.share-button:hover {
+    transform: translateY(-3px);
+}
+
+.copy-success {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.copy-error {
+    background-color: #dc3545 !important;
+    color: white !important;
 }
 
 /* Адаптивные стили */
@@ -522,8 +677,61 @@ a {
         height: 150px;
     }
     
+    .section-title:after {
+        width: 30px;
+    }
+    
+    .btn-back {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .favorite-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
     .pagination .page-link {
         padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
     }
 }
+
+/* Улучшения для скроллбара */
+.row.flex-nowrap.overflow-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.row.flex-nowrap.overflow-auto::-webkit-scrollbar {
+    height: 4px;
+}
+
+.row.flex-nowrap.overflow-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.row.flex-nowrap.overflow-auto::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+/* Темная тема */
+[data-bs-theme="dark"] {
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .input-group-text {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+
+[data-bs-theme="dark"] .categories-container:after {
+    background: linear-gradient(to right, rgba(0,0,0,0), var(--tg-theme-bg-color));
+}
+
+[data-bs-theme="dark"] .page-loader-spinner {
+    background-color: var(--tg-theme-secondary-bg-color);
+}
+

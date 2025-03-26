@@ -1,34 +1,47 @@
+"""
+Django settings for capybara project.
+"""
 
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from datetime import timedelta
 
+# Загрузка переменных окружения из .env файла
 load_dotenv()
 
+# Базовые настройки
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
-INSTALLED_APPS = [
+# Приложения
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_q',
-    'app',
-    'user_capybara',
-    'bot_capybara',
     'corsheaders',
 ]
 
+LOCAL_APPS = [
+    'app',
+    'user_capybara',
+    'bot_capybara',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
+# Middleware
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -41,12 +54,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# URL и шаблоны
 ROOT_URLCONF = 'capybara.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -63,6 +77,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'capybara.wsgi.application'
 
+# База данных
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -70,6 +85,7 @@ DATABASES = {
     }
 }
 
+# Валидация паролей
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -85,42 +101,27 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
-}
-
-LANGUAGE_CODE = os.getenv('LANGUAGE_CODE')
-
-TIME_ZONE = os.getenv('TIME_ZONE')
-
+# Интернационализация
+LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'ru-ru')
+TIME_ZONE = os.getenv('TIME_ZONE', 'Europe/Moscow')
 USE_I18N = True
-
 USE_TZ = True
 
-STATIC_URL = 'static/'
+# Статические файлы и медиа
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 
-
-
-# Настройки для Telegram бота
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME')
-TELEGRAM_MINI_APP_URL = os.getenv('TELEGRAM_MINI_APP_URL')
-
-# Настройки для загрузки медиафайлов
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Настройки для CORS
-CORS_ALLOWED_ORIGINS = [
-    "https://web.telegram.org",
-]
-CORS_ALLOW_CREDENTIALS = True
+# Настройки по умолчанию
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'user_capybara.TelegramUser'
 
+# REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -131,8 +132,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Настройки JWT
-from datetime import timedelta
+# JWT настройки
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
@@ -140,16 +140,21 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-
-AUTH_USER_MODEL = 'user_capybara.TelegramUser'
-
-# CORS_ALLOW_ALL_ORIGINS = True  # Только для разработки!
-
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+# CORS настройки
+CORS_ALLOWED_ORIGINS = [
+    "https://web.telegram.org",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
+# Настройки для Telegram бота
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME')
+TELEGRAM_MINI_APP_URL = os.getenv('TELEGRAM_MINI_APP_URL')
+
+# Mistral API
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 
+
+# Django Q настройки
 Q_CLUSTER = {
     'name': 'capybara',
     'workers': 4,
@@ -160,3 +165,4 @@ Q_CLUSTER = {
     'catch_up': False,
     'orm': 'default',
 }
+

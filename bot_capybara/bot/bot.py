@@ -1,4 +1,8 @@
+"""
+Модуль для инициализации и запуска Telegram бота.
+"""
 import logging
+import sys
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from django.conf import settings
 from .handlers import start_handler, help_handler, open_app_handler, message_handler
@@ -6,32 +10,46 @@ from .handlers import start_handler, help_handler, open_app_handler, message_han
 # Настройка логирования
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.INFO,
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('bot.log')
+    ]
 )
 logger = logging.getLogger(__name__)
 
 def start_bot():
     """
     Запускает Telegram бота.
+    
+    Функция проверяет наличие токена, создает приложение,
+    регистрирует обработчики команд и запускает бота.
+    
+    Returns:
+        None
     """
     # Проверяем наличие токена
     if not settings.TELEGRAM_BOT_TOKEN:
         logger.error("TELEGRAM_BOT_TOKEN не найден в настройках!")
         return
     
-    logger.info("Запуск бота...")
-    
-    # Создаем приложение
-    application = ApplicationBuilder().token(settings.TELEGRAM_BOT_TOKEN).build()
-    
-    # Добавляем обработчики команд
-    application.add_handler(CommandHandler("start", start_handler))
-    application.add_handler(CommandHandler("help", help_handler))
-    application.add_handler(CommandHandler("open", open_app_handler))
-    
-    # Обработчик для всех остальных сообщений
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-    
-    # Запускаем бота
-    logger.info(f"Бот @{settings.TELEGRAM_BOT_USERNAME} запущен")
-    application.run_polling()
+    try:
+        logger.info("Запуск бота...")
+        
+        # Создаем приложение
+        application = ApplicationBuilder().token(settings.TELEGRAM_BOT_TOKEN).build()
+        
+        # Добавляем обработчики команд
+        application.add_handler(CommandHandler("start", start_handler))
+        application.add_handler(CommandHandler("help", help_handler))
+        application.add_handler(CommandHandler("open", open_app_handler))
+        
+        # Обработчик для всех остальных сообщений
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
+        
+        # Запускаем бота
+        logger.info(f"Бот @{settings.TELEGRAM_BOT_USERNAME} запущен")
+        application.run_polling()
+    except Exception as e:
+        logger.error(f"Ошибка при запуске бота: {e}")
+        raise
