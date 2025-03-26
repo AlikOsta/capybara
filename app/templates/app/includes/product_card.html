@@ -38,12 +38,11 @@
             </div>
         </div>
     </a>
-    
-    {% if user.is_authenticated and user != product.author %}
+
     <button class="btn btn-sm position-absolute top-0 end-0 m-2 text-danger bg-white rounded-circle p-2 shadow-sm favorite-btn" 
             data-product-id="{{ product.id }}" 
             data-is-favorite="{% if product.id in favorite_products %}true{% else %}false{% endif %}">
         <i class="bi {% if product.id in favorite_products %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
     </button>
-    {% endif %}
+
 </div>
