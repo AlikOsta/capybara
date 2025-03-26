@@ -6,6 +6,11 @@ import sys
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from django.conf import settings
 from .handlers import start_handler, help_handler, open_app_handler, message_handler
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'capybara.settings')
+django.setup()
 
 # Настройка логирования
 logging.basicConfig(
