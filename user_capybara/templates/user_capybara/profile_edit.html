@@ -8,9 +8,6 @@
     <!-- Верхний блок с навигацией -->
     <div class="mb-4">
         <div class="d-flex align-items-center">
-            {% comment %} <a href="{% url 'user:author_profile' user.id %}" class="text-decoration-none btn-back me-2">
-                <i class="bi bi-arrow-left fs-4"></i>
-            </a> {% endcomment %}
             <div>
                 <h5 class="mb-0 fw-bold">Редактирование профиля</h5>
             </div>
@@ -44,7 +41,7 @@
     <!-- Форма редактирования -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
-            <form method="post">
+            <form method="post" id="profileForm">
                 {% csrf_token %}
                                 
                 <div class="mb-3">
@@ -63,9 +60,8 @@
                     {% endif %}
                 </div>
                 
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary py-2">Сохранить изменения</button>
-                </div>
+                <!-- Скрытая кнопка отправки формы (будет активироваться через Main Button) -->
+                <button type="submit" id="hiddenSubmitButton" class="d-none">Сохранить</button>
             </form>
         </div>
     </div>
@@ -79,30 +75,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем доступность Telegram Web App API
-        const tg = window.Telegram && window.Telegram.WebApp;
-        if (tg) {
-            // Показываем кнопку назад Telegram
-            if (tg.BackButton) {
-                tg.BackButton.show();
-                
-                // Обработчик нажатия на кнопку назад
-                tg.onEvent('backButtonClicked', function() {
-                    // Возвращаемся на предыдущую страницу
-                    window.history.back();
-                });
-            }
-        }
-    });
-    
-    // Скрываем кнопку назад при уходе со страницы
-    window.addEventListener('beforeunload', function() {
-        const tg = window.Telegram && window.Telegram.WebApp;
-        if (tg && tg.BackButton) {
-            tg.BackButton.hide();
-        }
-    });
-</script>
+{% load static %}
+<script src="{% static 'user_capybara/js/profile_edit.js' %}"></script>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'app/base.html' %}
+{% load static %}
 
 {% block title %}
     {% if is_edit %}
@@ -13,9 +14,6 @@
     <!-- Верхний блок с навигацией -->
     <div class="mb-3">
         <div class="d-flex align-items-center mb-3">
-            {% comment %} <a href="{% if is_edit %}{% url 'app:product_detail' object.pk %}{% else %}{% url 'app:index' %}{% endif %}" class="text-decoration-none btn-back me-2">
-                <i class="bi bi-arrow-left fs-4"></i>
-            </a> {% endcomment %}
             <div>
                 <h5 class="mb-0 fw-bold">
                     {% if is_edit %}
@@ -36,7 +34,7 @@
     {% endif %}
 
     <!-- Форма -->
-    <form method="post" enctype="multipart/form-data" class="product-form">
+    <form method="post" enctype="multipart/form-data" class="product-form" id="productForm">
         {% csrf_token %}
         
         <div class="form-group mb-3">
@@ -122,42 +120,18 @@
             {% endif %}
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 py-2 mb-5">
-            {% if is_edit %}
-                Сохранить изменения
-            {% else %}
-                Опубликовать
-            {% endif %}
-        </button>
+        <!-- Скрытая кнопка отправки формы (будет активироваться через Main Button) -->
+        <button type="submit" id="hiddenSubmitButton" class="d-none">Отправить</button>
     </form>
 </div>
+
+<script>
+    document.body.dataset.isEdit = "{% if is_edit %}true{% else %}false{% endif %}";
+    document.body.dataset.hasImage = "{% if is_edit and object.image %}true{% else %}false{% endif %}";
+</script>
+
 {% endblock %}
 
 {% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем доступность Telegram Web App API
-        const tg = window.Telegram && window.Telegram.WebApp;
-        if (tg) {
-            // Показываем кнопку назад Telegram
-            if (tg.BackButton) {
-                tg.BackButton.show();
-                
-                // Обработчик нажатия на кнопку назад
-                tg.onEvent('backButtonClicked', function() {
-                    // Возвращаемся на предыдущую страницу
-                    window.history.back();
-                });
-            }
-        }
-    });
-    
-    // Скрываем кнопку назад при уходе со страницы
-    window.addEventListener('beforeunload', function() {
-        const tg = window.Telegram && window.Telegram.WebApp;
-        if (tg && tg.BackButton) {
-            tg.BackButton.hide();
-        }
-    });
-</script>
+<script src="{% static 'app/js/product_form.js' %}"></script>
 {% endblock %}

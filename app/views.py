@@ -43,7 +43,7 @@ class AuthorRequiredMixin:
 
 
 # Кэширование главной страницы на 15 минут
-@method_decorator(cache_page(60 * 2), name='dispatch')
+# @method_decorator(cache_page(60 * 2), name='dispatch')
 class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для списка объявлений."""
     model = Product
