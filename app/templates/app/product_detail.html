@@ -6,11 +6,11 @@
 {% block content %}
 <div class="product-detail mt-3">
     <!-- Верхний блок с навигацией -->
-    <div class="mb-3">
+    {% comment %} <div class="mb-3">
         <div class="d-flex align-items-center justify-content-between">
             <a href="javascript:history.back()" class="text-decoration-none btn-back">
                 <i class="bi bi-arrow-left fs-4"></i>
-            </a>
+            </a> 
             {% if user.is_authenticated %}
             <div class="dropdown">
                 <button class="btn btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -89,7 +89,7 @@
             {% endif %}
             
         </div>
-    </div>
+    </div> {% endcomment %}
 
     <!-- Статус объявления (только для автора) -->
     {% if user == product.author and product.status != 3 %}
@@ -213,5 +213,30 @@
 {% endblock %}
 
 {% block scripts %}
-
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем доступность Telegram Web App API
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg) {
+            // Показываем кнопку назад Telegram
+            if (tg.BackButton) {
+                tg.BackButton.show();
+                
+                // Обработчик нажатия на кнопку назад
+                tg.onEvent('backButtonClicked', function() {
+                    // Возвращаемся на предыдущую страницу
+                    window.history.back();
+                });
+            }
+        }
+    });
+    
+    // Скрываем кнопку назад при уходе со страницы
+    window.addEventListener('beforeunload', function() {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.BackButton) {
+            tg.BackButton.hide();
+        }
+    });
+</script>
 {% endblock %}

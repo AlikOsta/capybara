@@ -13,9 +13,9 @@
     <!-- Верхний блок с навигацией -->
     <div class="mb-3">
         <div class="d-flex align-items-center mb-3">
-            <a href="{% if is_edit %}{% url 'app:product_detail' object.pk %}{% else %}{% url 'app:index' %}{% endif %}" class="text-decoration-none btn-back me-2">
+            {% comment %} <a href="{% if is_edit %}{% url 'app:product_detail' object.pk %}{% else %}{% url 'app:index' %}{% endif %}" class="text-decoration-none btn-back me-2">
                 <i class="bi bi-arrow-left fs-4"></i>
-            </a>
+            </a> {% endcomment %}
             <div>
                 <h5 class="mb-0 fw-bold">
                     {% if is_edit %}
@@ -134,5 +134,30 @@
 {% endblock %}
 
 {% block scripts %}
-
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем доступность Telegram Web App API
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg) {
+            // Показываем кнопку назад Telegram
+            if (tg.BackButton) {
+                tg.BackButton.show();
+                
+                // Обработчик нажатия на кнопку назад
+                tg.onEvent('backButtonClicked', function() {
+                    // Возвращаемся на предыдущую страницу
+                    window.history.back();
+                });
+            }
+        }
+    });
+    
+    // Скрываем кнопку назад при уходе со страницы
+    window.addEventListener('beforeunload', function() {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.BackButton) {
+            tg.BackButton.hide();
+        }
+    });
+</script>
 {% endblock %}

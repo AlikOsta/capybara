@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tg = window.Telegram && window.Telegram.WebApp;
     if (tg) {
         tg.expand();
+        tg.enableClosingConfirmation()
         
         // Адаптация темы к настройкам Telegram
         adaptThemeToTelegram(tg);
