@@ -9,12 +9,12 @@
     <div class="mb-3">
         <div class="d-flex align-items-center mb-3">
             <div class="flex-grow-1">
-                <form method="get" class="search-form">
+                <form id="search-form" class="search-form">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" name="q" class="form-control border-start-0 shadow-none" 
+                        <input type="text" name="q" id="search-input" class="form-control border-start-0 shadow-none" 
                                placeholder="Поиск в категории..." value="{{ query }}">
                         <button class="btn btn-primary d-none" type="submit">Найти</button>
                     </div>
@@ -33,22 +33,22 @@
     <div class="filters-section mb-4">
         <div class="row g-2">
             <div class="col-12">
-                <select class="form-select" onchange="location = this.value;">
-                    <option value="?{% if query %}q={{ query }}&{% endif %}{% if current_city %}city={{ current_city }}&{% endif %}{% if current_currency %}currency={{ current_currency }}{% endif %}">Сортировка</option>
-                    <option value="?sort=price_asc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'price_asc' %}selected{% endif %}>Сначала дешевле</option>
-                    <option value="?sort=price_desc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'price_desc' %}selected{% endif %}>Сначала дороже</option>
-                    <option value="?sort=date_desc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
-                    <option value="?sort=date_asc{% if query %}&q={{ query }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
+                <select id="sort-select" class="form-select">
+                    <option value="">Сортировка</option>
+                    <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Сначала дешевле</option>
+                    <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Сначала дороже</option>
+                    <option value="date_desc" {% if current_sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
+                    <option value="date_asc" {% if current_sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
                 </select>
             </div>
         </div>
         
         <div class="row g-2 mt-2">
             <div class="col-6">
-                <select class="form-select" onchange="location = this.value;">
-                    <option value="?{% if query %}q={{ query }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}{% if current_currency %}currency={{ current_currency }}{% endif %}">Все города</option>
+                <select id="city-select" class="form-select">
+                    <option value="">Все города</option>
                     {% for city in cities %}
-                    <option value="?city={{ city.id }}{% if query %}&q={{ query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_currency %}&currency={{ current_currency }}{% endif %}" {% if current_city == city.id|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ city.id }}" {% if current_city == city.id|stringformat:"s" %}selected{% endif %}>
                         {{ city.name }}
                     </option>
                     {% endfor %}
@@ -56,10 +56,10 @@
             </div>
             
             <div class="col-6">
-                <select class="form-select" onchange="location = this.value;">
-                    <option value="?{% if query %}q={{ query }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}{% if current_city %}city={{ current_city }}{% endif %}">Все валюты</option>
+                <select id="currency-select" class="form-select">
+                    <option value="">Все валюты</option>
                     {% for currency in currencies %}
-                    <option value="?currency={{ currency.id }}{% if query %}&q={{ query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_city %}&city={{ current_city }}{% endif %}" {% if current_currency == currency.id|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ currency.id }}" {% if current_currency == currency.id|stringformat:"s" %}selected{% endif %}>
                         {{ currency.code }}
                     </option>
                     {% endfor %}
@@ -72,43 +72,43 @@
         <div class="active-filters mt-3">
             <div class="d-flex flex-wrap gap-2">
                 {% if query %}
-                <a href="?{% if current_sort %}sort={{ current_sort }}&{% endif %}{% if current_city %}city={{ current_city }}&{% endif %}{% if current_currency %}currency={{ current_currency }}{% endif %}" class="badge bg-light text-dark text-decoration-none py-2 px-3">
+                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="q">
                     Поиск: {{ query }} <i class="bi bi-x-circle ms-1"></i>
-                </a>
+                </span>
                 {% endif %}
                 
                 {% if current_sort %}
-                <a href="?{% if query %}q={{ query }}&{% endif %}{% if current_city %}city={{ current_city }}&{% endif %}{% if current_currency %}currency={{ current_currency }}{% endif %}" class="badge bg-light text-dark text-decoration-none py-2 px-3">
+                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="sort">
                     {% if current_sort == 'price_asc' %}Сначала дешевле{% endif %}
                     {% if current_sort == 'price_desc' %}Сначала дороже{% endif %}
                     {% if current_sort == 'date_desc' %}Сначала новые{% endif %}
                     {% if current_sort == 'date_asc' %}Сначала старые{% endif %}
                     <i class="bi bi-x-circle ms-1"></i>
-                </a>
+                </span>
                 {% endif %}
                 
                 {% if current_city %}
-                <a href="?{% if query %}q={{ query }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}{% if current_currency %}currency={{ current_currency }}{% endif %}" class="badge bg-light text-dark text-decoration-none py-2 px-3">
+                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="city">
                     {% for city in cities %}
                         {% if current_city == city.id|stringformat:"s" %}{{ city.name }}{% endif %}
                     {% endfor %}
                     <i class="bi bi-x-circle ms-1"></i>
-                </a>
+                </span>
                 {% endif %}
                 
                 {% if current_currency %}
-                <a href="?{% if query %}q={{ query }}&{% endif %}{% if current_sort %}sort={{ current_sort }}&{% endif %}{% if current_city %}city={{ current_city }}{% endif %}" class="badge bg-light text-dark text-decoration-none py-2 px-3">
+                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="currency">
                     {% for currency in currencies %}
                         {% if current_currency == currency.id|stringformat:"s" %}{{ currency.code }}{% endif %}
                     {% endfor %}
                     <i class="bi bi-x-circle ms-1"></i>
-                </a>
+                </span>
                 {% endif %}
                 
                 {% if current_sort or current_city or current_currency or query %}
-                <a href="?category={{ category.slug }}" class="badge bg-danger text-white text-decoration-none py-2 px-3">
+                <button id="reset-filters" class="badge bg-danger text-white text-decoration-none py-2 px-3">
                     Сбросить все <i class="bi bi-x-circle ms-1"></i>
-                </a>
+                </button>
                 {% endif %}
             </div>
         </div>
@@ -127,7 +127,7 @@
                 <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
                 <p class="text-muted">В этой категории пока нет объявлений</p>
                 {% if query or current_sort or current_city or current_currency %}
-                <a href="?category={{ category.slug }}" class="btn btn-outline-primary mt-2">Сбросить фильтры</a>
+                <button id="reset-filters" class="btn btn-outline-primary mt-2">Сбросить фильтры</button>
                 {% endif %}
             </div>
         </div>

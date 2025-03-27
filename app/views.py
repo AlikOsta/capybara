@@ -385,18 +385,24 @@ class CategoryProductsAPIView(View):
 
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 10))
+        query = request.GET.get('q', '')
+        city_id = request.GET.get('city')
+        currency_id = request.GET.get('currency')
+        sort = request.GET.get('sort', '')
         
-        # Используем select_related для загрузки связанных объектов за один запрос
         queryset = Product.objects.filter(status=3, category=category).select_related(
             'author', 'category', 'currency', 'city'
         )
+        
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query)
             )
+            
         if city_id and city_id.isdigit():
             queryset = queryset.filter(city_id=city_id)
+            
         if currency_id and currency_id.isdigit():
             queryset = queryset.filter(currency_id=currency_id)
 
@@ -411,9 +417,11 @@ class CategoryProductsAPIView(View):
 
         total_count = queryset.count()
         products = queryset[offset:offset + limit]
+        
         favorite_products = []
         if request.user.is_authenticated:
             favorite_products = list(request.user.favorites.values_list('product_id', flat=True))
+            
         html = render_to_string(
             'app/includes/product_cards_list.html',
             {
@@ -422,6 +430,7 @@ class CategoryProductsAPIView(View):
                 'request': request
             }
         )
+        
         has_more = (offset + limit) < total_count
         return JsonResponse({
             'html': html,
@@ -429,6 +438,7 @@ class CategoryProductsAPIView(View):
             'total_count': total_count,
             'next_offset': offset + limit if has_more else None
         })
+
 
 class FavoriteProductsAPIView(View):
     """API представление для получения списка избранных объявлений."""
