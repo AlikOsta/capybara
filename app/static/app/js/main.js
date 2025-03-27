@@ -6,6 +6,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Инициализация Telegram Mini App
     const tg = window.Telegram && window.Telegram.WebApp;
+
+    if (tg.BackButton) tg.BackButton.hide();
+    if (tg.MainButton) tg.MainButton.hide();
+
     if (tg) {
         tg.expand();
         tg.enableClosingConfirmation()

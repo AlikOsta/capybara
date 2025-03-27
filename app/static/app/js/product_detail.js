@@ -9,11 +9,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Обработчик нажатия на кнопку назад
         tg.onEvent('backButtonClicked', function() {
+            
             // Вызываем тактильную обратную связь при нажатии на кнопку назад
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
-            
+
+            if (tg.MainButton) tg.MainButton.hide();
+            if (tg.BackButton) tg.BackButton.hide();
+
             // Возвращаемся на предыдущую страницу
             window.history.back();
         });
@@ -129,11 +133,19 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(updateMainButtonVisibility, 1000);
 });
 
-// Скрываем кнопки при уходе со страницы
+// Обязательно скрываем кнопки при уходе со страницы
 window.addEventListener('beforeunload', function() {
     const tg = window.Telegram && window.Telegram.WebApp;
     if (tg) {
+        if (tg.MainButton) tg.MainButton.hide();
         if (tg.BackButton) tg.BackButton.hide();
+    }
+});
+
+// Добавляем обработчик для popstate (когда пользователь нажимает кнопку назад браузера)
+window.addEventListener('popstate', function() {
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) {
         if (tg.MainButton) tg.MainButton.hide();
     }
 });
