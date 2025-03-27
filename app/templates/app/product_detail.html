@@ -10,7 +10,7 @@
         <div class="d-flex align-items-center justify-content-between">
             <a href="javascript:history.back()" class="text-decoration-none btn-back">
                 <i class="bi bi-arrow-left fs-4"></i>
-            </a> 
+            </a>
             {% if user.is_authenticated %}
             <div class="dropdown">
                 <button class="btn btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -156,9 +156,13 @@
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center">
                         <div class="seller-avatar me-3">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                <i class="bi bi-person-fill fs-4"></i>
-                            </div>
+                            {% if product.author.photo_url %}
+                                <img src="{{ product.author.photo_url }}" alt="{{ product.author.username }}" class="rounded-circle" width="50" height="50">
+                            {% else %}
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="bi bi-person-fill fs-4"></i>
+                                </div>
+                            {% endif %}
                         </div>
                         <div>
                             <h6 class="mb-1">{{ product.author.first_name }}</h6>
@@ -175,6 +179,7 @@
             </div>
         </a>
     </div>
+
     
 
     <!-- Кнопки действий для не-автора -->
@@ -182,13 +187,14 @@
     <div class="action-buttons mb-4">
         <!-- Кнопка связи с продавцом -->
         <button data-action="contact" 
-        data-username="{{ product.author.username }}" 
-        data-product-id="{{ product.id }}" 
-        data-product-title="{{ product.title|escapejs }}" 
-        data-product-price="{{ product.price }} {{ product.currency }}" 
-        class="btn btn-primary w-100">
-    <i class="bi bi-telegram me-2"></i>Связаться с продавцом
-</button>
+                data-username="{{ product.author.username }}" 
+                data-product-id="{{ product.id }}" 
+                data-product-title="{{ product.title|escapejs }}" 
+                data-product-price="{{ product.price }} {{ product.currency }}" 
+                class="btn btn-primary w-100">
+            <i class="bi bi-telegram me-2"></i>Связаться с продавцом
+        </button>
+    </div>
     {% endif %}
     
 </div>
@@ -213,30 +219,11 @@
 {% endblock %}
 
 {% block scripts %}
+{% load static %}
+<!-- Добавляем data-атрибут для определения, является ли пользователь автором -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем доступность Telegram Web App API
-        const tg = window.Telegram && window.Telegram.WebApp;
-        if (tg) {
-            // Показываем кнопку назад Telegram
-            if (tg.BackButton) {
-                tg.BackButton.show();
-                
-                // Обработчик нажатия на кнопку назад
-                tg.onEvent('backButtonClicked', function() {
-                    // Возвращаемся на предыдущую страницу
-                    window.history.back();
-                });
-            }
-        }
-    });
-    
-    // Скрываем кнопку назад при уходе со страницы
-    window.addEventListener('beforeunload', function() {
-        const tg = window.Telegram && window.Telegram.WebApp;
-        if (tg && tg.BackButton) {
-            tg.BackButton.hide();
-        }
-    });
+    document.body.dataset.isAuthor = "{% if user == product.author %}true{% else %}false{% endif %}";
 </script>
+{% comment %} <script src="{% static 'app/js/share.js' %}"></script> {% endcomment %}
+<script src="{% static 'app/js/product_detail.js' %}"></script>
 {% endblock %}

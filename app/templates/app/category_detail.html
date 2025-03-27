@@ -8,9 +8,9 @@
     <!-- Верхний блок с навигацией и поиском -->
     <div class="mb-3">
         <div class="d-flex align-items-center mb-3">
-            <a href="{% url 'app:index' %}" class="text-decoration-none btn-back me-2">
+            {% comment %} <a href="{% url 'app:index' %}" class="text-decoration-none btn-back me-2">
                 <i class="bi bi-arrow-left fs-4"></i>
-            </a>
+            </a> {% endcomment %}
             <div class="flex-grow-1">
                 <form method="get" class="search-form">
                     <div class="input-group">
@@ -163,5 +163,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static 'app/js/infinite-scroll.js' %}"></script>
+<script src="{% static 'app/js/category_detail.js' %}"></script>
 
 {% endblock %}

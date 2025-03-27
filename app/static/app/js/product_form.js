@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Обработчик нажатия на кнопку назад
         tg.onEvent('backButtonClicked', function() {
+            // Вызываем тактильную обратную связь при нажатии на кнопку назад
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+            
             // Возвращаемся на предыдущую страницу
             window.history.back();
         });
@@ -96,6 +101,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обработчик нажатия на Main Button
     mainButton.onClick(function() {
+        // Вызываем тактильную обратную связь при нажатии на Main Button
+        if (tg.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        
         // Проверяем валидность перед отправкой
         const { isValid, hasChanges } = validateForm();
         if (isValid && hasChanges) {
@@ -127,3 +137,4 @@ window.addEventListener('beforeunload', function() {
         if (tg.MainButton) tg.MainButton.hide();
     }
 });
+
