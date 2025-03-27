@@ -1,61 +1,47 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем доступность Telegram Web App API
+    applyMainButtonAnimation();
+
     const tg = window.Telegram && window.Telegram.WebApp;
-    if (!tg) return;
-    
-    // Показываем кнопку назад Telegram
+    // if (!tg) return;
+
+    // Настраиваем кнопку "Назад"
     if (tg.BackButton) {
         tg.BackButton.show();
-        
-        // Обработчик нажатия на кнопку назад
         tg.onEvent('backButtonClicked', function() {
-            
-            // Вызываем тактильную обратную связь при нажатии на кнопку назад
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
-
-            if (tg.MainButton) tg.MainButton.hide();
-            if (tg.BackButton) tg.BackButton.hide();
-
-            // Возвращаемся на предыдущую страницу
             window.history.back();
         });
     }
-    
-    // Инициализация Main Button
+
+    // Инициализируем MainButton
     const mainButton = tg.MainButton;
     if (!mainButton) return;
-    
-    // Получаем данные для связи с продавцом из data-атрибутов
-    const contactButton = document.querySelector('[data-action="contact"]');
-    if (!contactButton) return;
-    
-    const username = contactButton.dataset.username;
-    const productId = contactButton.dataset.productId;
-    const productTitle = contactButton.dataset.productTitle;
-    const productPrice = contactButton.dataset.productPrice;
-    
-    // Настройка Main Button
+
+    // Ссылка на нижнее меню
+    const footer = document.querySelector('footer.fixed-bottom');
+
+    // Получаем данные для связи из элемента .product-detail
+    const productDetail = document.querySelector('.product-detail');
+    if (!productDetail) return;
+    const { username, productId, productTitle, productPrice, isAuthor } = productDetail.dataset;
+
+    // Настраиваем MainButton
     mainButton.setText('Связаться с продавцом');
     mainButton.hide(); // Изначально скрываем кнопку
-    
-    // Переменные для плавного появления/исчезновения
-    let mainButtonVisibilityTimeout;
-    const VISIBILITY_DELAY = 200; // Задержка в миллисекундах
-    
-    // Обработчик нажатия на Main Button
+
+    // Параметры анимации
+    const ANIMATION_DURATION = 100;
+
+    // Обработчик клика по MainButton
     mainButton.onClick(function() {
-        // Вызываем тактильную обратную связь при нажатии на Main Button
         if (tg.HapticFeedback) {
             tg.HapticFeedback.impactOccurred('medium');
         }
-        
-        // Используем функцию из share.js для связи с продавцом
         if (typeof window.contactSeller === 'function') {
             window.contactSeller(new Event('click'), username, productId, productTitle, productPrice);
         } else {
-            // Запасной вариант, если функция недоступна
             const productUrl = `https://t.me/CapybaraMPRobot?start=product_${productId}`;
             let messageText = `Здравствуйте! Меня интересует "${productTitle}" за ${productPrice}.\nЕщё актуально?\n\n`;
             messageText += `Ссылка на объявление: ${productUrl}`;
@@ -64,88 +50,88 @@ document.addEventListener('DOMContentLoaded', function() {
             window.open(contactUrl, '_blank');
         }
     });
-    
-    // Функция для проверки видимости обычной кнопки связи
-    function isContactButtonVisible() {
-        if (!contactButton) return false;
-        
-        const rect = contactButton.getBoundingClientRect();
-        return (
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        );
+
+    // Функция показа MainButton с анимацией
+    function showMainButton() {
+        if (footer) footer.classList.add('hidden');
+        setTimeout(() => {
+            mainButton.show();
+            document.body.classList.add('main-button-visible');
+            const btnElem = document.querySelector('.telegram-main-button');
+            if (btnElem) btnElem.classList.remove('hidden');
+        }, ANIMATION_DURATION / 2);
     }
-    
-    // Функция для проверки, находится ли пользователь близко к концу страницы
-    function isNearBottom() {
-        const scrollPosition = window.scrollY + window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        const nearBottomThreshold = 300; // Пикселей от низа страницы
-        
-        return documentHeight - scrollPosition < nearBottomThreshold;
+
+    function hideMainButton() {
+        const btnElem = document.querySelector('.telegram-main-button');
+        if (btnElem) btnElem.classList.add('hidden');
+        setTimeout(() => {
+            mainButton.hide();
+            document.body.classList.remove('main-button-visible');
+            if (footer) footer.classList.remove('hidden');
+        }, ANIMATION_DURATION / 2);
     }
-    
-    // Функция для обновления состояния Main Button в зависимости от прокрутки
+
     function updateMainButtonVisibility() {
-        // Если мы не автор объявления
-        const isAuthor = document.body.dataset.isAuthor === 'true';
-        
-        if (!isAuthor) {
-            // Очищаем предыдущий таймаут, чтобы избежать мерцания
-            clearTimeout(mainButtonVisibilityTimeout);
-            
-            mainButtonVisibilityTimeout = setTimeout(() => {
-                // Показываем кнопку, если обычная кнопка не видна ИЛИ пользователь близок к концу страницы
-                if (!isContactButtonVisible() || isNearBottom()) {
-                    mainButton.show();
-                } else {
-                    mainButton.hide();
-                }
-            }, VISIBILITY_DELAY);
+        if (isAuthor === 'true') {
+            hideMainButton();
+        } else {
+            showMainButton();
         }
     }
-    
-    // Обработчик события прокрутки с дебаунсингом для производительности
-    let scrollTimeout;
-    window.addEventListener('scroll', function() {
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(updateMainButtonVisibility, 50);
-    });
-    
-    // Обработчик изменения размера окна
-    window.addEventListener('resize', function() {
-        updateMainButtonVisibility();
-    });
-    
-    // Обработчик изменения ориентации устройства
-    window.addEventListener('orientationchange', function() {
-        // Небольшая задержка для корректного пересчета размеров
-        setTimeout(updateMainButtonVisibility, 300);
-    });
-    
-    // Инициализация при загрузке страницы
+
     updateMainButtonVisibility();
     
-    // Дополнительная проверка через 1 секунду после загрузки
-    // для случаев, когда контент загружается асинхронно
     setTimeout(updateMainButtonVisibility, 1000);
 });
 
-// Обязательно скрываем кнопки при уходе со страницы
+// Скрытие кнопок при уходе со страницы
 window.addEventListener('beforeunload', function() {
     const tg = window.Telegram && window.Telegram.WebApp;
     if (tg) {
         if (tg.MainButton) tg.MainButton.hide();
-        if (tg.BackButton) tg.BackButton.hide();
     }
+    const footer = document.querySelector('footer.fixed-bottom');
+    if (footer) footer.classList.remove('hidden');
+    document.body.classList.remove('main-button-visible');
 });
 
-// Добавляем обработчик для popstate (когда пользователь нажимает кнопку назад браузера)
+// Скрытие MainButton при нажатии кнопки назад браузера
 window.addEventListener('popstate', function() {
     const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg) {
-        if (tg.MainButton) tg.MainButton.hide();
-    }
+    if (tg && tg.MainButton) tg.MainButton.hide();
+    const footer = document.querySelector('footer.fixed-bottom');
+    if (footer) footer.classList.remove('hidden');
+    document.body.classList.remove('main-button-visible');
 });
+
+// Функция для применения анимации к MainButton
+function applyMainButtonAnimation() {
+    if (!document.querySelector('#telegram-main-button-styles')) {
+        const style = document.createElement('style');
+        style.id = 'telegram-main-button-styles';
+        style.textContent = `
+            .telegram-main-button {
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                            opacity 0.3s ease !important;
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+            }
+            .telegram-main-button.hidden {
+                transform: translateY(100%) !important;
+                opacity: 0 !important;
+            }
+            footer.fixed-bottom {
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            footer.fixed-bottom.hidden {
+                transform: translateY(100%);
+            }
+            body.main-button-visible {
+                padding-bottom: 70px !important;
+                transition: padding-bottom 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}

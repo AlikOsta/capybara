@@ -10,9 +10,6 @@ function applyMainButtonAnimation() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Применяем анимацию к MainButton
-    applyMainButtonAnimation();
-    
     // Проверяем доступность Telegram Web App API
     const tg = window.Telegram && window.Telegram.WebApp;
     if (!tg) return;
@@ -40,73 +37,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // Получаем ссылку на нижнее меню
     const footer = document.querySelector('footer.fixed-bottom');
     
-    // Получаем данные из data-атрибутов
-    const isEdit = document.body.dataset.isEdit === 'true';
-    const hasImage = document.body.dataset.hasImage === 'true';
-    const imageInputId = document.body.dataset.imageInputId;
-    
     // Настройка Main Button
-    mainButton.setText(isEdit ? 'Сохранить изменения' : 'Опубликовать');
+    mainButton.setText('Сохранить изменения');
     mainButton.hide();
     
     // Получаем форму и все поля ввода
-    const form = document.getElementById('productForm');
+    const form = document.getElementById('profileForm');
     const inputs = form.querySelectorAll('input, textarea, select');
     
-    // Для редактирования: сохраняем начальные значения полей
+    // Сохраняем начальные значения полей
     const initialValues = {};
-    if (isEdit) {
-        inputs.forEach(input => {
-            if (input.type === 'file') return;
-            initialValues[input.name] = input.value;
-        });
-    }
+    inputs.forEach(input => {
+        initialValues[input.name] = input.value;
+    });
     
     // Функция проверки валидности формы
     function validateForm() {
         let isValid = true;
         let hasChanges = false;
         
-        // Проверяем все обязательные поля
+        // Проверяем все поля на валидность и изменения
         inputs.forEach(input => {
-            // Пропускаем поле файла при проверке валидности
-            if (input.type === 'file') return;
-            
-            // Проверка на заполненность
+            // Проверка на заполненность обязательных полей
             if (input.required && !input.value.trim()) {
                 isValid = false;
             }
             
-            // Для редактирования: проверяем, есть ли изменения
-            if (isEdit) {
-                if (initialValues[input.name] !== input.value) {
-                    hasChanges = true;
-                }
+            // Проверка на изменения
+            if (initialValues[input.name] !== input.value) {
+                hasChanges = true;
             }
         });
-        
-        // Для создания нового объявления всегда считаем, что есть изменения
-        if (!isEdit) {
-            hasChanges = true;
-        }
-        
-        // Проверка изображения
-        const imageInput = document.getElementById(imageInputId);
-        
-        // Если это новое объявление или изменено изображение
-        if (imageInput && imageInput.files.length > 0) {
-            hasChanges = true;
-        }
-        
-        // Для нового объявления требуется изображение
-        if (!hasImage && imageInput && imageInput.files.length === 0 && !isEdit) {
-            isValid = false;
-        }
         
         return { isValid, hasChanges };
     }
     
-    // Функция обновления состояния кнопки
+    // Обновите функцию updateButtonState
     function updateButtonState() {
         const { isValid, hasChanges } = validateForm();
         
@@ -158,12 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
             input.addEventListener(eventType, updateButtonState);
         });
     });
-    
-    // Обработчик изменения файла изображения
-    const imageInput = document.getElementById(imageInputId);
-    if (imageInput) {
-        imageInput.addEventListener('change', updateButtonState);
-    }
     
     // Инициализация состояния кнопки при загрузке страницы
     updateButtonState();

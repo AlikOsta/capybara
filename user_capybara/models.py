@@ -61,7 +61,9 @@ class TelegramUser(AbstractUser):
         return f"User {self.telegram_id}"
     
     def get_full_name(self):
-        return f"{self.first_name} {self.last_name}"
+        if(self.first_name and self.last_name):
+            return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name}"
 
     def get_tg_name(self):
         return f"@{self.username}"

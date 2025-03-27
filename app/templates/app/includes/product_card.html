@@ -1,48 +1,58 @@
 <div class="product-card position-relative">
-    <a href="{% url 'app:product_detail' pk=product.pk %}" class="text-decoration-none text-dark">
+    <a href="{% url 'app:product_detail' pk=product.pk %}" 
+       class="text-decoration-none" 
+       style="color: var(--tg-theme-text-color, #000000);">
         <div class="card h-100 product-card-inner">
-            <div class="product-image-container">
-                <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.title }}" loading="lazy">
-
+            <div class="product-image-container position-relative">
+                <img src="{{ product.image.url }}" 
+                     class="card-img-top product-image" 
+                     alt="{{ product.title }}" 
+                     loading="lazy">
+                     
                 {% if product.status != 3 %}
                 <div class="product-status-badge 
-                    {% if product.status == 0 %}badge-pending{% endif %}
-                    {% if product.status == 1 %}badge-approved{% endif %}
-                    {% if product.status == 2 %}badge-rejected{% endif %}
-                    {% if product.status == 4 %}badge-archived{% endif %}">
+                    {% if product.status == 0 %}badge-pending{% elif product.status == 1 %}badge-approved{% elif product.status == 2 %}badge-rejected{% elif product.status == 4 %}badge-archived{% endif %}"
+                     style="background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+                            color: var(--tg-theme-text-color, #000000);">
                     <span>
-                        {% if product.status == 0 %}На модерации{% endif %}
-                        {% if product.status == 1 %}Ожидает публикации{% endif %}
-                        {% if product.status == 2 %}Отклонено{% endif %}
-                        {% if product.status == 4 %}В архиве{% endif %}
+                        {% if product.status == 0 %}На модерации{% elif product.status == 1 %}Ожидает публикации{% elif product.status == 2 %}Отклонено{% elif product.status == 4 %}В архиве{% endif %}
                     </span>
                 </div>
                 {% endif %}
             </div>
             <div class="card-body p-3">
-                <h6 class="card-title text-truncate mb-1">{{ product.title }}</h6>
-                <p class="card-text fw-bold mb-2">{{ product.price }} {{ product.currency }}</p>
+                <h6 class="card-title text-truncate mb-1" 
+                    style="color: var(--tg-theme-text-color, #000000);">
+                    {{ product.title }}
+                </h6>
+                <p class="card-text fw-bold mb-2" 
+                   style="color: var(--tg-theme-button-color, #2481cc);">
+                    {{ product.price }} {{ product.currency }}
+                </p>
                 <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted d-flex align-items-center">
+                    <small class="d-flex align-items-center" 
+                           style="color: var(--tg-theme-hint-color, #999999);">
                         <i class="bi bi-geo-alt me-1"></i>
                         <span class="text-truncate">{{ product.city }}</span>
                     </small>
-                    <small class="text-muted d-flex align-items-center">
+                    <small class="d-flex align-items-center" 
+                           style="color: var(--tg-theme-hint-color, #999999);">
                         <i class="bi bi-eye me-1"></i>
                         <span>{{ product.get_view_count }}</span>
                     </small>
                 </div>
-                <small class="text-muted d-block mt-1">
+                <small class="d-block mt-1" 
+                       style="color: var(--tg-theme-hint-color, #999999);">
                     <i class="bi bi-clock me-1"></i>{{ product.created_at|date:"d.m.Y" }}
                 </small>
             </div>
         </div>
     </a>
-
-    <button class="btn btn-sm position-absolute top-0 end-0 m-2 text-danger bg-white rounded-circle p-2 shadow-sm favorite-btn" 
+    <button class="btn btn-sm position-absolute top-0 end-0 m-2 favorite-btn rounded-circle p-2 shadow-sm" 
             data-product-id="{{ product.id }}" 
-            data-is-favorite="{% if product.id in favorite_products %}true{% else %}false{% endif %}">
-        <i class="bi {% if product.id in favorite_products %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+            data-is-favorite="{% if product.id in favorite_products %}true{% else %}false{% endif %}"
+            style="background-color: var(--tg-theme-button-text-color, #ffffff);">
+        <i class="bi {% if product.id in favorite_products %}bi-heart-fill{% else %}bi-heart{% endif %}" 
+           style="color: var(--tg-theme-button-color, #2481cc);"></i>
     </button>
-
 </div>

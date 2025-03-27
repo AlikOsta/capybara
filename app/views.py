@@ -264,7 +264,6 @@ class FavoriteListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        # Используем prefetch_related для оптимизации запроса избранных объявлений
         return Product.objects.filter(
             favorited_by__user=self.request.user,
             status=3 
@@ -273,6 +272,7 @@ class FavoriteListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Избранное'
+        context['has_more'] = self.get_queryset().count() > len(context['products'])
         return context
 
 
@@ -429,3 +429,39 @@ class CategoryProductsAPIView(View):
             'total_count': total_count,
             'next_offset': offset + limit if has_more else None
         })
+
+class FavoriteProductsAPIView(View):
+    """API представление для получения списка избранных объявлений."""
+    
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Требуется авторизация'}, status=401)
+            
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 10))
+        
+        queryset = Product.objects.filter(
+            favorited_by__user=request.user,
+            status=3
+        ).select_related('author', 'category', 'currency', 'city')
+        
+        total_count = queryset.count()
+        products = queryset.order_by('-created_at')[offset:offset + limit]
+        
+        html = render_to_string(
+            'app/includes/product_cards_list.html',
+            {
+                'products': products,
+                'favorite_products': list(request.user.favorites.values_list('product_id', flat=True)),
+                'request': request
+            }
+        )
+        
+        has_more = (offset + limit) < total_count
+        return JsonResponse({
+            'html': html,
+            'has_more': has_more,
+            'total_count': total_count,
+            'next_offset': offset + limit if has_more else None
+        })
+

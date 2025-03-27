@@ -13,20 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
-
-            if (tg.MainButton) tg.MainButton.hide();
-            if (tg.BackButton) tg.BackButton.hide();
             
             // Возвращаемся на предыдущую страницу
             window.history.back();
         });
-    }
-});
-
-// Скрываем кнопку назад при уходе со страницы
-window.addEventListener('beforeunload', function() {
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg && tg.BackButton) {
-        tg.BackButton.hide();
     }
 });

@@ -3,31 +3,32 @@
  * Содержит общие функции и инициализацию Telegram Mini App
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация Telegram Mini App
+document.addEventListener('DOMContentLoaded', () => {
     const tg = window.Telegram && window.Telegram.WebApp;
 
-    if (tg.BackButton) tg.BackButton.hide();
-    if (tg.MainButton) tg.MainButton.hide();
-
+    // Инициализация Telegram Mini App
     if (tg) {
+        // Скрываем кнопки и расширяем приложение
+        if (tg.BackButton) tg.BackButton.hide();
+        if (tg.MainButton) tg.MainButton.hide();
         tg.expand();
-        tg.enableClosingConfirmation()
-        
+        tg.enableClosingConfirmation();
+
         // Адаптация темы к настройкам Telegram
         adaptThemeToTelegram(tg);
     }
     
-    // Инициализация предпросмотра изображений при загрузке
+    // Инициализация функционала приложения
     initImagePreview();
-    
-    // Инициализация кнопки "Наверх"
     initBackToTopButton();
+    initMainButtonAnimation();
 });
 
-// Функция для адаптации темы к настройкам Telegram
+/**
+ * Адаптация темы к настройкам Telegram.
+ * Получает параметры темы из tg.themeParams и устанавливает CSS-переменные.
+ */
 function adaptThemeToTelegram(tg) {
-    // Получаем цвета из Telegram
     const colors = {
         bg_color: tg.themeParams.bg_color || '#ffffff',
         text_color: tg.themeParams.text_color || '#000000',
@@ -37,88 +38,76 @@ function adaptThemeToTelegram(tg) {
         button_text_color: tg.themeParams.button_text_color || '#ffffff',
         secondary_bg_color: tg.themeParams.secondary_bg_color || '#f0f0f0'
     };
-    
-    // Устанавливаем CSS переменные
-    document.documentElement.style.setProperty('--tg-theme-bg-color', colors.bg_color);
-    document.documentElement.style.setProperty('--tg-theme-text-color', colors.text_color);
-    document.documentElement.style.setProperty('--tg-theme-hint-color', colors.hint_color);
-    document.documentElement.style.setProperty('--tg-theme-link-color', colors.link_color);
-    document.documentElement.style.setProperty('--tg-theme-button-color', colors.button_color);
-    document.documentElement.style.setProperty('--tg-theme-button-text-color', colors.button_text_color);
-    document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', colors.secondary_bg_color);
-    
-    // Добавляем RGB версии для использования с opacity
+
+    // Устанавливаем CSS-переменные в корневом элементе
+    const root = document.documentElement;
+    root.style.setProperty('--tg-theme-bg-color', colors.bg_color);
+    root.style.setProperty('--tg-theme-text-color', colors.text_color);
+    root.style.setProperty('--tg-theme-hint-color', colors.hint_color);
+    root.style.setProperty('--tg-theme-link-color', colors.link_color);
+    root.style.setProperty('--tg-theme-button-color', colors.button_color);
+    root.style.setProperty('--tg-theme-button-text-color', colors.button_text_color);
+    root.style.setProperty('--tg-theme-secondary-bg-color', colors.secondary_bg_color);
+
+    // Добавляем RGB версию цвета кнопки для прозрачности (если требуется)
     const rgbButton = hexToRgb(colors.button_color);
     if (rgbButton) {
-        document.documentElement.style.setProperty('--tg-theme-button-color-rgb', `${rgbButton.r}, ${rgbButton.g}, ${rgbButton.b}`);
+        root.style.setProperty('--tg-theme-button-color-rgb', `${rgbButton.r}, ${rgbButton.g}, ${rgbButton.b}`);
     }
-    
+
     // Устанавливаем тему Bootstrap в зависимости от яркости фона
-    const brightness = getBrightness(colors.bg_color);
-    if (brightness < 128) {
-        document.body.setAttribute('data-bs-theme', 'dark');
-    } else {
-        document.body.setAttribute('data-bs-theme', 'light');
-    }
+    document.body.setAttribute('data-bs-theme', getBrightness(colors.bg_color) < 128 ? 'dark' : 'light');
 }
 
-// Расчет яркости цвета
+/**
+ * Вычисление яркости HEX цвета.
+ */
 function getBrightness(hexColor) {
-    // Удаляем # если есть
     hexColor = hexColor.replace('#', '');
-    
-    // Преобразуем в RGB
     const r = parseInt(hexColor.substr(0, 2), 16);
     const g = parseInt(hexColor.substr(2, 2), 16);
     const b = parseInt(hexColor.substr(4, 2), 16);
-    
-    // Вычисляем яркость
     return (r * 299 + g * 587 + b * 114) / 1000;
 }
 
-// Преобразование HEX в RGB
+/**
+ * Преобразование HEX в RGB.
+ */
 function hexToRgb(hex) {
-    // Удаляем # если есть
     hex = hex.replace('#', '');
-    
-    // Парсим значения RGB
     const bigint = parseInt(hex, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    
-    return {r, g, b};
+    return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
-// Инициализация предпросмотра изображений при загрузке
+/**
+ * Инициализация предпросмотра изображений.
+ * Добавлена проверка на размер файла (например, 5 Мб).
+ */
 function initImagePreview() {
     const fileInput = document.getElementById('id_image');
     const previewContainer = document.querySelector('.image-preview-container');
-    
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 Мб
+
     if (fileInput && previewContainer) {
         fileInput.addEventListener('change', function() {
-            // Очищаем контейнер
             previewContainer.innerHTML = '';
-            
-            // Проверяем, выбран ли файл
+
             if (this.files && this.files[0]) {
                 const file = this.files[0];
-                
-                // Создаем элемент img для предпросмотра
+
+                // Проверяем размер файла
+                if (file.size > MAX_FILE_SIZE) {
+                    previewContainer.innerHTML = '<p class="text-danger">Файл слишком большой (макс. 5 Мб).</p>';
+                    return;
+                }
+
                 const img = document.createElement('img');
                 img.classList.add('img-preview', 'img-fluid', 'rounded');
-                
-                // Создаем URL для предпросмотра
                 const objectUrl = URL.createObjectURL(file);
                 img.src = objectUrl;
-                
-                // Добавляем изображение в контейнер
                 previewContainer.appendChild(img);
-                
-                // Освобождаем URL после загрузки изображения
-                img.onload = function() {
-                    URL.revokeObjectURL(objectUrl);
-                };
+
+                img.onload = () => URL.revokeObjectURL(objectUrl);
             } else {
                 // Если файл не выбран, показываем плейсхолдер
                 const placeholder = document.createElement('div');
@@ -130,45 +119,93 @@ function initImagePreview() {
     }
 }
 
-// Инициализация кнопки "Наверх"
+/**
+ * Инициализация кнопки "Наверх".
+ * Показываем кнопку при прокрутке более чем на 1000px.
+ */
 function initBackToTopButton() {
     const backToTopButton = document.getElementById('back-to-top');
-    
-    if (backToTopButton) {
-        // Показываем/скрываем кнопку при прокрутке
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 1000) {
-                backToTopButton.style.display = 'flex';
-            } else {
-                backToTopButton.style.display = 'none';
-            }
-        });
-        
-        // Обработчик клика по кнопке
-        backToTopButton.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    }
+    if (!backToTopButton) return;
+
+    const toggleVisibility = () => {
+        backToTopButton.style.display = window.pageYOffset > 1000 ? 'flex' : 'none';
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 }
 
-// Функция для получения CSRF токена из cookies
+/**
+ * Инициализация анимации для MainButton Telegram.
+ * Добавляет стили и следит за появлением кнопки в DOM.
+ */
+function initMainButtonAnimation() {
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (!tg) return;
+
+    // Добавляем стили анимации, если они еще не добавлены
+    if (!document.querySelector('#telegram-main-button-styles')) {
+        const style = document.createElement('style');
+        style.id = 'telegram-main-button-styles';
+        style.textContent = `
+            .telegram-main-button {
+                transition: transform 0.3s ease, opacity 0.3s ease !important;
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+            }
+            .telegram-main-button.hidden {
+                transform: translateY(100%) !important;
+                opacity: 0 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Следим за изменениями в DOM и добавляем класс анимации при появлении кнопки
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.addedNodes.length) {
+                const mainButtonElement = document.querySelector('.telegram-main-button');
+                if (mainButtonElement && !mainButtonElement.classList.contains('telegram-main-button-animation')) {
+                    mainButtonElement.classList.add('telegram-main-button-animation');
+                }
+            }
+        });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+/**
+ * Глобальный обработчик для управления нижним меню при навигации.
+ * При изменении истории возвращаем нижнее меню и убираем видимость MainButton.
+ */
+(function() {
+    window.addEventListener('popstate', () => {
+        const footer = document.querySelector('footer.fixed-bottom');
+        if (footer) footer.classList.remove('hidden');
+        document.body.classList.remove('main-button-visible');
+    });
+})();
+
+/**
+ * Функция для получения CSRF токена из cookies.
+ * Экспортируется для использования в других скриптах.
+ */
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        for (const cookie of cookies) {
+            const trimmedCookie = cookie.trim();
+            if (trimmedCookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(trimmedCookie.substring(name.length + 1));
                 break;
             }
         }
     }
     return cookieValue;
 }
-
-// Экспортируем функции для использования в других скриптах
 window.getCookie = getCookie;

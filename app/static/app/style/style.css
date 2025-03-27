@@ -735,3 +735,157 @@ footer {
     background-color: var(--tg-theme-secondary-bg-color);
 }
 
+body {
+    padding-bottom: 50px !important; /* Отступ только для нижнего меню */
+}
+
+/* Фиксированное положение нижней навигации */
+footer.fixed-bottom {
+    bottom: 0 !important;
+    z-index: 1000 !important; /* Высокий z-index, чтобы меню было поверх других элементов */
+    position: fixed !important;
+    width: 100%;
+}
+
+/* Стили для Telegram Web App MainButton */
+.telegram-webapp-button-visible main {
+    padding-bottom: 100px !important; /* Дополнительный отступ при видимой кнопке */
+}
+
+/* Стили для плавного скрытия/показа нижнего меню */
+footer.fixed-bottom {
+    transition: transform 0.3s ease;
+    z-index: 1000;
+}
+
+/* Класс для скрытия нижнего меню */
+footer.fixed-bottom.hidden {
+    transform: translateY(100%);
+}
+
+/* Дополнительный отступ для контента, когда MainButton видима */
+.main-button-visible main {
+    padding-bottom: 70px !important;
+}
+
+/* Стили для плавного скрытия/показа нижнего меню */
+footer.fixed-bottom {
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    transform: translateY(0);
+}
+
+/* Класс для скрытия нижнего меню */
+footer.fixed-bottom.hidden {
+    transform: translateY(100%);
+}
+
+/* Стили для MainButton Telegram */
+body:after {
+    content: '';
+    display: block;
+    height: 0;
+    transition: height 0.3s ease;
+}
+
+body.main-button-visible:after {
+    height: 70px; /* Высота для отступа под MainButton */
+}
+
+/* Анимация для MainButton */
+.telegram-main-button-animation {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.telegram-main-button-animation.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+
+/* Стили для плавного скрытия/показа нижнего меню */
+footer.fixed-bottom {
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    transform: translateY(0);
+}
+
+/* Класс для скрытия нижнего меню */
+footer.fixed-bottom.hidden {
+    transform: translateY(100%);
+}
+
+/* Стили для MainButton Telegram */
+body:after {
+    content: '';
+    display: block;
+    height: 0;
+    transition: height 0.3s ease;
+}
+
+body.main-button-visible:after {
+    height: 70px; /* Высота для отступа под MainButton */
+}
+
+/* Анимация для MainButton */
+.telegram-main-button-animation {
+    transition: transform 0.3s ease, opacity 0.3s ease !important;
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+}
+
+.telegram-main-button-animation.hidden {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+}
+
+/* Стили для плавного скрытия/показа нижнего меню */
+footer.fixed-bottom {
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    transform: translateY(0);
+}
+
+/* Класс для скрытия нижнего меню */
+footer.fixed-bottom.hidden {
+    transform: translateY(100%);
+}
+
+/* Адаптивные стили для темной темы */
+[data-bs-theme="dark"] .card-text.small.fw-medium {
+    color: var(--tg-theme-text-color) !important;
+}
+
+[data-bs-theme="dark"] .input-group-text.search-icon {
+    background-color: var(--tg-theme-secondary-bg-color) !important;
+    border-color: var(--tg-theme-secondary-bg-color) !important;
+}
+
+[data-bs-theme="dark"] .search-icon-text {
+    color: var(--tg-theme-text-color) !important;
+}
+
+[data-bs-theme="dark"] .search-input {
+    background-color: var(--tg-theme-secondary-bg-color) !important;
+    border-color: var(--tg-theme-secondary-bg-color) !important;
+    color: var(--tg-theme-text-color) !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-light.text-dark {
+    background-color: var(--tg-theme-secondary-bg-color) !important;
+    color: var(--tg-theme-text-color) !important;
+}
+
+/* Адаптивные стили для светлой темы */
+[data-bs-theme="light"] .card-text.small.fw-medium {
+    color: var(--tg-theme-text-color) !important;
+}
+
+[data-bs-theme="light"] .badge.bg-light.text-dark {
+    background-color: var(--tg-theme-secondary-bg-color) !important;
+    color: var(--tg-theme-text-color) !important;
+}
+
+

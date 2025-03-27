@@ -4,92 +4,12 @@
 {% block title %}{{ product.title }}{% endblock %}
 
 {% block content %}
-<div class="product-detail mt-3">
-    <!-- Верхний блок с навигацией -->
-    {% comment %} <div class="mb-3">
-        <div class="d-flex align-items-center justify-content-between">
-            <a href="javascript:history.back()" class="text-decoration-none btn-back">
-                <i class="bi bi-arrow-left fs-4"></i>
-            </a>
-            {% if user.is_authenticated %}
-            <div class="dropdown">
-                <button class="btn btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots-vertical"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    {% if user == product.author %}
-                        {% if product.status == 3 %}
-                            <!-- Опубликовано -->
-                            <li>
-                                <form method="post" action="{% url 'app:change_status' product.pk 4 %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item d-flex align-items-center">
-                                        <i class="bi bi-archive me-2"></i>Снять с публикации
-                                    </button>
-                                </form>
-                            </li>
-                            <li><a class="dropdown-item" href="#" data-action="share" data-product-id="{{ product.id }}" data-product-title="{{ product.title|escapejs }}">
-                                <i class="bi bi-share me-2"></i>Поделиться
-                            </a></li>
-                            <li><a class="dropdown-item" href="{% url 'app:product_edit' product.pk %}">
-                                <i class="bi bi-pencil me-2"></i>Редактировать
-                            </a></li>
-                            <li><a class="dropdown-item text-danger" href="{% url 'app:product_delete' product.pk %}">
-                                <i class="bi bi-trash me-2"></i>Удалить
-                            </a></li>
-                        {% elif product.status == 4 %}
-                            <!-- Архив -->
-                            <li>
-                                <form method="post" action="{% url 'app:change_status' product.pk 0 %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item d-flex align-items-center">
-                                        <i class="bi bi-arrow-up-circle me-2"></i>Опубликовать
-                                    </button>
-                                </form>
-                            </li>
-                            <li><a class="dropdown-item" href="{% url 'app:product_edit' product.pk %}">
-                                <i class="bi bi-pencil me-2"></i>Редактировать
-                            </a></li>
-                            <li><a class="dropdown-item text-danger" href="{% url 'app:product_delete' product.pk %}">
-                                <i class="bi bi-trash me-2"></i>Удалить
-                            </a></li>
-                        {% elif product.status == 2 %}
-                            <!-- Отклонено -->
-                            <li><a class="dropdown-item text-danger" href="{% url 'app:product_delete' product.pk %}">
-                                <i class="bi bi-trash me-2"></i>Удалить
-                            </a></li>
-                        {% elif product.status == 1 %}
-                            <li><a class="dropdown-item" href="{% url 'app:product_edit' product.pk %}">
-                                <i class="bi bi-pencil me-2"></i>Редактировать
-                            </a></li>
-                            <li><a class="dropdown-item text-danger" href="{% url 'app:product_delete' product.pk %}">
-                                <i class="bi bi-trash me-2"></i>Удалить
-                            </a></li>
-                        {% endif %}
-                    {% else %}
-                        <!-- Не автор поста -->
-                        <li>
-                            <form method="post" action="{% url 'app:toggle_favorite' product.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item d-flex align-items-center">
-                                    <i class="bi {% if is_favorite %}bi-heart-fill text-danger{% else %}bi-heart{% endif %} me-2"></i>
-                                    {% if is_favorite %}Удалить из избранного{% else %}Добавить в избранное{% endif %}
-                                </button>
-                            </form>
-                        </li>
-                        <li><a class="dropdown-item" href="#" onclick="shareProduct(event, {{ product.id }}, '{{ product.title|escapejs }}')">
-                            <i class="bi bi-share me-2"></i>Поделиться
-                        </a></li>
-                        <li><a class="dropdown-item" href="#" onclick="reportProduct(event)">
-                            <i class="bi bi-flag me-2"></i>Пожаловаться
-                        </a></li>
-                    {% endif %}
-                </ul>
-            </div>
-            {% endif %}
-            
-        </div>
-    </div> {% endcomment %}
+<div class="product-detail mt-3" 
+     data-is-author="{% if user == product.author %}true{% else %}false{% endif %}"
+     data-username="{{ product.author.username }}"
+     data-product-id="{{ product.id }}"
+     data-product-title="{{ product.title|escapejs }}"
+     data-product-price="{{ product.price }} {{ product.currency }}">
 
     <!-- Статус объявления (только для автора) -->
     {% if user == product.author and product.status != 3 %}
@@ -180,22 +100,7 @@
         </a>
     </div>
 
-    
 
-    <!-- Кнопки действий для не-автора -->
-    {% if user.is_authenticated and user != product.author %}
-    <div class="action-buttons mb-4">
-        <!-- Кнопка связи с продавцом -->
-        <button data-action="contact" 
-                data-username="{{ product.author.username }}" 
-                data-product-id="{{ product.id }}" 
-                data-product-title="{{ product.title|escapejs }}" 
-                data-product-price="{{ product.price }} {{ product.currency }}" 
-                class="btn btn-primary w-100">
-            <i class="bi bi-telegram me-2"></i>Связаться с продавцом
-        </button>
-    </div>
-    {% endif %}
     
 </div>
 
@@ -219,11 +124,5 @@
 {% endblock %}
 
 {% block scripts %}
-{% load static %}
-<!-- Добавляем data-атрибут для определения, является ли пользователь автором -->
-<script>
-    document.body.dataset.isAuthor = "{% if user == product.author %}true{% else %}false{% endif %}";
-</script>
-{% comment %} <script src="{% static 'app/js/share.js' %}"></script> {% endcomment %}
 <script src="{% static 'app/js/product_detail.js' %}"></script>
 {% endblock %}

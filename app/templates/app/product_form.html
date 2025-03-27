@@ -125,9 +125,11 @@
     </form>
 </div>
 
+<!-- Передаем данные в JavaScript через data-атрибуты -->
 <script>
     document.body.dataset.isEdit = "{% if is_edit %}true{% else %}false{% endif %}";
     document.body.dataset.hasImage = "{% if is_edit and object.image %}true{% else %}false{% endif %}";
+    document.body.dataset.imageInputId = "{{ form.image.id_for_label }}";
 </script>
 
 {% endblock %}

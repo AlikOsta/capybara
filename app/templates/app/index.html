@@ -10,10 +10,11 @@
     <div class="mb-3">
         <form method="get" class="search-form">
             <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
+                <span class="input-group-text bg-white border-end-0 search-icon">
+                    <i class="bi bi-search search-icon-text"></i>
                 </span>
-                <input type="text" name="q" class="form-control border-start-0 shadow-none" placeholder="Поиск..." value="{{ query }}">
+                <input type="text" name="q" class="form-control border-start-0 shadow-none search-input" 
+                       placeholder="Поиск..." value="{{ query }}">
                 <button class="btn btn-primary d-none" type="submit">Найти</button>
             </div>
         </form>
@@ -31,17 +32,16 @@
                         <div class="category-card card h-100 border-0 position-relative overflow-hidden bg-light">
                             <div class="card-body p-3 text-center">
                                 {% if category.image %}
-                                    <!-- Обновляем теги img для категорий -->
                                     <div class="category-icon mb-2">
-                                        <img src="{{ category.image.url }}" class="img-fluid" alt="{{ category.name }}" style="max-height: 40px;" loading="lazy">
+                                        <img src="{{ category.image.url }}" class="img-fluid" alt="{{ category.name }}" 
+                                             style="max-height: 40px;" loading="lazy">
                                     </div>
                                 {% else %}
-                                <div class="category-icon mb-2">
-                                    <i class="bi bi-grid fs-3"></i>
-                                </div>
+                                    <div class="category-icon mb-2">
+                                        <i class="bi bi-grid fs-3"></i>
+                                    </div>
                                 {% endif %}
-                                <p class="card-text small fw-medium text-dark mb-0">{{ category.name }}</p>
-                            
+                                <p class="card-title small fw-medium text-dark mb-0">{{ category.name }}</p>
                             </div>
                         </div>
                     </a>
@@ -52,9 +52,9 @@
     </div>
     {% endcache %}
 
-    <!-- Заголовок с количеством -->
+    <!-- Заголовок с количеством новых объявлений -->
     <div class="d-flex align-items-center mb-3">
-        <h5 class="mb-0 fw-bold">Новые объявления</h5>
+        <h5 class="fw-bold" style="color: var(--tg-theme-button-color, #2481cc);">Новые объявления</h5>
         <span class="ms-2 badge bg-light text-dark rounded-pill">{{ total_count }}</span>
     </div>
 
@@ -69,9 +69,6 @@
             <div class="empty-state">
                 <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
                 <p class="text-muted">Объявления не найдены</p>
-                {% if query %}
-                <a href="{% url 'app:index' %}" class="btn btn-outline-primary mt-2">Сбросить поиск</a>
-                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -91,13 +88,14 @@
     </div>
 
     <!-- Кнопка "Наверх" -->
-    <button id="back-to-top" class="btn btn-primary rounded-circle position-fixed" style="bottom: 80px; right: 20px; display: none; width: 50px; height: 50px;">
+    <button id="back-to-top" class="btn btn-primary rounded-circle position-fixed" 
+            style="bottom: 80px; right: 20px; display: none; width: 50px; height: 50px;">
         <i class="bi bi-arrow-up"></i>
     </button>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<!-- Скрипт для бесконечной прокрутки -->
 <script src="{% static 'app/js/infinite-scroll.js' %}"></script>
-
 {% endblock %}
