@@ -1,0 +1,205 @@
+<!-- templates/admin/views_stats.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<style>
+    .stats-container {
+        padding: 20px;
+    }
+    .stats-card {
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .stats-number {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .stats-label {
+        color: #666;
+    }
+    .chart-container {
+        height: 300px;
+        margin-bottom: 30px;
+    }
+    .period-selector {
+        margin-bottom: 20px;
+    }
+    .period-selector .btn {
+        margin-right: 10px;
+    }
+    .btn-primary {
+        background-color: #2481cc;
+        border-color: #2481cc;
+    }
+    .btn-outline-primary {
+        color: #2481cc;
+        border-color: #2481cc;
+    }
+    .btn-outline-primary:hover {
+        background-color: #2481cc;
+        border-color: #2481cc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stats-container">
+    <h1>Статистика просмотров и избранного</h1>
+    
+    <!-- Общая статистика -->
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-number" id="total-views">-</div>
+            <div class="stats-label">Всего просмотров</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number" id="total-favorites">-</div>
+            <div class="stats-label">Добавлено в избранное</div>
+        </div>
+    </div>
+    
+    <!-- Селектор периода -->
+    <div class="period-selector">
+        <button class="btn btn-outline-primary" data-period="day">День</button>
+        <button class="btn btn-outline-primary" data-period="week">Неделя</button>
+        <button class="btn btn-primary" data-period="month">Месяц</button>
+        <button class="btn btn-outline-primary" data-period="year">Год</button>
+    </div>
+    
+    <!-- График просмотров и избранного -->
+    <div class="stats-card">
+        <h2>Просмотры и избранное</h2>
+        <div class="chart-container">
+            <canvas id="viewsChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Топ популярных объявлений -->
+    <div class="stats-card">
+        <h2>Самые популярные объявления</h2>
+        <div class="table-responsive">
+            <table class="table table-striped" id="popular-products-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Категория</th>
+                        <th>Просмотры</th>
+                        <th>В избранном</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="text-center">Загрузка данных...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let viewsChart;
+        const periodButtons = document.querySelectorAll('.period-selector .btn');
+        
+        // Обработчик для кнопок периода
+        periodButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                periodButtons.forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                });
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                
+                loadData(this.dataset.period);
+            });
+        });
+        
+        // Загрузка данных с сервера
+        function loadData(period = 'month') {
+            fetch(`/admin/stats/api/views/?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateViewsChart(data);
+                    updateStats(data);
+                    updatePopularProducts(data);
+                })
+                .catch(error => console.error('Ошибка загрузки данных:', error));
+        }
+        
+        // Обновление графика просмотров и избранного
+        function updateViewsChart(data) {
+            const ctx = document.getElementById('viewsChart').getContext('2d');
+            
+            if (viewsChart) {
+                viewsChart.destroy();
+            }
+            
+            viewsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Обновление статистики
+        function updateStats(data) {
+            document.getElementById('total-views').textContent = data.total_views;
+            document.getElementById('total-favorites').textContent = data.total_favorites;
+        }
+        
+        // Обновление таблицы популярных объявлений
+        function updatePopularProducts(data) {
+            const tableBody = document.querySelector('#popular-products-table tbody');
+            
+            if (data.popular_products && data.popular_products.length > 0) {
+                let html = '';
+                
+                data.popular_products.forEach(product => {
+                    html += `
+                        <tr>
+                            <td><a href="/admin/app/product/${product.id}/change/">${product.title}</a></td>
+                            <td>${product.category_name}</td>
+                            <td>${product.views_count}</td>
+                            <td>${product.favorites_count}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = html;
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Нет данных</td></tr>';
+            }
+        }
+        
+        // Загружаем данные при загрузке страницы
+        loadData();
+    });
+</script>
+{% endblock %}
+
+

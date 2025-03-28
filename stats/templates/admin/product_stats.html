@@ -1,0 +1,196 @@
+<!-- templates/admin/product_stats.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<style>
+    .stats-container {
+        padding: 20px;
+    }
+    .stats-card {
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .stats-number {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .stats-label {
+        color: #666;
+    }
+    .chart-container {
+        height: 300px;
+        margin-bottom: 30px;
+    }
+    .period-selector {
+        margin-bottom: 20px;
+    }
+    .period-selector .btn {
+        margin-right: 10px;
+    }
+    .btn-primary {
+        background-color: #2481cc;
+        border-color: #2481cc;
+    }
+    .btn-outline-primary {
+        color: #2481cc;
+        border-color: #2481cc;
+    }
+    .btn-outline-primary:hover {
+        background-color: #2481cc;
+        border-color: #2481cc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stats-container">
+    <h1>Статистика объявлений</h1>
+    
+    <!-- Общая статистика -->
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-number" id="total-products">-</div>
+            <div class="stats-label">Всего объявлений</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-number" id="active-products">-</div>
+            <div class="stats-label">Активных объявлений</div>
+        </div>
+    </div>
+    
+    <!-- Селектор периода -->
+    <div class="period-selector">
+        <button class="btn btn-outline-primary" data-period="day">День</button>
+        <button class="btn btn-outline-primary" data-period="week">Неделя</button>
+        <button class="btn btn-primary" data-period="month">Месяц</button>
+        <button class="btn btn-outline-primary" data-period="year">Год</button>
+    </div>
+    
+    <!-- График объявлений -->
+    <div class="stats-card">
+        <h2>Новые объявления</h2>
+        <div class="chart-container">
+            <canvas id="productsChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- График по статусам -->
+    <div class="stats-card">
+        <h2>Объявления по статусам</h2>
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let productsChart, statusChart;
+        const periodButtons = document.querySelectorAll('.period-selector .btn');
+        
+        // Обработчик для кнопок периода
+        periodButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                periodButtons.forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                });
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                
+                loadData(this.dataset.period);
+            });
+        });
+        
+        // Загрузка данных с сервера
+        function loadData(period = 'month') {
+            fetch(`/admin/stats/api/products/?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateProductsChart(data);
+                    updateStatusChart(data);
+                    updateStats(data);
+                })
+                .catch(error => console.error('Ошибка загрузки данных:', error));
+        }
+        
+        // Обновление графика объявлений
+        function updateProductsChart(data) {
+            const ctx = document.getElementById('productsChart').getContext('2d');
+            
+            if (productsChart) {
+                productsChart.destroy();
+            }
+            
+            productsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Обновление графика статусов
+        function updateStatusChart(data) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            if (statusChart) {
+                statusChart.destroy();
+            }
+            
+            statusChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.status_labels,
+                    datasets: [{
+                        data: data.status_data,
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 0.7)',  // На модерации - желтый
+                            'rgba(54, 162, 235, 0.7)',  // Одобрено - синий
+                            'rgba(255, 99, 132, 0.7)',  // Отклонено - красный
+                            'rgba(75, 192, 192, 0.7)',  // Опубликовано - зеленый
+                            'rgba(153, 102, 255, 0.7)'  // Архив - фиолетовый
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // Обновление статистики
+        function updateStats(data) {
+            document.getElementById('total-products').textContent = data.total_products;
+            document.getElementById('active-products').textContent = data.active_products;
+        }
+        
+        // Загружаем данные при загрузке страницы
+        loadData();
+    });
+</script>
+{% endblock %}
