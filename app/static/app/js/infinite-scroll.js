@@ -1,17 +1,14 @@
-/**
- * Модуль бесконечной ленты для загрузки объявлений
- * Зависит от функций из main.js
- */
+
 const InfiniteScrollModule = {
     settings: {
         isLoading: false,
         offset: 0,
         limit: 20,
         hasMore: true,
-        loadThreshold: 70, // % прокрутки для загрузки
-        observerThreshold: 0.2, // порог видимости для IntersectionObserver
-        animationDelay: 5, // задержка для анимации появления элементов
-        loadingTimeout: null // таймаут для debounce загрузки
+        loadThreshold: 70, 
+        observerThreshold: 0.2, 
+        animationDelay: 5, 
+        loadingTimeout: null
     },
 
     elements: {
@@ -24,23 +21,19 @@ const InfiniteScrollModule = {
     },
 
     init() {
-        // Получаем элементы DOM
         const { productsContainer, loaderElement, errorElement, retryButton } = this.elements;
         this.elements.productsContainer = document.getElementById('products-container');
         this.elements.loaderElement = document.getElementById('loader');
-        this.elements.endMessageElement = document.getElementById('end-message'); // если требуется сообщение об окончании
+        this.elements.endMessageElement = document.getElementById('end-message');
         this.elements.errorElement = document.getElementById('error-message');
         this.elements.backToTopButton = document.getElementById('back-to-top');
         this.elements.retryButton = document.getElementById('retry-button');
 
-        // Если нет контейнера для продуктов, выходим
         if (!this.elements.productsContainer) return;
 
-        // Получаем параметры из data-атрибутов
         this.settings.offset = parseInt(this.elements.productsContainer.dataset.offset || '20', 10);
         this.settings.hasMore = this.elements.productsContainer.dataset.hasMore === 'true';
 
-        // Инициализируем IntersectionObserver и обработчики событий
         this.initIntersectionObserver();
         this.initEventListeners();
     },
@@ -110,7 +103,6 @@ const InfiniteScrollModule = {
                     this.settings.offset = data.next_offset || this.settings.offset;
                     this.settings.hasMore = data.has_more;
 
-                    // Если больше нет данных, показываем сообщение (если элемент существует)
                     if (!this.settings.hasMore && this.elements.endMessageElement) {
                         this.elements.endMessageElement.style.display = 'block';
                     }
@@ -132,11 +124,9 @@ const InfiniteScrollModule = {
         const urlParams = new URLSearchParams(window.location.search);
         const params = new URLSearchParams();
 
-        // Добавляем параметры пагинации
         params.append('offset', this.settings.offset);
         params.append('limit', this.settings.limit);
 
-        // Добавляем все текущие параметры URL, исключая 'page'
         for (const [key, value] of urlParams.entries()) {
             if (key !== 'page') {
                 params.append(key, value);
@@ -164,7 +154,6 @@ const InfiniteScrollModule = {
 
         const newProductItems = tempContainer.querySelectorAll('.product-item');
         newProductItems.forEach((item, index) => {
-            // Устанавливаем начальное состояние для анимации
             item.style.opacity = '0';
             item.style.transform = 'translateY(20px)';
             this.elements.productsContainer.appendChild(item);
@@ -175,7 +164,6 @@ const InfiniteScrollModule = {
             }, this.settings.animationDelay * (index + 1));
         });
 
-        // Если функция для инициализации кнопок избранного существует, вызываем её
         if (typeof window.initFavoriteButtons === 'function') {
             window.initFavoriteButtons();
         }
@@ -194,7 +182,6 @@ const InfiniteScrollModule = {
     }
 };
 
-// Инициализация модуля при загрузке DOM
 document.addEventListener('DOMContentLoaded', () => {
     InfiniteScrollModule.init();
 });

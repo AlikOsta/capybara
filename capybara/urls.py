@@ -8,6 +8,7 @@ from django.urls import path, include
 
 # Основные URL-маршруты
 urlpatterns = [
+    path('admin/stats/', include('stats.urls', namespace='stats')), 
     path('admin/', admin.site.urls),
     path('user/', include('user_capybara.urls')),
     path('', include('app.urls')),

@@ -18,6 +18,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_
 
 # Приложения
 DJANGO_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,6 +38,7 @@ LOCAL_APPS = [
     'app',
     'user_capybara',
     'bot_capybara',
+    'stats',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -188,3 +190,121 @@ CACHES = {
 
 # Время кэширования в секундах
 CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 минут
+
+# Настройки Jazzmin
+JAZZMIN_SETTINGS = {
+    # Заголовок
+    "site_title": "Capybara Admin",
+    "site_header": "Capybara",
+    "site_brand": "Capybara",
+    
+    # Цвета и тема
+    "site_logo": "app/img/logo.png",  # Логотип (если есть)
+    "welcome_sign": "Добро пожаловать в админ-панель Capybara",
+    "copyright": "Capybara © 2023",
+    
+    # Верхнее меню (опционально)
+    "topmenu_links": [
+        {"name": "Главная", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Сайт", "url": "/", "new_window": True},
+    ],
+    
+    # Боковое меню
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    
+    # Пользовательские ссылки в боковом меню
+    "custom_links": {
+        "app": [
+            {
+                "name": "Статистика пользователей", 
+                "url": "/admin/stats/user_stats/",  # Используйте абсолютный путь
+                "icon": "fas fa-chart-line"
+            },
+            {
+                "name": "Статистика объявлений", 
+                "url": "/admin/stats/product_stats/",  # Используйте абсолютный путь
+                "icon": "fas fa-chart-bar"
+            },
+            {
+                "name": "Статистика просмотров", 
+                "url": "/admin/stats/views_stats/",  # Используйте абсолютный путь
+                "icon": "fas fa-eye"
+            },
+        ]
+    },
+    
+    # Иконки для приложений
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "app.product": "fas fa-shopping-cart",
+        "app.category": "fas fa-list",
+        "app.favorite": "fas fa-heart",
+        "app.productview": "fas fa-eye",
+    },
+    
+    # Настройка дашборда
+    "dashboard_charts": True,  # Включаем графики на дашборде
+    "changeform_format": "horizontal_tabs",
+    "show_ui_builder": True,  # Включаем UI Builder для настройки
+}
+
+# Настройки UI для Jazzmin
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-primary",
+    "accent": "accent-primary",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
+}
+
+JAZZMIN_SETTINGS.update({
+    # Настройка дашборда
+    "dashboard_charts": True,
+    "dashboard_widgets": [
+        {
+            "name": "Статистика пользователей",
+            "url": "stats:user_stats",  
+            "icon": "fas fa-users",
+            "description": "Статистика регистраций пользователей",
+        },
+        {
+            "name": "Статистика объявлений",
+            "url": "admin:stats_product_stats",
+            "icon": "fas fa-shopping-cart",
+            "description": "Статистика создания объявлений",
+        },
+        {
+            "name": "Статистика просмотров",
+            "url": "stats:views_stats",
+            "icon": "fas fa-eye",
+            "description": "Статистика просмотров и избранного",
+        },
+    ],
+})
