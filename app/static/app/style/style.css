@@ -29,6 +29,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    padding-bottom: 50px !important; /* Отступ для нижнего меню */
 }
 
 a {
@@ -157,6 +158,19 @@ a:hover {
     background-color: white;
 }
 
+.search-input:focus {
+    box-shadow: none;
+    border-color: var(--tg-theme-button-color);
+}
+
+.search-icon {
+    color: var(--tg-theme-hint-color);
+}
+
+.search-input:focus + .search-icon {
+    color: var(--tg-theme-button-color);
+}
+
 /* Стили для категорий */
 .categories-container {
     position: relative;
@@ -236,22 +250,10 @@ a:hover {
     z-index: 1;
 }
 
-.badge-pending {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.badge-approved {
-    background-color: #0dcaf0;
-}
-
-.badge-rejected {
-    background-color: #dc3545;
-}
-
-.badge-archived {
-    background-color: #6c757d;
-}
+.badge-pending { background-color: #ffc107; color: #212529; }
+.badge-approved { background-color: #0dcaf0; }
+.badge-rejected { background-color: #dc3545; }
+.badge-archived { background-color: #6c757d; }
 
 .favorite-btn {
     width: 36px;
@@ -456,18 +458,6 @@ a:hover {
     margin-top: 0.25rem;
 }
 
-.current-image-preview {
-    border-radius: var(--button-border-radius);
-    overflow: hidden;
-    display: inline-block;
-}
-
-.product-form .btn-primary {
-    border-radius: var(--button-border-radius);
-    font-weight: 500;
-    font-size: 1rem;
-}
-
 /* Стили для предпросмотра изображения */
 .image-preview-container {
     width: 100%;
@@ -477,15 +467,16 @@ a:hover {
     background-color: var(--tg-theme-secondary-bg-color);
 }
 
-.img-preview {
+.img-preview, .img-preview-placeholder {
     width: 100%;
     height: 100%;
+}
+
+.img-preview {
     object-fit: contain;
 }
 
 .img-preview-placeholder {
-    width: 100%;
-    height: 100%;
     background-color: var(--tg-theme-secondary-bg-color);
 }
 
@@ -498,43 +489,6 @@ a:hover {
 
 .custom-file-upload label:hover {
     background-color: rgba(var(--tg-theme-button-color-rgb), 0.1);
-}
-
-/* Стили для страницы подтверждения удаления */
-.delete-confirmation-page .btn-back {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color var(--transition-duration) ease;
-}
-
-.delete-confirmation-page .btn-back:hover {
-    background-color: var(--tg-theme-secondary-bg-color);
-}
-
-.delete-confirmation-content {
-    padding: 20px;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.delete-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background-color: rgba(var(--bs-danger-rgb), 0.1);
-}
-
-.delete-confirmation-page .btn {
-    border-radius: var(--button-border-radius);
-    padding: 10px 20px;
 }
 
 /* Стили для страницы избранного */
@@ -562,14 +516,21 @@ a:hover {
     margin-right: auto;
 }
 
-.empty-favorites .btn {
-    border-radius: var(--button-border-radius);
-    padding: 10px 20px;
-}
-
 /* Стили для футера */
 footer {
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+footer.fixed-bottom {
+    bottom: 0 !important;
+    z-index: 1000 !important;
+    position: fixed !important;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+footer.fixed-bottom.hidden {
+    transform: translateY(100%);
 }
 
 /* Стили для индикатора загрузки страницы */
@@ -666,6 +627,62 @@ footer {
     color: white !important;
 }
 
+/* Улучшения для скроллбара */
+.row.flex-nowrap.overflow-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.row.flex-nowrap.overflow-auto::-webkit-scrollbar {
+    height: 4px;
+}
+
+.row.flex-nowrap.overflow-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.row.flex-nowrap.overflow-auto::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+/* Стили для Telegram Web App MainButton */
+.telegram-webapp-button-visible main {
+    padding-bottom: 100px !important;
+}
+
+.main-button-visible main {
+    padding-bottom: 70px !important;
+}
+
+body:after {
+    content: '';
+    display: block;
+    height: 0;
+    transition: height 0.3s ease;
+}
+
+body.main-button-visible:after {
+    height: 70px;
+}
+
+/* Анимация для MainButton */
+.telegram-main-button-animation {
+    transition: transform 0.3s ease, opacity 0.3s ease !important;
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+}
+
+.telegram-main-button-animation.hidden {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+}
+
+/* Стили для динамического поиска */
+.product-item {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
 /* Адаптивные стили */
 @media (max-width: 576px) {
     .container {
@@ -696,25 +713,6 @@ footer {
     }
 }
 
-/* Улучшения для скроллбара */
-.row.flex-nowrap.overflow-auto {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-.row.flex-nowrap.overflow-auto::-webkit-scrollbar {
-    height: 4px;
-}
-
-.row.flex-nowrap.overflow-auto::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.row.flex-nowrap.overflow-auto::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-}
-
 /* Темная тема */
 [data-bs-theme="dark"] {
     --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -735,125 +733,6 @@ footer {
     background-color: var(--tg-theme-secondary-bg-color);
 }
 
-body {
-    padding-bottom: 50px !important; /* Отступ только для нижнего меню */
-}
-
-/* Фиксированное положение нижней навигации */
-footer.fixed-bottom {
-    bottom: 0 !important;
-    z-index: 1000 !important; /* Высокий z-index, чтобы меню было поверх других элементов */
-    position: fixed !important;
-    width: 100%;
-}
-
-/* Стили для Telegram Web App MainButton */
-.telegram-webapp-button-visible main {
-    padding-bottom: 100px !important; /* Дополнительный отступ при видимой кнопке */
-}
-
-/* Стили для плавного скрытия/показа нижнего меню */
-footer.fixed-bottom {
-    transition: transform 0.3s ease;
-    z-index: 1000;
-}
-
-/* Класс для скрытия нижнего меню */
-footer.fixed-bottom.hidden {
-    transform: translateY(100%);
-}
-
-/* Дополнительный отступ для контента, когда MainButton видима */
-.main-button-visible main {
-    padding-bottom: 70px !important;
-}
-
-/* Стили для плавного скрытия/показа нижнего меню */
-footer.fixed-bottom {
-    transition: transform 0.3s ease;
-    z-index: 1000;
-    transform: translateY(0);
-}
-
-/* Класс для скрытия нижнего меню */
-footer.fixed-bottom.hidden {
-    transform: translateY(100%);
-}
-
-/* Стили для MainButton Telegram */
-body:after {
-    content: '';
-    display: block;
-    height: 0;
-    transition: height 0.3s ease;
-}
-
-body.main-button-visible:after {
-    height: 70px; /* Высота для отступа под MainButton */
-}
-
-/* Анимация для MainButton */
-.telegram-main-button-animation {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.telegram-main-button-animation.hidden {
-    transform: translateY(100%);
-    opacity: 0;
-}
-
-
-/* Стили для плавного скрытия/показа нижнего меню */
-footer.fixed-bottom {
-    transition: transform 0.3s ease;
-    z-index: 1000;
-    transform: translateY(0);
-}
-
-/* Класс для скрытия нижнего меню */
-footer.fixed-bottom.hidden {
-    transform: translateY(100%);
-}
-
-/* Стили для MainButton Telegram */
-body:after {
-    content: '';
-    display: block;
-    height: 0;
-    transition: height 0.3s ease;
-}
-
-body.main-button-visible:after {
-    height: 70px; /* Высота для отступа под MainButton */
-}
-
-/* Анимация для MainButton */
-.telegram-main-button-animation {
-    transition: transform 0.3s ease, opacity 0.3s ease !important;
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-}
-
-.telegram-main-button-animation.hidden {
-    transform: translateY(100%) !important;
-    opacity: 0 !important;
-}
-
-/* Стили для плавного скрытия/показа нижнего меню */
-footer.fixed-bottom {
-    transition: transform 0.3s ease;
-    z-index: 1000;
-    transform: translateY(0);
-}
-
-/* Класс для скрытия нижнего меню */
-footer.fixed-bottom.hidden {
-    transform: translateY(100%);
-}
-
-/* Адаптивные стили для темной темы */
 [data-bs-theme="dark"] .card-text.small.fw-medium {
     color: var(--tg-theme-text-color) !important;
 }
@@ -888,20 +767,21 @@ footer.fixed-bottom.hidden {
     color: var(--tg-theme-text-color) !important;
 }
 
-.product-item {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+/* Стили для уведомлений */
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    min-width: 250px;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.search-input:focus {
-    box-shadow: none;
-    border-color: var(--tg-theme-button-color, #2481cc);
-}
-
-.search-icon {
-    color: var(--tg-theme-hint-color, #999999);
-}
-
-.search-input:focus + .search-icon {
-    color: var(--tg-theme-button-color, #2481cc);
+.notification-toast.show {
+    transform: translateY(0);
+    opacity: 1;
 }
 

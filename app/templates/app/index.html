@@ -28,21 +28,25 @@
         <div class="categories-container">
             <div class="row flex-nowrap overflow-auto g-2 pb-2">
                 {% for category in categories %}
-                <div class="col-auto" style="min-width: 120px;">
+                <div class="col-auto" style="min-width: 130px;">
                     <a href="{% url 'app:category_detail' category.slug %}" class="text-decoration-none">
-                        <div class="category-card card h-100 border-0 position-relative overflow-hidden bg-light">
-                            <div class="card-body p-3 text-center">
+                        <div class="card h-100 border-0 position-relative overflow-hidden bg-light rounded-3">
+                            <!-- Фоновое изображение занимает весь блок -->
+                            <div class="position-absolute w-100 h-100 d-flex justify-content-end align-items-end p-2">
                                 {% if category.image %}
-                                    <div class="category-icon mb-2">
-                                        <img src="{{ category.image.url }}" class="img-fluid" alt="{{ category.name }}" 
-                                             style="max-height: 40px;" loading="lazy">
-                                    </div>
+                                    <img src="{{ category.image.url }}" class="img-fluid" alt="{{ category.name }}"
+                                        style="max-height: 70px; max-width: 70px; opacity: 0.8;" loading="lazy">
                                 {% else %}
-                                    <div class="category-icon mb-2">
-                                        <i class="bi bi-grid fs-3"></i>
-                                    </div>
+                                    <i class="bi bi-grid fs-1 text-primary opacity-50"></i>
                                 {% endif %}
-                                <p class="card-title small fw-medium text-dark mb-0">{{ category.name }}</p>
+                            </div>
+                            
+                            <!-- Название категории поверх изображения с полупрозрачным фоном -->
+                            <div class="card-body position-relative z-1 d-flex align-items-start p-2" style="height: 100px;">
+                                <div class="bg-light bg-opacity-75 rounded p-1">
+                                    <p class="card-title fw-medium mb-0" style="color: var(--tg-theme-button-color, #2481cc);">{{ category.name }}</p>
+
+                                </div>
                             </div>
                         </div>
                     </a>
@@ -51,6 +55,8 @@
             </div>
         </div>
     </div>
+
+
     {% endcache %}
 
     <!-- Заголовок с количеством новых объявлений -->
