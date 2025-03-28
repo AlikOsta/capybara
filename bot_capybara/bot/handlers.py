@@ -16,6 +16,10 @@ def get_product_by_id(product_id):
     """
     try:
         logger.info(f"Поиск продукта с ID {product_id}")
+        # Добавляем логирование для отладки
+        all_products = list(Product.objects.all().values('id', 'title'))
+        logger.info(f"Все товары в базе: {all_products}")
+        
         product = Product.objects.filter(id=product_id).first()
         if product:
             logger.info(f"Продукт найден: {product.title}, статус: {product.status}")
@@ -31,8 +35,9 @@ def get_product_by_id(product_id):
             logger.warning(f"Продукт с ID {product_id} не найден")
             return None
     except Exception as e:
-        logger.error(f"Ошибка при получении продукта: {e}")
+        logger.error(f"Ошибка при получении продукта: {e}", exc_info=True)
         return None
+    
 
 @sync_to_async
 def get_or_create_user(telegram_id, username, first_name, last_name):
@@ -61,10 +66,9 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         args = context.args
         
         logger.info(f"Пользователь {user.id} ({user.username}) вызвал команду /start с аргументами: {args}")
-        
-        # Если есть аргументы, проверяем, не является ли это deep link
+
         if args and args[0].startswith('product_'):
-            # Извлекаем ID продукта
+
             try:
                 product_id = int(args[0].split('_')[1])
                 logger.info(f"Запрошен продукт с ID {product_id}")
@@ -74,16 +78,12 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                 if product_data:
                     logger.info(f"Продукт найден: {product_data['title']}")
                     
-                    # Формируем правильный URL для продукта
-                    # Используем базовый URL без /user/mini-app/
                     base_url = "https://capybarashop.store"
-                    
-                    # Для мини-приложения используем полный URL
+
                     mini_app_url = settings.TELEGRAM_MINI_APP_URL
-                    
-                    # URL для авторизации с редиректом на продукт
-                    auth_url = f"{base_url}/user/auth/telegram/"
-                    
+
+                    auth_url = f"{base_url}/user/mini-app/?product_id={product_id}"
+
                     keyboard = [
                         [InlineKeyboardButton("Открыть объявление", web_app=WebAppInfo(url=auth_url))],
                         [InlineKeyboardButton("Все объявления", web_app=WebAppInfo(url=mini_app_url))]

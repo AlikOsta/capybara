@@ -42,6 +42,10 @@
             // Получаем данные инициализации
             const initData = tg.initData;
             
+            // Получаем ID товара из URL параметров
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('product_id');
+            
             if (!initData) {
                 // В случае ошибки просто перенаправляем на главную
                 tg.MainButton.setText('Перейти на главную');
@@ -73,8 +77,13 @@
                 localStorage.setItem('access_token', data.access);
                 localStorage.setItem('refresh_token', data.refresh);
                 
-                // Сразу перенаправляем на главную страницу
-                window.location.href = '/';
+                // Если есть ID товара, перенаправляем на него
+                if (productId) {
+                    window.location.href = '/product/' + productId + '/';
+                } else {
+                    // Иначе перенаправляем на главную страницу
+                    window.location.href = '/';
+                }
             })
             .catch(error => {
                 // В случае ошибки просто перенаправляем на главную
