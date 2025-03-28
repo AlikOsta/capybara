@@ -66,12 +66,12 @@ class Product(models.Model):
         if self.image and not self.id:  
             img = Image.open(self.image)
             
-            if img.height > 1200 or img.width > 1200:
-                output_size = (1200, 1200)
+            if img.height > 800 or img.width > 800:
+                output_size = (800, 800)
                 img.thumbnail(output_size)
             
             output = BytesIO()
-            img.save(output, format=img.format, quality=85, optimize=True)
+            img.save(output, format=img.format, quality=65, optimize=True)
             output.seek(0)
             
             self.image = ContentFile(output.read(), name=self.image.name)

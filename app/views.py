@@ -140,7 +140,7 @@ class ProductDetailView(DetailView):
 
 
 # Кэширование страницы категории на 15 минут
-@method_decorator(cache_page(60 * 15), name='dispatch')
+# @method_decorator(cache_page(60 * 15), name='dispatch')
 class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для детального просмотра категории."""
     model = Product
