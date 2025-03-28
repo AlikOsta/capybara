@@ -888,4 +888,20 @@ footer.fixed-bottom.hidden {
     color: var(--tg-theme-text-color) !important;
 }
 
+.product-item {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.search-input:focus {
+    box-shadow: none;
+    border-color: var(--tg-theme-button-color, #2481cc);
+}
+
+.search-icon {
+    color: var(--tg-theme-hint-color, #999999);
+}
+
+.search-input:focus + .search-icon {
+    color: var(--tg-theme-button-color, #2481cc);
+}
 

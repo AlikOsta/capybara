@@ -8,17 +8,18 @@
 <div class="mt-3">
     <!-- Поисковая строка -->
     <div class="mb-3">
-        <form method="get" class="search-form">
+        <form id="search-form" class="search-form">
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0 search-icon">
                     <i class="bi bi-search search-icon-text"></i>
                 </span>
-                <input type="text" name="q" class="form-control border-start-0 shadow-none search-input" 
-                       placeholder="Поиск..." value="{{ query }}">
+                <input type="text" name="q" id="search-input" class="form-control border-start-0 shadow-none search-input" 
+                    placeholder="Поиск..." value="{{ query }}">
                 <button class="btn btn-primary d-none" type="submit">Найти</button>
             </div>
         </form>
     </div>
+
 
     {% cache 60 product_list %}
     <!-- Категории -->
@@ -98,4 +99,5 @@
 {% block scripts %}
 <!-- Скрипт для бесконечной прокрутки -->
 <script src="{% static 'app/js/infinite-scroll.js' %}"></script>
+<script src="{% static 'app/js/index-search.js' %}"></script>
 {% endblock %}

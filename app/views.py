@@ -340,6 +340,7 @@ class ProductListAPIView(View):
         offset = int(request.GET.get('offset', 0))
         limit = int(request.GET.get('limit', 10))
         query = request.GET.get('q', '')
+        
         queryset = Product.objects.filter(status=3).select_related(
             'author', 'category', 'currency', 'city'
         )
@@ -356,6 +357,7 @@ class ProductListAPIView(View):
         favorite_products = []
         if request.user.is_authenticated:
             favorite_products = list(request.user.favorites.values_list('product_id', flat=True))
+            
         html = render_to_string(
             'app/includes/product_cards_list.html',
             {
@@ -364,6 +366,7 @@ class ProductListAPIView(View):
                 'request': request
             }
         )
+        
         has_more = (offset + limit) < total_count
         return JsonResponse({
             'html': html,
@@ -371,6 +374,7 @@ class ProductListAPIView(View):
             'total_count': total_count,
             'next_offset': offset + limit if has_more else None
         })
+
 
 
 class CategoryProductsAPIView(View):
