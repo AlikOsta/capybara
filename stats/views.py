@@ -11,22 +11,22 @@ from user_capybara.models import TelegramUser
 @staff_member_required
 def dashboard_stats(request):
     """Отображает общую панель статистики."""
-    return render(request, 'admin/dashboard_stats.html')
+    return render(request, 'admin_stats/dashboard_stats.html')
 
 @staff_member_required
 def user_stats(request):
     """Отображает статистику пользователей."""
-    return render(request, 'admin/user_stats.html')
+    return render(request, 'admin_stats/user_stats.html')
 
 @staff_member_required
 def product_stats(request):
     """Отображает статистику объявлений."""
-    return render(request, 'admin/product_stats.html')
+    return render(request, 'admin_stats/product_stats.html')
 
 @staff_member_required
 def views_stats(request):
     """Отображает статистику просмотров и избранного."""
-    return render(request, 'admin/views_stats.html')
+    return render(request, 'admin_stats/views_stats.html')
 
 @staff_member_required
 def api_users_stats(request):
