@@ -11,7 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
-            window.history.back();
+            
+            // Проверяем, есть ли история браузера
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // Если истории нет, перенаправляем на главную страницу
+                window.location.href = '/';
+            }
         });
     }
 
@@ -32,22 +39,42 @@ document.addEventListener('DOMContentLoaded', function() {
     mainButton.hide(); // Изначально скрываем кнопку
 
     // Параметры анимации
-    const ANIMATION_DURATION = 100;
-
+    const ANIMATION_DURATION = 50;
+    
     // Обработчик клика по MainButton
     mainButton.onClick(function() {
         if (tg.HapticFeedback) {
             tg.HapticFeedback.impactOccurred('medium');
         }
+        
         if (typeof window.contactSeller === 'function') {
             window.contactSeller(new Event('click'), username, productId, productTitle, productPrice);
         } else {
-            const productUrl = `https://t.me/CapybaraMPRobot?start=product_${productId}`;
-            let messageText = `Здравствуйте! Меня интересует "${productTitle}" за ${productPrice}.\nЕщё актуально?\n\n`;
+            const productUrl = `https://t.me/CapybaraMarketplaceRobot?start=product_${productId}`;
+            let messageText = `Здравствуйте!\n Меня интересует "${productTitle}" за ${productPrice}.\n\nЕщё актуально?\n\n`;
             messageText += `Ссылка на объявление: ${productUrl}`;
-            const encodedText = encodeURIComponent(messageText);
-            const contactUrl = `https://t.me/${username}?text=${encodedText}`;
-            window.open(contactUrl, '_blank');
+            
+            // Используем Telegram API для отправки сообщения без закрытия мини-приложения
+            if (tg.openTelegramLink) {
+                // Этот метод сворачивает WebApp, но не закрывает его полностью
+                tg.openTelegramLink(`https://t.me/${username}?text=${encodeURIComponent(messageText)}`);
+            } else {
+                // Запасной вариант, если openTelegramLink не доступен
+                tg.sendData(JSON.stringify({
+                    action: 'send_message',
+                    username: username,
+                    message: messageText
+                }));
+                
+                // Показываем уведомление пользователю
+                if (tg.showPopup) {
+                    tg.showPopup({
+                        title: 'Сообщение',
+                        message: 'Переход в чат с продавцом...',
+                        buttons: [{type: 'ok'}]
+                    });
+                }
+            }
         }
     });
 
