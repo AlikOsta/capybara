@@ -199,7 +199,7 @@ JAZZMIN_SETTINGS = {
     "site_brand": "Capybara",
     
     # Цвета и тема
-    "site_logo": "app/img/logo.png",  # Логотип (если есть)
+    "site_logo": "images/logo.png",  # Логотип (если есть)
     "welcome_sign": "Добро пожаловать в админ-панель Capybara",
     "copyright": "Capybara © 2023",
     
@@ -217,19 +217,9 @@ JAZZMIN_SETTINGS = {
     "custom_links": {
         "app": [
             {
-                "name": "Статистика пользователей", 
-                "url": "/admin/stats/user_stats/",  # Используйте абсолютный путь
+                "name": "Статистика", 
+                "url": "/admin/stats/dashboard/",  # Новый URL для объединенной статистики
                 "icon": "fas fa-chart-line"
-            },
-            {
-                "name": "Статистика объявлений", 
-                "url": "/admin/stats/product_stats/",  # Используйте абсолютный путь
-                "icon": "fas fa-chart-bar"
-            },
-            {
-                "name": "Статистика просмотров", 
-                "url": "/admin/stats/views_stats/",  # Используйте абсолютный путь
-                "icon": "fas fa-eye"
             },
         ]
     },
@@ -289,22 +279,11 @@ JAZZMIN_SETTINGS.update({
     "dashboard_charts": True,
     "dashboard_widgets": [
         {
-            "name": "Статистика пользователей",
-            "url": "stats:user_stats",  
-            "icon": "fas fa-users",
-            "description": "Статистика регистраций пользователей",
-        },
-        {
-            "name": "Статистика объявлений",
-            "url": "admin:stats_product_stats",
-            "icon": "fas fa-shopping-cart",
-            "description": "Статистика создания объявлений",
-        },
-        {
-            "name": "Статистика просмотров",
-            "url": "stats:views_stats",
-            "icon": "fas fa-eye",
-            "description": "Статистика просмотров и избранного",
+            "name": "Статистика",
+            "url": "stats:dashboard_stats",  
+            "icon": "fas fa-chart-line",
+            "description": "Общая статистика платформы",
         },
     ],
 })
+
