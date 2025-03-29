@@ -41,6 +41,7 @@ def start_bot():
     
     try:
         logger.info("Запуск бота...")
+
         
         # Создаем приложение
         application = ApplicationBuilder().token(settings.TELEGRAM_BOT_TOKEN).build()
