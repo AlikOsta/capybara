@@ -17,7 +17,7 @@ class TelegramAuthView(APIView):
     """
     API-представление для аутентификации пользователей через Telegram Mini App.
     """
-    permission_classes = []  # Разрешаем доступ без аутентификации
+    permission_classes = [] 
     
     def post(self, request):
         # Получаем данные инициализации от Telegram

@@ -50,7 +50,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof window.contactSeller === 'function') {
             window.contactSeller(new Event('click'), username, productId, productTitle, productPrice);
         } else {
-            const productUrl = `https://t.me/CapybaraMarketplaceRobot?start=product_${productId}`;
+            // const productUrl = `https://t.me/CapybaraMarketplaceRobot?start=product_${productId}`;
+
+            const productUrl = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=product_${productId}`;
+
             let messageText = `Здравствуйте!\n Меня интересует "${productTitle}" за ${productPrice}.\n\nЕщё актуально?\n\n`;
             messageText += `Ссылка на объявление: ${productUrl}`;
             

@@ -127,5 +127,8 @@
 
 {% block scripts %}
 <script src="{% static 'app/js/product_detail.js' %}"></script>
+<script>
+    const TELEGRAM_BOT_USERNAME = "{{ settings.TELEGRAM_BOT_USERNAME }}";
+</script>
 
 {% endblock %}

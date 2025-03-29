@@ -152,6 +152,7 @@ CORS_ALLOW_CREDENTIALS = True
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME')
 TELEGRAM_MINI_APP_URL = os.getenv('TELEGRAM_MINI_APP_URL')
+BASE_URL = os.getenv('BASE_URL')
 
 # Mistral API
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 
@@ -287,3 +288,12 @@ JAZZMIN_SETTINGS.update({
     ],
 })
 
+# Пути к изображениям для бота
+PHOTO_START = os.getenv("PHOTO_START")
+PHOTO_HELP = os.getenv("PHOTO_HELP")
+PHOTO_INFO = os.getenv("PHOTO_INFO")
+PHOTO_ERROR = os.getenv("PHOTO_ERROR")
+
+SAPPORT_URL = os.getenv("SAPPORT_URL")
+
+BASE_URL = os.getenv("BASE_URL")

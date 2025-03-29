@@ -8,15 +8,22 @@ from telegram.ext import ContextTypes, CallbackContext
 from app.models import Product, Category, City
 from user_capybara.models import TelegramUser
 
-
 logger = logging.getLogger(__name__)
+
+BASE_URL = settings.BASE_URL
+
+PHOTO_ERROR = settings.PHOTO_ERROR
+PHOTO_START = settings.PHOTO_START
+PHOTO_HELP = settings.PHOTO_HELP
+PHOTO_INFO = settings.PHOTO_INFO
+
 
 @sync_to_async
 def get_product_by_id(product_id: int) -> dict | None:
     """Асинхронно получает продукт по ID и возвращает словарь с данными."""
     try:
         product = Product.objects.select_related('category').get(id=product_id)
-        image_url = f"https://capybarashop.store{product.image.url}" if product.image else None
+        image_url = f"{BASE_URL}{product.image.url}" if product.image else None
         author = product.author.get_full_name()
         return {
             'id': product.id,
@@ -54,30 +61,12 @@ def get_info_count() -> dict | None:
     except:
         return None
 
-# @sync_to_async
-# def get_or_create_user(telegram_id: int, username: str, first_name: str, last_name: str) -> TelegramUser | None:
-#     """Создает или обновляет пользователя в базе данных."""
-#     try:
-#         user, _ = TelegramUser.objects.update_or_create(
-#             telegram_id=telegram_id,
-#             defaults={
-#                 'username': username or '',
-#                 'first_name': first_name or '',
-#                 'last_name': last_name or '',
-#                 'last_activity': timezone.now()
-#             }
-#         )
-#         return user
-#     except Exception as e:
-#         logger.error(f"Ошибка при создании/обновлении пользователя: {e}", exc_info=True)
-#         return None
-
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /start."""
 
     user = update.effective_user
     args = context.args
-    mini_app_url = "https://capybarashop.store/user/mini-app/"
+    mini_app_url = f"{BASE_URL}/user/mini-app/"
 
     if args and args[0].startswith('product_'):
         try:
@@ -85,7 +74,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             product_data = await get_product_by_id(product_id)
 
             if product_data:
-                auth_url = f"https://capybarashop.store/user/mini-app/?product_id={product_id}"
+                auth_url = f"{BASE_URL}/user/mini-app/?product_id={product_id}"
 
                 keyboard = [
                     [InlineKeyboardButton("Открыть объявление", web_app=WebAppInfo(url=auth_url))],
@@ -110,7 +99,6 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
             else:
 
-                error__image_path = "https://i.ibb.co/W13Rtfc/error.png"
                 keyboard = [
                     [InlineKeyboardButton("Все объявления", web_app=WebAppInfo(url=mini_app_url))]
                 ]
@@ -121,12 +109,11 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                     f"❌ К сожалению, объявление не найдено или было удалено.\n\n"
                     "Вы можете просмотреть другие объявления, нажав на кнопку ниже:"
                 )
-                await update.message.reply_photo(photo=error__image_path, caption=caption, reply_markup=reply_markup, parse_mode='HTML')
+                await update.message.reply_photo(photo=PHOTO_ERROR, caption=caption, reply_markup=reply_markup, parse_mode='HTML')
 
         except ValueError:
             logger.error("Некорректный формат ID продукта")
 
-            error__image_path = "https://i.ibb.co/W13Rtfc/error.png"
             keyboard = [
                     [InlineKeyboardButton("Все объявления", web_app=WebAppInfo(url=mini_app_url))]
                 ]
@@ -136,10 +123,8 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
                     f"❌ <b>Некорректный формат ID продукта</b>\n\n"
                 )
 
-            await update.message.reply_photo(photo=error__image_path, caption=caption, reply_markup=reply_markup, parse_mode='HTML')
+            await update.message.reply_photo(photo=PHOTO_ERROR, caption=caption, reply_markup=reply_markup, parse_mode='HTML')
         return
-
-    photo = "https://i.ibb.co/zWyhswRv/start.png"
 
     keyboard = [
         [InlineKeyboardButton("Открыть приложение", web_app=WebAppInfo(url=mini_app_url))],
@@ -155,7 +140,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"Нажмите кнопку ниже, чтобы открыть приложение:"
     )
 
-    await update.message.reply_photo(photo=photo, caption=caption, reply_markup=reply_markup, parse_mode='HTML')
+    await update.message.reply_photo(photo=PHOTO_START, caption=caption, reply_markup=reply_markup, parse_mode='HTML')
 
 
 async def button_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -175,10 +160,10 @@ async def back_to_start_callback(update: Update, context: ContextTypes.DEFAULT_T
     query = update.callback_query
     user = query.from_user
     
-    photo = "https://i.ibb.co/zWyhswR/start.png" 
+    photo = PHOTO_START
     
     keyboard = [
-        [InlineKeyboardButton("Открыть приложение", web_app=WebAppInfo(url="https://capybarashop.store/user/mini-app/"))],
+        [InlineKeyboardButton("Открыть приложение", web_app=WebAppInfo(url=f"{BASE_URL}/user/mini-app/"))],
         [InlineKeyboardButton("Помощь", callback_data="help"), InlineKeyboardButton("О нас", callback_data="info")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -227,7 +212,7 @@ async def handle_command(update: Update, context: ContextTypes.DEFAULT_TYPE, pho
 
 async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /help."""
-    photo = "https://i.ibb.co/N27msW6y/help.png"
+    photo = settings.PHOTO_HELP
     text = (
         "🔍 <b>Справка по использованию Capybara</b>\n\n"
         "Для использования сервиса Capybara Marketplace вам не нужна регистрация или авторизация. Все, что вам нужно — это открыть приложение и наслаждаться покупками и продажами.\n"
@@ -239,7 +224,7 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/start - Начать работу с ботом\n"
         "/help - Показать эту справку\n"
         "/info - Информация о сервисе\n\n"
-        f"Если у вас возникли вопросы, напишите нам <a href='t.me/A43721'>Команда Capybara</a>"
+        f"Если у вас возникли вопросы, напишите нам <a href='{settings.SAPPORT_URL}'>Команда Capybara</a>"
     )
     
     await handle_command(update, context, photo, text)
@@ -247,7 +232,7 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 async def info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /info."""
-    photo = "https://i.ibb.co/ZpTx5g8b/info.png"
+    photo = settings.PHOTO_INFO
     data = await get_info_count()
     
     text = (
@@ -262,7 +247,7 @@ async def info_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"Мы стремимся предоставить удобный и безопасный сервис как для покупателей, так и для продавцов.\n"
         f"Цени свое время — используй его с пользой.\n\n"
         
-        f"Если у вас возникли вопросы, напишите нам <a href='t.me/A43721'>Команда Capybara</a>"
+        f"Если у вас возникли вопросы, напишите нам <a href='{settings.SAPPORT_URL}'>Команда Capybara</a>"
     )
     
     await handle_command(update, context, photo, text)
