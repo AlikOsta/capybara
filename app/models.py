@@ -61,21 +61,26 @@ class Product(models.Model):
         return self.views.count()
     
     def save(self, *args, **kwargs):
-
         if self.image and not self.id:  
+            
             img = Image.open(self.image)
             
             if img.height > 800 or img.width > 800:
                 output_size = (800, 800)
                 img.thumbnail(output_size)
             
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+            
             output = BytesIO()
-            img.save(output, format=img.format, quality=65, optimize=True)
+            img.save(output, format="WEBP", quality=65, optimize=True)
             output.seek(0)
             
-            self.image = ContentFile(output.read(), name=self.image.name)
+            base_name = self.image.name.rsplit('.', 1)[0]
+            self.image = ContentFile(output.read(), name=f"{base_name}.webp")
         
         super().save(*args, **kwargs)
+
 
     class Meta:
         verbose_name = "Объявление"
