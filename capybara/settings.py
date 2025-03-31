@@ -32,6 +32,8 @@ THIRD_PARTY_APPS = [
     'rest_framework_simplejwt',
     'django_q',
     'corsheaders',
+    'django_filters', 
+    'drf_yasg',
 ]
 
 LOCAL_APPS = [
@@ -39,6 +41,7 @@ LOCAL_APPS = [
     'user_capybara',
     'bot_capybara',
     'stats',
+    'api',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
