@@ -2,10 +2,11 @@
 Django management команда для запуска Telegram бота.
 """
 import logging
+import asyncio
 from django.core.management.base import BaseCommand
-from bot_capybara.bot import start_bot
+from bot_capybara.bot import main
 
-# Настройка логирования
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -24,7 +25,7 @@ class Command(BaseCommand):
         """
         self.stdout.write(self.style.SUCCESS('Запуск Telegram бота...'))
         try:
-            start_bot()
+            asyncio.run(main())
             return 0
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Ошибка при запуске бота: {e}'))
