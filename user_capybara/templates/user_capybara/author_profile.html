@@ -40,7 +40,11 @@
     
     {% if is_own_profile %}
     <div class="mt-3">
-        <a href="{% url 'user:profile_edit' %}" class="btn btn-outline-primary w-100">
+        <a href="#" 
+        hx-get="{% url 'user:profile_edit' %}" 
+        hx-target="#dialog" 
+        hx-trigger="click"
+        class="btn btn-outline-primary w-100">
             <i class="bi bi-pencil me-2"></i>Редактировать профиль
         </a>
     </div>
@@ -109,10 +113,19 @@
                             </button>
                         </form>
                         <div class="mt-1 d-flex gap-1">
-                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                            <a href="#" 
+                            hx-get="{% url 'app:product_edit' product.id %}" 
+                            hx-target="#dialog" 
+                            hx-trigger="click" 
+                            class="btn btn-sm btn-outline-primary flex-grow-1">
                                 <i class="bi bi-pencil me-1"></i> 
                             </a>
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger flex-grow-1">
+                            <!-- Для удаления -->
+                            <a href="#" 
+                            hx-get="{% url 'app:product_delete' product.id %}" 
+                            hx-target="#dialog" 
+                            hx-trigger="click" 
+                            class="btn btn-sm btn-outline-danger flex-grow-1">
                                 <i class="bi bi-trash me-1"></i>
                             </a>
                         </div>
@@ -178,10 +191,19 @@
                             </button>
                         </form>
                         <div class="mt-1 d-flex gap-1">
-                            <a href="{% url 'app:product_edit' product.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                            <a href="#" 
+                            hx-get="{% url 'app:product_edit' product.id %}" 
+                            hx-target="#dialog" 
+                            hx-trigger="click" 
+                            class="btn btn-sm btn-outline-primary flex-grow-1">
                                 <i class="bi bi-pencil me-1"></i> 
                             </a>
-                            <a href="{% url 'app:product_delete' product.id %}" class="btn btn-sm btn-outline-danger flex-grow-1">
+                            <!-- Для удаления -->
+                            <a href="#" 
+                                hx-get="{% url 'app:product_delete' product.id %}" 
+                                hx-target="#dialog" 
+                                hx-trigger="click" 
+                                class="btn btn-sm btn-outline-danger flex-grow-1">
                                 <i class="bi bi-trash me-1"></i>
                             </a>
                         </div>

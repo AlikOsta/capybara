@@ -7,6 +7,7 @@ from slugify import slugify
 from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Product(models.Model):
@@ -27,7 +28,7 @@ class Product(models.Model):
     title = models.CharField(max_length=50, verbose_name='Товар', db_index=True) 
     description = models.TextField(max_length=350, verbose_name='Описание')
     image = models.ImageField(upload_to='media/images/', verbose_name='Изображение')
-    price = models.IntegerField(verbose_name='Цена', db_index=True) 
+    price = models.IntegerField(verbose_name='Цена', db_index=True, validators=[MinValueValidator(0), MaxValueValidator(9999999)],) 
     currency = models.ForeignKey('Currency', null=True, on_delete=models.PROTECT, verbose_name='Валюта')
     city = models.ForeignKey('City', null=True, on_delete=models.PROTECT, verbose_name='Город')
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Опубликовано')
@@ -49,7 +50,6 @@ class Product(models.Model):
                 try:
                     os.remove(image_path)
                 except Exception as e:
-                    # Если не удалось удалить файл, логируем ошибку или игнорируем её
                     pass
         super().delete(*args, **kwargs)
 
@@ -201,3 +201,11 @@ class ProductView(models.Model):
             ),
         ]
         ordering = ['-created_at']
+
+
+
+class BannerPost(models.Model):
+    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Автор')
+    title = models.CharField(max_length=50, verbose_name='Товар', db_index=True)
+    link = models.URLField(max_length=200, verbose_name='Ссылка', blank=True, null=True)
+    image = models.ImageField(upload_to='media/images/banner/', verbose_name='Изображение')

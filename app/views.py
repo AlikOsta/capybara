@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View
 from django.db.models import Q
 from django.urls import reverse_lazy, reverse
-from django.http import JsonResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 
-from .models import Product, Category, Currency, City, Favorite, ProductView
+from .models import Product, Category, Currency, City, Favorite, ProductView, BannerPost
 from .forms import ProductForm
 
 
@@ -42,8 +42,6 @@ class AuthorRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-# Кэширование главной страницы на 15 минут
-# @method_decorator(cache_page(60 * 2), name='dispatch')
 class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для списка объявлений."""
     model = Product
@@ -69,9 +67,12 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
+        
         context['query'] = self.request.GET.get('q', '')
         context['total_count'] = self.get_queryset().count()
         context['has_more'] = context['total_count'] > len(context['products'])
+
+        context['banners'] = BannerPost.objects.all()
 
         if self.request.user.is_authenticated:
             context['favorite_products'] = list(
@@ -139,8 +140,6 @@ class ProductDetailView(DetailView):
         return request.META.get('REMOTE_ADDR')
 
 
-# Кэширование страницы категории на 15 минут
-# @method_decorator(cache_page(60 * 15), name='dispatch')
 class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для детального просмотра категории."""
     model = Product
@@ -215,8 +214,24 @@ class ProductCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        return super().form_valid(form)
-
+        response = super().form_valid(form)
+        
+        # Если запрос от HTMX, возвращаем перенаправление для HTMX
+        if self.request.headers.get('HX-Request'):
+            return HttpResponse(
+                status=200,
+                headers={
+                    'HX-Redirect': self.get_success_url()
+                }
+            )
+        return response
+    
+    def get_template_names(self):
+        # Если запрос от HTMX, используем шаблон для модального окна
+        if self.request.headers.get('HX-Request'):
+            return ['app/includes/product_form_modal.html']
+        return [self.template_name]
+    
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductUpdateView(AuthorRequiredMixin, UpdateView):
@@ -479,3 +494,10 @@ class FavoriteProductsAPIView(View):
             'next_offset': offset + limit if has_more else None
         })
 
+
+def banner_ad_info(request):
+    """Представление для отображения информации о размещении рекламы."""
+    admin_telegram = "@newpunknot"  
+    return render(request, 'app/includes/banner_ad_modal.html', {
+        'admin_telegram': admin_telegram
+    })

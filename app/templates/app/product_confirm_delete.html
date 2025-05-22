@@ -1,36 +1,21 @@
-{% extends 'app/base.html' %}
-
-{% block title %}Удаление объявления{% endblock %}
-
-{% block content %}
-<div class="delete-confirmation-page mt-3">
-    <!-- Верхний блок с навигацией -->
-    <div class="mb-3">
-        <div class="d-flex align-items-center mb-3">
-            <a href="{% url 'app:product_detail' product.id %}" class="text-decoration-none btn-back me-2">
-                <i class="bi bi-arrow-left fs-4"></i>
-            </a>
-            <div>
-                <h5 class="mb-0 fw-bold">Удаление объявления</h5>
-            </div>
-        </div>
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">Удаление объявления</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-
-    <div class="delete-confirmation-content text-center my-5">
+    <div class="modal-body text-center">
         <div class="delete-icon mx-auto mb-4">
             <i class="bi bi-exclamation-triangle-fill text-danger fs-1"></i>
         </div>
         
         <h5 class="mb-3">Вы уверены, что хотите удалить объявление?</h5>
         <p class="mb-4 text-muted">{{ product.title }}</p>
-        
-        <div class="d-flex justify-content-center gap-3">
-            <form method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger px-4">Удалить</button>
-            </form>
-            <a href="{% url 'app:product_detail' product.id %}" class="btn btn-outline-secondary px-4">Отмена</a>
-        </div>
+    </div>
+    <div class="modal-footer justify-content-center">
+        <form method="post" hx-post="{{ request.path }}" hx-swap="none" hx-on::after-request="setTimeout(() => window.location.reload(), 300)">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger px-4">Удалить</button>
+        </form>
+        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Отмена</button>
     </div>
 </div>
-{% endblock %}

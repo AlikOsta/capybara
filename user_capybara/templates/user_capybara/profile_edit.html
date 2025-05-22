@@ -1,247 +1,62 @@
-{% extends 'app/base.html' %}
-{% load static %}
-
-{% block title %}Редактирование профиля{% endblock %}
-
-{% block content %}
-<div class="profile-edit-page mt-3">
-    <!-- Верхний блок с навигацией -->
-    <div class="mb-4">
-        <div class="d-flex align-items-center">
-            <div>
-                <h5 class="mb-0 fw-bold">Редактирование профиля</h5>
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">Редактирование профиля</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    
+    <div class="modal-body">
+        <!-- Информация о пользователе -->
+        <div class="profile-header mb-4">
+            <div class="d-flex align-items-start">
+                <div class="profile-avatar me-3">
+                    {% if user.photo_url %}
+                        <img src="{{ user.photo_url }}" alt="{{ user.username }}" class="rounded-circle" width="80" height="80">
+                    {% else %}
+                        <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="bi bi-person-fill fs-3"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-info flex-grow-1">
+                    <h5 class="mb-1 fw-bold">{{ user.get_full_name }}</h5>
+                    <p class="text-muted mb-1 small">
+                        <i class="bi bi-telegram me-1"></i>@{{ user.username }}
+                    </p>
+                    <p class="text-muted mb-0 small">
+                        <i class="bi bi-calendar3 me-1"></i> На сайте с {{ user.date_joined|date:"d.m.Y" }}
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Информация о пользователе -->
-    <div class="profile-header mb-4">
-        <div class="d-flex align-items-start">
-            <div class="profile-avatar me-3">
-                {% if user.photo_url %}
-                    <img src="{{ user.photo_url }}" alt="{{ user.username }}" class="rounded-circle" width="100" height="100">
-                {% else %}
-                    <div class="avatar-placeholder rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
-                        <i class="bi bi-person-fill fs-1"></i>
-                    </div>
+        <!-- Форма редактирования -->
+        <form method="post" id="profileForm" hx-post="{{ request.path }}" hx-swap="none">
+            {% csrf_token %}
+                            
+            <div class="mb-3">
+                <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                <div class="text-danger mt-1 small">{{ form.first_name.errors }}</div>
                 {% endif %}
             </div>
-            <div class="profile-info flex-grow-1">
-                <h4 class="mb-1 fw-bold">{{ user.get_full_name }}</h4>
-                <p class="text-muted mb-1">
-                    <i class="bi bi-telegram me-1"></i>@{{ user.username }}
-                </p>
-                <p class="text-muted mb-0">
-                    <i class="bi bi-calendar3 me-1"></i> На сайте с {{ user.date_joined|date:"d.m.Y" }}
-                </p>
+            
+            <div class="mb-3">
+                <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                <div class="text-danger mt-1 small">{{ form.last_name.errors }}</div>
+                {% endif %}
             </div>
-        </div>
-    </div>
-
-    <!-- Форма редактирования -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <form method="post" id="profileForm">
-                {% csrf_token %}
-                                
-                <div class="mb-3">
-                    <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
-                    {{ form.first_name }}
-                    {% if form.first_name.errors %}
-                    <div class="text-danger mt-1 small">{{ form.first_name.errors }}</div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-4">
-                    <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
-                    {{ form.last_name }}
-                    {% if form.last_name.errors %}
-                    <div class="text-danger mt-1 small">{{ form.last_name.errors }}</div>
-                    {% endif %}
-                </div>
-                
-                <!-- Скрытая кнопка отправки формы (будет активироваться через Main Button) -->
-                <button type="submit" id="hiddenSubmitButton" class="d-none">Сохранить</button>
-            </form>
-        </div>
-    </div>
-    
-    <div class="mb-5">
-        <p class="text-muted small text-center">
-            Некоторые данные профиля можно изменить только в Telegram.
-        </p>
+            
+            <div class="text-muted small mb-3">
+                Некоторые данные профиля можно изменить только в Telegram.
+            </div>
+            
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем доступность Telegram Web App API
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (!tg) return;
-    
-    // Показываем кнопку назад Telegram
-    if (tg.BackButton) {
-        tg.BackButton.show();
-        
-        // Обработчик нажатия на кнопку назад
-        tg.onEvent('backButtonClicked', function() {
-            // Вызываем тактильную обратную связь при нажатии на кнопку назад
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-            
-            // Возвращаемся на предыдущую страницу
-            window.history.back();
-        });
-    }
-    
-    // Инициализация Main Button
-    const mainButton = tg.MainButton;
-    if (!mainButton) return;
-    
-    // Получаем ссылку на нижнее меню
-    const footer = document.querySelector('footer.fixed-bottom');
-    
-    // Настройка Main Button
-    mainButton.setText('Сохранить изменения');
-    mainButton.hide();
-    
-    // Получаем форму и все поля ввода
-    const form = document.getElementById('profileForm');
-    const inputs = form.querySelectorAll('input, textarea, select');
-    
-    // Сохраняем начальные значения полей
-    const initialValues = {};
-    inputs.forEach(input => {
-        initialValues[input.name] = input.value;
-    });
-    
-    // Функция проверки валидности формы
-    function validateForm() {
-        let isValid = true;
-        let hasChanges = false;
-        
-        // Проверяем все поля на валидность и изменения
-        inputs.forEach(input => {
-            // Проверка на заполненность обязательных полей
-            if (input.required && !input.value.trim()) {
-                isValid = false;
-            }
-            
-            // Проверка на изменения
-            if (initialValues[input.name] !== input.value) {
-                hasChanges = true;
-            }
-        });
-        
-        return { isValid, hasChanges };
-    }
-    
-    // Функция обновления состояния кнопки
-    function updateButtonState() {
-        const { isValid, hasChanges } = validateForm();
-        
-        // Получаем элемент MainButton для анимации
-        const mainButtonElement = document.querySelector('.telegram-main-button');
-        
-        if (isValid && hasChanges) {
-            mainButton.enable();
-        } else {
-            mainButton.disable();
-        }
-        
-        // Сначала скрываем нижнее меню
-        if (footer) {
-            footer.classList.add('hidden');
-        }
-        
-        // Затем с небольшой задержкой показываем MainButton
-        setTimeout(() => {
-            // Показываем кнопку в любом случае
-            mainButton.show();
-            document.body.classList.add('main-button-visible');
-            
-            // Показываем анимацию появления
-            if (mainButtonElement) {
-                mainButtonElement.classList.remove('hidden');
-            }
-        }, 150);
-    }
-    
-    // Обработчик нажатия на Main Button
-    mainButton.onClick(function() {
-        // Вызываем тактильную обратную связь при нажатии на Main Button
-        if (tg.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-        
-        // Проверяем валидность перед отправкой
-        const { isValid, hasChanges } = validateForm();
-        if (isValid && hasChanges) {
-            // Программно нажимаем на скрытую кнопку отправки формы
-            document.getElementById('hiddenSubmitButton').click();
-        }
-    });
-    
-    // Добавляем обработчики событий для всех полей ввода
-    inputs.forEach(input => {
-        ['input', 'change', 'blur'].forEach(eventType => {
-            input.addEventListener(eventType, updateButtonState);
-        });
-    });
-    
-    // Инициализация состояния кнопки при загрузке страницы
-    updateButtonState();
-});
-
-// Скрываем кнопки при уходе со страницы
-window.addEventListener('beforeunload', function() {
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg) {
-        if (tg.BackButton) tg.BackButton.hide();
-        if (tg.MainButton) tg.MainButton.hide();
-    }
-    
-    // Показываем нижнее меню
-    const footer = document.querySelector('footer.fixed-bottom');
-    if (footer) {
-        footer.classList.remove('hidden');
-    }
-    
-    document.body.classList.remove('main-button-visible');
-});
-
-// Обработчик для кнопки назад браузера
-window.addEventListener('popstate', function() {
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg && tg.MainButton) {
-        tg.MainButton.hide();
-    }
-    
-    // Показываем нижнее меню
-    const footer = document.querySelector('footer.fixed-bottom');
-    if (footer) {
-        footer.classList.remove('hidden');
-    }
-    
-    document.body.classList.remove('main-button-visible');
-});
-
-// Функция для применения анимации к MainButton
-function applyMainButtonAnimation() {
-    // Получаем элемент MainButton
-    const mainButtonElement = document.querySelector('.telegram-main-button');
-    
-    if (mainButtonElement) {
-        // Добавляем класс для анимации
-        mainButtonElement.classList.add('telegram-main-button-animation');
-    }
-}
-
-// Вызываем функцию после загрузки DOM
-setTimeout(applyMainButtonAnimation, 500);
-</script>
-{% endblock %}

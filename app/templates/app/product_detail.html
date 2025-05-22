@@ -114,10 +114,10 @@
             <i class="bi bi-clock text-muted me-2"></i>
             <span>{{ product.created_at|date:"d.m.y" }}</span>
         </div>
-        <div class="mb-2 d-flex align-items-center">
+        {% comment %} <div class="mb-2 d-flex align-items-center">
             <i class="bi bi-eye text-muted me-2"></i>
             <span>{{ product.get_view_count }}</span>
-        </div>
+        </div> {% endcomment %}
     </div>
 </div>
 

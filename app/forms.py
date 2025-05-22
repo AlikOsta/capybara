@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product
+from .models import Product, Category, Currency, City
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -14,4 +14,20 @@ class ProductForm(forms.ModelForm):
             'city': forms.Select(attrs={'class': 'form-control'}),
             'currency': forms.Select(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].empty_label = 'Выберите категорию'
+        
+        self.fields['city'].queryset = City.objects.all().order_by('name')
+        self.fields['city'].empty_label = None
+        first = self.fields['city'].queryset.first()
+        if first is not None:
+            self.fields['city'].initial = first.pk
+        
+        self.fields['currency'].queryset = Currency.objects.all().order_by('order')
+        self.fields['currency'].empty_label = None
+        first =self.fields['currency'].queryset.first()
+        if first is not None:
+            self.fields['currency'].initial = first.pk
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Product, Category, Currency, City
+from .models import Product, Category, Currency, City, BannerPost
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'price_with_currency', 'city', 'status_badge', 'author', 'created_at', 'view_count')
@@ -122,3 +122,5 @@ admin.site.register(Category, CategoryAdmin)
 admin.site.register(Currency, CurrencyAdmin)
 admin.site.register(City, CityAdmin)
 
+
+admin.site.register(BannerPost)

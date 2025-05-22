@@ -35,16 +35,15 @@
                         <i class="bi bi-geo-alt me-1"></i>
                         <span class="text-truncate">{{ product.city }}</span>
                     </small>
-                    <small class="d-flex align-items-center" 
+                    {% comment %} <small class="d-flex align-items-center" 
                            style="color: var(--tg-theme-hint-color, #999999);">
                         <i class="bi bi-eye me-1"></i>
                         <span>{{ product.get_view_count }}</span>
-                    </small>
+                    </small> {% endcomment %}
                 </div>
                 <small class="d-block mt-1" 
                        style="color: var(--tg-theme-hint-color, #999999);">
-                    <i class="bi bi-clock me-1"></i>{{ product.created_at|date:"d.m.Y" }}
-                    <i class="bi bi-clock me-1"></i>{{ product.updated_at|date:"d.m.Y" }}
+                    <i class="bi bi-clock me-1"></i>{{ product.created_at|date:"d.m.y" }}
                 </small>
             </div>
         </div>
