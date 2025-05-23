@@ -1,8 +1,0 @@
-<button class="btn btn-sm position-absolute top-0 end-0 m-2 favorite-btn rounded-circle p-2 shadow-sm" 
-        hx-post="{% url 'app:toggle_favorite' product.id %}" 
-        hx-swap="outerHTML"
-        hx-trigger="click"
-        style="background-color: var(--tg-theme-button-text-color, #ffffff);">
-    <i class="bi {% if is_favorite %}bi-heart-fill text-danger{% else %}bi-heart{% endif %}" 
-       style="color: var(--tg-theme-button-color, #2481cc);"></i>
-</button>

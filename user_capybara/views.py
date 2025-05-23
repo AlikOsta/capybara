@@ -28,73 +28,99 @@ class AuthorProfileMixin:
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class AuthorProfileView(AuthorProfileMixin, TemplateView):
     """Представление профиля автора с его объявлениями, разделенными по статусам"""
-    template_name = 'user_capybara/author_profile.html'
+    
+    def setup(self, request, *args, **kwargs):
+        """Инициализация общих данных при настройке представления"""
+        super().setup(request, *args, **kwargs)
+        self._author = None
+        self._is_own_profile = None
+        self._products_by_status = None
+    
+    def get_template_names(self):
+        """
+        Возвращает имя шаблона в зависимости от типа запроса.
+        Если запрос через HTMX, используется частичный шаблон,
+        иначе - полный шаблон.
+        """
+        # Проверяем, является ли запрос HTMX-запросом
+        if self.request.headers.get('HX-Request') == 'true':
+            return ['user_capybara/author_profile.html']
+        else:
+            return ['user_capybara/author_profile_full.html']
     
     def get_author(self):
-        try:
-            author_id = self.kwargs.get('author_id')
-            logger.info(f"Getting author with ID: {author_id}")
-            author = get_object_or_404(User, id=author_id)
-            logger.info(f"Found author: {author.username}")
-            return author
-        except Exception as e:
-            logger.error(f"Error getting author: {e}")
-            raise
+        """Получает автора профиля (с кэшированием результата)"""
+        if self._author is None:
+            try:
+                author_id = self.kwargs.get('author_id')
+                logger.info(f"Getting author with ID: {author_id}")
+                self._author = get_object_or_404(User, id=author_id)
+                logger.info(f"Found author: {self._author.username}")
+            except Exception as e:
+                logger.error(f"Error getting author: {e}")
+                raise
+        return self._author
     
     def is_own_profile(self):
-        try:
-            result = self.request.user.is_authenticated and self.request.user.id == self.get_author().id
-            logger.info(f"Is own profile: {result}")
-            return result
-        except Exception as e:
-            logger.error(f"Error checking if own profile: {e}")
-            return False
+        """Проверяет, является ли профиль собственным (с кэшированием результата)"""
+        if self._is_own_profile is None:
+            try:
+                self._is_own_profile = self.request.user.is_authenticated and self.request.user.id == self.get_author().id
+                logger.info(f"Is own profile: {self._is_own_profile}")
+            except Exception as e:
+                logger.error(f"Error checking if own profile: {e}")
+                self._is_own_profile = False
+        return self._is_own_profile
+    
+    def get_products_by_status(self):
+        """Получает все продукты автора, сгруппированные по статусу (с кэшированием результата)"""
+        if self._products_by_status is None:
+            author = self.get_author()
+            
+            # Получаем все продукты автора за один запрос
+            all_products = Product.objects.filter(
+                author=author
+            ).select_related('category', 'city', 'currency', 'author')
+            
+            # Группируем продукты по статусу
+            self._products_by_status = {
+                0: [], # pending
+                1: [], # approved
+                2: [], # rejected
+                3: [], # published
+                4: [], # archived
+            }
+            
+            for product in all_products:
+                self._products_by_status[product.status].append(product)
+                
+        return self._products_by_status
     
     def get_context_data(self, **kwargs):
         try:
             context = super().get_context_data(**kwargs)
             author = self.get_author()
+            is_own_profile = self.is_own_profile()
             
             context['author'] = author
-            context['is_own_profile'] = self.is_own_profile()
+            context['is_own_profile'] = is_own_profile
             
-            if not context['is_own_profile']:
-                context['published_products'] = Product.objects.filter(
-                    author=author, 
-                    status=3
-                ).select_related('category', 'city', 'currency')
-                return context
+            products_by_status = self.get_products_by_status()
             
-            context['published_products'] = Product.objects.filter(
-                author=author, 
-                status=3
-            ).select_related('category', 'city', 'currency')
+            # Добавляем в контекст только нужные продукты
+            context['published_products'] = products_by_status[3]
             
-            context['pending_products'] = Product.objects.filter(
-                author=author, 
-                status=0
-            ).select_related('category', 'city', 'currency')
-            
-            context['approved_products'] = Product.objects.filter(
-                author=author, 
-                status=1
-            ).select_related('category', 'city', 'currency')
-            
-            context['rejected_products'] = Product.objects.filter(
-                author=author, 
-                status=2
-            ).select_related('category', 'city', 'currency')
-
-            context['archived_products'] = Product.objects.filter(
-                author=author, 
-                status=4
-            ).select_related('category', 'city', 'currency')
+            if is_own_profile:
+                context['pending_products'] = products_by_status[0]
+                context['approved_products'] = products_by_status[1]
+                context['rejected_products'] = products_by_status[2]
+                context['archived_products'] = products_by_status[4]
             
             return context
         except Exception as e:
             logger.error(f"Error in get_context_data: {e}")
-
             return {'author': self.get_author(), 'is_own_profile': False}
+
 
 
 class TelegramAuthView(TemplateView):

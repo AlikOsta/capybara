@@ -1,167 +1,55 @@
 document.addEventListener('DOMContentLoaded', function() {
-    applyMainButtonAnimation();
-
-    const tg = window.Telegram && window.Telegram.WebApp;
-    // if (!tg) return;
-
-    // Настраиваем кнопку "Назад"
-    if (tg.BackButton) {
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', function() {
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-            
-            // Проверяем, есть ли история браузера
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                // Если истории нет, перенаправляем на главную страницу
-                window.location.href = '/';
-            }
-        });
-    }
-
-    // Инициализируем MainButton
-    const mainButton = tg.MainButton;
-    if (!mainButton) return;
-
-    // Ссылка на нижнее меню
-    const footer = document.querySelector('footer.fixed-bottom');
-
     // Получаем данные для связи из элемента .product-detail
     const productDetail = document.querySelector('.product-detail');
     if (!productDetail) return;
-    const { username, productId, productTitle, productPrice, isAuthor } = productDetail.dataset;
-
-    // Настраиваем MainButton
-    mainButton.setText('Связаться с продавцом');
-    mainButton.hide(); // Изначально скрываем кнопку
-
-    // Параметры анимации
-    const ANIMATION_DURATION = 50;
     
-    // Обработчик клика по MainButton
-    mainButton.onClick(function() {
-        if (tg.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('medium');
+    const { username, productId, productTitle, productPrice, isAuthor } = productDetail.dataset;
+    
+    // Находим кнопку "Связаться с продавцом"
+    const contactSellerBtn = document.getElementById('contactSellerBtn');
+    
+    // Если пользователь - автор объявления или кнопка не найдена, выходим
+    if (isAuthor === 'true' || !contactSellerBtn) return;
+    
+    // Добавляем обработчик клика на кнопку
+    contactSellerBtn.addEventListener('click', function() {
+        // Формируем URL для перехода в Telegram
+        const productUrl = `https://t.me/CapybaraMarketplaceRobot?start=product_${productId}`;
+        
+        let messageText = `Здравствуйте!\n Меня интересует "${productTitle}" за ${productPrice}.\n\nЕщё актуально?\n\n`;
+        messageText += `Ссылка на объявление: ${productUrl}`;
+        
+        // Открываем ссылку на чат с продавцом
+        window.open(`https://t.me/${username}?text=${encodeURIComponent(messageText)}`, '_blank');
+    });
+    
+    // Добавляем эффект нажатия на кнопку
+    contactSellerBtn.addEventListener('mousedown', function() {
+        this.style.transform = 'scale(0.98)';
+        this.style.opacity = '0.9';
+    });
+    
+    contactSellerBtn.addEventListener('mouseup', function() {
+        this.style.transform = 'scale(1)';
+        this.style.opacity = '1';
+    });
+    
+    // Добавляем стили для кнопки
+    const style = document.createElement('style');
+    style.textContent = `
+        #contactSellerBtn {
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
-        if (typeof window.contactSeller === 'function') {
-            window.contactSeller(new Event('click'), username, productId, productTitle, productPrice);
-        } else {
-            // const productUrl = `https://t.me/CapybaraMarketplaceRobot?start=product_${productId}`;
-
-            const productUrl = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=product_${productId}`;
-
-            let messageText = `Здравствуйте!\n Меня интересует "${productTitle}" за ${productPrice}.\n\nЕщё актуально?\n\n`;
-            messageText += `Ссылка на объявление: ${productUrl}`;
-            
-            // Используем Telegram API для отправки сообщения без закрытия мини-приложения
-            if (tg.openTelegramLink) {
-                // Этот метод сворачивает WebApp, но не закрывает его полностью
-                tg.openTelegramLink(`https://t.me/${username}?text=${encodeURIComponent(messageText)}`);
-            } else {
-                // Запасной вариант, если openTelegramLink не доступен
-                tg.sendData(JSON.stringify({
-                    action: 'send_message',
-                    username: username,
-                    message: messageText
-                }));
-                
-                // Показываем уведомление пользователю
-                if (tg.showPopup) {
-                    tg.showPopup({
-                        title: 'Сообщение',
-                        message: 'Переход в чат с продавцом...',
-                        buttons: [{type: 'ok'}]
-                    });
-                }
-            }
+        #contactSellerBtn:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
-    });
-
-    // Функция показа MainButton с анимацией
-    function showMainButton() {
-        if (footer) footer.classList.add('hidden');
-        setTimeout(() => {
-            mainButton.show();
-            document.body.classList.add('main-button-visible');
-            const btnElem = document.querySelector('.telegram-main-button');
-            if (btnElem) btnElem.classList.remove('hidden');
-        }, ANIMATION_DURATION / 2);
-    }
-
-    function hideMainButton() {
-        const btnElem = document.querySelector('.telegram-main-button');
-        if (btnElem) btnElem.classList.add('hidden');
-        setTimeout(() => {
-            mainButton.hide();
-            document.body.classList.remove('main-button-visible');
-            if (footer) footer.classList.remove('hidden');
-        }, ANIMATION_DURATION / 2);
-    }
-
-    function updateMainButtonVisibility() {
-        if (isAuthor === 'true') {
-            hideMainButton();
-        } else {
-            showMainButton();
+        
+        #contactSellerBtn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
         }
-    }
-
-    updateMainButtonVisibility();
-    
-    setTimeout(updateMainButtonVisibility, 1000);
+    `;
+    document.head.appendChild(style);
 });
-
-// Скрытие кнопок при уходе со страницы
-window.addEventListener('beforeunload', function() {
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg) {
-        if (tg.MainButton) tg.MainButton.hide();
-    }
-    const footer = document.querySelector('footer.fixed-bottom');
-    if (footer) footer.classList.remove('hidden');
-    document.body.classList.remove('main-button-visible');
-});
-
-// Скрытие MainButton при нажатии кнопки назад браузера
-window.addEventListener('popstate', function() {
-    const tg = window.Telegram && window.Telegram.WebApp;
-    if (tg && tg.MainButton) tg.MainButton.hide();
-    const footer = document.querySelector('footer.fixed-bottom');
-    if (footer) footer.classList.remove('hidden');
-    document.body.classList.remove('main-button-visible');
-});
-
-// Функция для применения анимации к MainButton
-function applyMainButtonAnimation() {
-    if (!document.querySelector('#telegram-main-button-styles')) {
-        const style = document.createElement('style');
-        style.id = 'telegram-main-button-styles';
-        style.textContent = `
-            .telegram-main-button {
-                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                            opacity 0.3s ease !important;
-                transform: translateY(0) !important;
-                opacity: 1 !important;
-            }
-            .telegram-main-button.hidden {
-                transform: translateY(100%) !important;
-                opacity: 0 !important;
-            }
-            footer.fixed-bottom {
-                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
-            footer.fixed-bottom.hidden {
-                transform: translateY(100%);
-            }
-            body.main-button-visible {
-                padding-bottom: 70px !important;
-                transition: padding-bottom 0.3s ease;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-}

@@ -100,35 +100,37 @@
         </a>
     </div>
 
+    <div class="product-info mb-4">
+        <div class="product-meta d-flex flex-wrap mb-3">
+            <div class="me-4 mb-2 d-flex align-items-center">
+                <i class="bi bi-geo-alt text-muted me-2"></i>
+                <span>{{ product.city }}</span>
+            </div>
+            <div class="me-4 mb-2 d-flex align-items-center">
+                <i class="bi bi-clock text-muted me-2"></i>
+                <span>{{ product.created_at|date:"d.m.y" }}</span>
+            </div>
+            <div class="mb-2 d-flex align-items-center">
+                <i class="bi bi-eye text-muted me-2"></i>
+                <span>{{ product.get_view_count }}</span>
+            </div>
+        </div>
+    </div>
 
+    <!-- Кнопка "Связаться с продавцом" (только для не-автора) -->
+    {% if user != product.author %}
+    <div class="contact-seller-button-container mb-5">
+        <button id="contactSellerBtn" class="btn btn-primary w-100 py-3 rounded-3 d-flex justify-content-center align-items-center"
+                style="background-color: var(--tg-theme-button-color, #2481cc); border-color: var(--tg-theme-button-color, #2481cc);">
+            <i class="bi bi-chat-dots-fill me-2"></i>
+            <span>Связаться с продавцом</span>
+        </button>
+    </div>
+    {% endif %}
     
 </div>
-
-<div class="product-info mb-4">
-    <div class="product-meta d-flex flex-wrap mb-3">
-        <div class="me-4 mb-2 d-flex align-items-center">
-            <i class="bi bi-geo-alt text-muted me-2"></i>
-            <span>{{ product.city }}</span>
-        </div>
-        <div class="me-4 mb-2 d-flex align-items-center">
-            <i class="bi bi-clock text-muted me-2"></i>
-            <span>{{ product.created_at|date:"d.m.y" }}</span>
-        </div>
-        {% comment %} <div class="mb-2 d-flex align-items-center">
-            <i class="bi bi-eye text-muted me-2"></i>
-            <span>{{ product.get_view_count }}</span>
-        </div> {% endcomment %}
-    </div>
-</div>
-
-
-
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'app/js/product_detail.js' %}"></script>
-<script>
-    const TELEGRAM_BOT_USERNAME = "{{ settings.TELEGRAM_BOT_USERNAME }}";
-</script>
-
 {% endblock %}
