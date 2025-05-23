@@ -1,6 +1,9 @@
 from datetime import timedelta
 from django.utils import timezone
 from .models import Product
+from django_q.tasks import async_task
+from .utils import moderate_goods
+
 
 def archive_old_products():
     """
@@ -17,3 +20,19 @@ def archive_old_products():
     count = old_products.update(status=4)
     
     return f"Архивировано {count} объявлений"
+
+
+def moderate_product(product_id):
+    """
+    Фоновая задача: проверяет контент продукта через ИИ и сохраняет результат.
+    """
+    try:
+        product = Product.objects.get(pk=product_id)
+        result = moderate_goods(product.description)
+        if result:
+            product.status = 3
+        else:
+            product.status = 2 
+        product.save()
+    except Product.DoesNotExist:
+        pass

@@ -5,13 +5,105 @@ from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
+
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from django.core.paginator import Paginator
+from django_q.tasks import async_task
+from functools import wraps
+
 
 from .models import Product, Category, Currency, City, Favorite, ProductView, BannerPost
 from .forms import ProductForm
+
+
+def htmx_aware_login_required(view_func):
+    """
+    Декоратор, который проверяет авторизацию и корректно обрабатывает HTMX-запросы
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            if request.headers.get('HX-Request') == 'true':
+                return HttpResponse(
+                    status=200,
+                    headers={
+                        'HX-Redirect': reverse('user:telegram_auth')
+                    }
+                )
+            return redirect('user:telegram_auth')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def index(request):
+    context = {
+        'categories': Category.objects.all(),
+        'currencies': Currency.objects.all(),
+        'cities': City.objects.all(),
+        'banners': BannerPost.objects.all(),
+    }
+    return render(request, 'app/index.html', context)
+
+
+def product_list(request):
+    page = int(request.GET.get("page", 1))
+    products = Product.objects.filter(status=3).order_by('-created_at')
+    paginator = Paginator(products, 32)
+    
+    products_page = paginator.get_page(page)
+    
+    context = {
+        "products": products_page,
+        "total_count": products.count(),
+    }
+    
+    return render(request, 'app/includes/product_list.html', context)
+
+
+@htmx_aware_login_required
+def product_create(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.author = request.user
+            product.status = 0 
+            product.save()
+
+            async_task('app.tasks.moderate_product', product.id)
+
+            return HttpResponse(status=204, headers={'HX-Trigger': 'productListChanged'})
+    else:
+        form = ProductForm()
+    return render(request, 'app/includes/product_form_modal.html', {'form': form})
+
+
+def product_update(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.author = request.user
+            product.status = 0
+            product.save()
+
+            async_task('app.tasks.moderate_product', product.id)
+
+            return HttpResponse(status=204, headers={'HX-Trigger': 'productListChanged'})
+    else:
+        form = ProductForm(instance=product)
+
+        context = {
+            'form': form,
+            'is_edit': True,
+        }
+
+    return render(request, 'app/includes/product_form_modal.html', context)
+
+
 
 
 # Миксин для фильтрации опубликованных объявлений
@@ -47,10 +139,9 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     model = Product
     template_name = 'app/index.html'
     context_object_name = 'products'
-    paginate_by = 10 
+    paginate_by = 30
 
     def get_queryset(self):
-        # Используем select_related для загрузки связанных объектов за один запрос
         queryset = Product.objects.filter(status=3).select_related(
             'author', 'category', 'currency', 'city'
         )
@@ -81,6 +172,7 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
         else:
             context['favorite_products'] = []
         return context
+    
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
@@ -255,6 +347,12 @@ class ProductUpdateView(AuthorRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['is_edit'] = True 
         return context
+    
+    def get_template_names(self):
+        # Если запрос от HTMX, используем шаблон для модального окна
+        if self.request.headers.get('HX-Request'):
+            return ['app/includes/product_form_modal.html']
+        return [self.template_name]
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')

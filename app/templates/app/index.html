@@ -12,72 +12,35 @@
     {% include "app/includes/search.html" %}
 
     {% cache 60 product_list %}
-    
-    <!-- Категории -->
-    <div class="mb-4">
-        <div class="categories-container">
-            <div class="row flex-nowrap overflow-auto g-2 pb-2">
-                {% for category in categories %}
-                <div class="col-auto" style="min-width: 130px;">
-                    <a href="{% url 'app:category_detail' category.slug %}" class="text-decoration-none">
-                        <div class="card h-100 border-0 position-relative overflow-hidden bg-light rounded-3">
-                            <!-- Фоновое изображение занимает весь блок -->
-                            <div class="position-absolute w-100 h-100 d-flex justify-content-end align-items-end p-2">
-                                {% if category.image %}
-                                    <img src="{{ category.image.url }}" class="img-fluid" alt="{{ category.name }}"
-                                        style="max-height: 70px; max-width: 70px; opacity: 0.8;" loading="lazy">
-                                {% else %}
-                                    <i class="bi bi-grid fs-1 text-primary opacity-50"></i>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Название категории поверх изображения с полупрозрачным фоном -->
-                            <div class="card-body position-relative z-1 d-flex align-items-start p-2" style="height: 100px;">
-                                <div class="bg-light bg-opacity-75 rounded p-1">
-                                    <p class="card-title fw-medium mb-0" style="color: var(--tg-theme-button-color, #2481cc);">{{ category.name }}</p>
+        <!-- Категории -->
+        {% include "app/includes/category.html" %}
 
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-        <!-- Баннер -->
-    {% include "app/includes/banner.html" %}
-    
+            <!-- Баннер -->
+        {% include "app/includes/banner.html" %}
     {% endcache %}
 
-    <!-- Заголовок с количеством новых объявлений -->
+        <!-- Заголовок с количеством новых объявлений -->
     <div class="d-flex align-items-center mb-3">
         <h5 class="fw-bold" style="color: var(--tg-theme-button-color, #2481cc);">Новые объявления</h5>
         <span class="ms-2 badge bg-light text-dark rounded-pill">{{ total_count }}</span>
     </div>
 
-    <!-- Список объявлений -->
-    <div id="products-container" class="row g-3" data-offset="{{ products|length }}" data-has-more="{{ has_more|lower }}">
-        {% for product in products %}
-        <div class="col-6 product-item">
-            {% include 'app/includes/product_card.html' with product=product %}
-        </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <div class="empty-state">
-                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                <p class="text-muted">Объявления не найдены</p>
+
+    <!-- Контейнер для продуктов -->
+    <div id="products-container" class="row g-3">
+        <!-- Здесь будут отображаться продукты -->
+        <div class="col-12 text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
             </div>
         </div>
-        {% endfor %}
     </div>
 
-    <!-- Индикатор загрузки -->
-    <div id="loader" class="text-center py-4" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Загрузка...</span>
-        </div>
+    <!-- Загрузка первой страницы продуктов -->
+    <div hx-get="{% url 'app:product_list' %}" 
+         hx-trigger="load, productListChanged from:body"
+         hx-target="#products-container"
+         hx-swap="innerHTML">
     </div>
 
     <!-- Сообщение об ошибке -->
@@ -91,10 +54,8 @@
             style="bottom: 80px; right: 20px; display: none; width: 50px; height: 50px;">
         <i class="bi bi-arrow-up"></i>
     </button>
+
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script src="{% static 'app/js/infinite-scroll.js' %}"></script>
-<script src="{% static 'app/js/index-search.js' %}"></script>
-{% endblock %}
+

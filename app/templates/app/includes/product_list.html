@@ -1,0 +1,24 @@
+
+<!-- Продукты -->
+{% for product in products %}
+<div class="col-6 product-item">
+    {% include 'app/includes/product_card.html' with product=product %}
+</div>
+{% empty %}
+<div class="col-12 text-center py-5">
+    <div class="empty-state">
+        <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+        <p class="text-muted">Объявления не найдены</p>
+    </div>
+</div>
+{% endfor %}
+
+{% if products.has_next %}
+<!-- Триггер для загрузки следующей страницы -->
+<div class="col-12 load-more-trigger"
+     hx-get="{% url 'app:product_list' %}?page={{ products.next_page_number }}"
+     hx-trigger="revealed"
+     hx-target=".load-more-trigger"
+     hx-swap="outerHTML">
+</div>
+{% endif %}

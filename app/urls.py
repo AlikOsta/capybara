@@ -3,16 +3,19 @@ from .views import (
     ProductListView, ProductDetailView, CategoryDetailView, 
     ProductCreateView, ProductUpdateView, ProductDeleteView,
     FavoriteListView, toggle_favorite, ProductListAPIView, CategoryProductsAPIView, change_product_status, FavoriteProductsAPIView,
-    banner_ad_info,
+    banner_ad_info, index, product_list, product_create, product_update
     )   
 
 app_name = 'app'
 
 urlpatterns = [
-    path('', ProductListView.as_view(), name='index'),
-    path('product/create/', ProductCreateView.as_view(), name='product_create'),
+    path('', index, name='index'),
+    path('product_list/', product_list, name='product_list'),
+    path('product/create/', product_create, name='product_create'),
+    path('product/<int:pk>/edit/', product_update, name='product_edit'),
+    
     path('product/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
-    path('product/<int:pk>/edit/', ProductUpdateView.as_view(), name='product_edit'),
+
     path('product/<int:pk>/delete/', ProductDeleteView.as_view(), name='product_delete'),
     path('product/<int:pk>/favorite/', toggle_favorite, name='toggle_favorite'),
     path('favorites/', FavoriteListView.as_view(), name='favorites'),
