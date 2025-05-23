@@ -34,6 +34,7 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_filters', 
     'drf_yasg',
+    'debug_toolbar',
 ]
 
 LOCAL_APPS = [
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'user_capybara.middleware.JWTAuthenticationMiddleware',  
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 # URL и шаблоны
@@ -300,3 +302,8 @@ PHOTO_ERROR = os.getenv("PHOTO_ERROR")
 SAPPORT_URL = os.getenv("SAPPORT_URL")
 
 BASE_URL = os.getenv("BASE_URL")
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+    "localhost",
+]

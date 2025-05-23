@@ -20,7 +20,7 @@
     
     {% csrf_token %}
 
-    <main class="flex-grow-1 pb-5 mb-5">
+    <main class="flex-grow-1">
         <div id="main-content" class="container">
             {% block content %}
             <!-- Здесь будет основное контент -->
@@ -35,27 +35,45 @@
     </div>
 
     <footer class="fixed-bottom bg-white border-top shadow-sm">
-        <nav class="container d-flex justify-content-around py-2">
-            <a href="{% url 'app:index' %}" 
-               class="text-decoration-none {% if request.resolver_match.url_name == 'index' %}text-primary{% else %}text-muted{% endif %} d-flex flex-column align-items-center">
-                <i class="bi bi-search fs-5"></i>
-            </a>
-            <a href="{% if user.is_authenticated %}{% url 'app:favorites' %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" 
-               class="text-decoration-none {% if request.resolver_match.url_name == 'favorites' %}text-primary{% else %}{% if user.is_authenticated %}text-muted{% else %}text-muted opacity-50{% endif %}{% endif %} d-flex flex-column align-items-center">
-                <i class="bi bi-heart fs-5"></i>
-            </a>
-            <a href="#"
-                hx-get="{% url 'app:product_create' %}"
-                hx-target="#dialog"
-               class="text-decoration-none {% if request.resolver_match.url_name == 'product_create' or request.resolver_match.url_name == 'product_edit' %}text-primary{% else %}{% if user.is_authenticated %}text-muted{% else %}text-muted opacity-50{% endif %}{% endif %} d-flex flex-column align-items-center">
-                <i class="bi bi-plus-square fs-5"></i>
-            </a>
-            <a href="{% if user.is_authenticated %}{% url 'user:author_profile' user.id %}{% else %}{% url 'user:telegram_auth' %}{% endif %}" 
-               class="text-decoration-none {% if request.resolver_match.url_name == 'author_profile' %}text-primary{% else %}{% if user.is_authenticated %}text-muted{% else %}text-muted opacity-50{% endif %}{% endif %} d-flex flex-column align-items-center">
-                <i class="bi bi-person fs-5"></i>
-            </a>
-        </nav>
-    </footer>
+  <nav class="container d-flex justify-content-between align-items-center" role="navigation" aria-label="Главное меню">
+    
+    <button type="button"
+            class="nav-btn flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
+            hx-get="{% url 'app:index' %}"
+            hx-target="#main-content"
+            hx-push-url="true"
+            aria-label="Поиск">
+    <i class="bi bi-house fs-4"></i>
+    </button>
+
+    <button type="button"
+            class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
+            hx-get="{% url 'app:favorites' %}"
+            hx-trigger="click, favoriteListChanged from:body"
+            hx-target="#main-content"
+            aria-label="Избранное">
+      <i class="bi bi-heart fs-4"></i>
+    </button>
+
+    <button type="button"
+            class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
+            hx-get="{% url 'app:product_create' %}"
+            hx-target="#dialog"
+            aria-label="Создать пост">
+      <i class="bi bi-plus-square fs-4"></i>
+    </button>
+
+    <button type="button"
+            class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
+            hx-get="{% url 'user:author_profile' user.id %}"
+            hx-target="#main-content"
+            aria-label="Профиль">
+      <i class="bi bi-person fs-4"></i>
+    </button>
+
+  </nav>
+</footer>
+
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <script src="{% static 'app/js/telegram_web_app.js' %}"></script>

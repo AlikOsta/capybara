@@ -1,9 +1,3 @@
-{% extends 'app/base.html' %}
-{% load static %}
-
-{% block title %}Избранное{% endblock %}
-
-{% block content %}
 <div class="favorites-page mt-3">
     <!-- Верхний блок с заголовком -->
     <div class="mb-4">
@@ -26,7 +20,8 @@
                 <p class="text-muted mb-4">
                     Добавляйте понравившиеся объявления в избранное, чтобы быстро находить их позже
                 </p>
-                <a href="{% url 'app:index' %}" class="btn btn-primary" 
+                <a href="{% url 'app:index' %}"
+                   class="btn btn-primary" 
                    style="background-color: var(--tg-theme-button-color, #2481cc); border-color: var(--tg-theme-button-color, #2481cc);">
                     <i class="bi bi-search me-2"></i>Найти объявления
                 </a>
@@ -42,15 +37,17 @@
         </div>
     </div>
 
-        <!-- Кнопка "Наверх" -->
+    <!-- Кнопка "Наверх" -->
     <button id="back-to-top" class="btn btn-primary rounded-circle position-fixed" 
         style="bottom: 80px; right: 20px; display: none; width: 50px; height: 50px;">
         <i class="bi bi-arrow-up"></i>
     </button>
-
 </div>
-{% endblock %}
 
-{% block scripts %}
-<script src="{% static 'app/js/infinite-scroll.js' %}"></script>
-{% endblock %}
+<script>
+    // Инициализируем кнопки избранного после загрузки контента через HTMX
+    if (typeof initFavoriteButtons === 'function') {
+        console.log('Calling initFavoriteButtons from favorites.html');
+        initFavoriteButtons();
+    }
+</script>

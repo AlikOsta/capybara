@@ -1,13 +1,6 @@
-{% extends 'app/base.html' %}
+
 {% load static %}
 
-{% block title %}
-    {% if is_own_profile %}
-        Мой профиль
-    {% else %}
-        Профиль {{ author.username }}
-    {% endif %}
-{% endblock %}
 
 {% block content %}
 <div class="profile-page mt-3">
@@ -289,7 +282,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static 'user_capybara/js/index.js' %}"></script>
+
 
 <script>
 

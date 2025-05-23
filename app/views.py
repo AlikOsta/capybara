@@ -11,6 +11,7 @@ from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.paginator import Paginator
 from django_q.tasks import async_task
+from django.core.cache import cache
 from functools import wraps
 
 
@@ -44,7 +45,10 @@ def index(request):
         'cities': City.objects.all(),
         'banners': BannerPost.objects.all(),
     }
-    return render(request, 'app/index.html', context)
+
+    if request.headers.get("HX-Request"):
+        return render(request, "app/includes/include_index.html", context)
+    return render(request, "app/index.html", context)
 
 
 def product_list(request):
@@ -80,6 +84,7 @@ def product_create(request):
     return render(request, 'app/includes/product_form_modal.html', {'form': form})
 
 
+@htmx_aware_login_required
 def product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
@@ -103,6 +108,16 @@ def product_update(request, pk):
 
     return render(request, 'app/includes/product_form_modal.html', context)
 
+
+@htmx_aware_login_required
+def favorites_list(request):
+    favorites = Favorite.objects.filter(user=request.user)
+    context = {
+        'favorites': favorites,
+    }
+    if request.headers.get("HX-Request"):
+        return render(request, "app/includes/include_favorites.html", context)
+    return render(request, "app/favorites.html", context)
 
 
 
@@ -239,15 +254,32 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     context_object_name = 'products'
     paginate_by = 10 
 
-    def get_queryset(self):
-        self.category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
-        # Используем select_related для загрузки связанных объектов за один запрос
-        queryset = Product.objects.filter(status=3, category=self.category).select_related(
-            'author', 'category', 'currency', 'city'
-        )
+    def setup(self, request, *args, **kwargs):
+        """Инициализация общих данных при настройке представления"""
+        super().setup(request, *args, **kwargs)
+        self.category = None
+        self.base_queryset = None
+        self.total_count = None
+        self.filtered_queryset = None
 
+    def get_category(self):
+        if self.category is None:
+            self.category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
+        return self.category
+
+    def get_base_queryset(self):
+        if self.base_queryset is None:
+            self.category = self.get_category()
+            self.base_queryset = Product.objects.filter(
+                status=3, 
+                category=self.category
+            ).select_related(
+                'author', 'category', 'currency', 'city'
+            )
+        return self.base_queryset
+
+    def apply_filters(self, queryset):
         query = self.request.GET.get('q', '')
-
         if query:
             queryset = queryset.filter(
                 Q(title__icontains=query) |
@@ -255,12 +287,10 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
             )
 
         city_id = self.request.GET.get('city')
-
         if city_id and city_id.isdigit():
             queryset = queryset.filter(city_id=city_id)
 
         currency_id = self.request.GET.get('currency')
-
         if currency_id and currency_id.isdigit():
             queryset = queryset.filter(currency_id=currency_id)
 
@@ -273,27 +303,61 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
             queryset = queryset.order_by('created_at')
         else: 
             queryset = queryset.order_by('-created_at')
-
+            
         return queryset
 
+    def get_queryset(self):
+        if self.filtered_queryset is None:
+            cache_key = f"category_{self.get_category().id}_products_{self.request.GET.urlencode()}"
+            cached_data = cache.get(cache_key)
+            
+            if cached_data:
+                self.filtered_queryset, self.total_count = cached_data
+            else:
+                base_queryset = self.get_base_queryset()
+                self.filtered_queryset = self.apply_filters(base_queryset)
+                self.total_count = len(list(self.filtered_queryset.values_list('id', flat=True)))
+                cache.set(cache_key, (self.filtered_queryset, self.total_count), 60*5)  # 5 минут
+                
+        return self.filtered_queryset
+
     def get_context_data(self, **kwargs):
+
+        cities_cache_key = "all_cities"
+        currencies_cache_key = "all_currencies"
+
+        cities = cache.get(cities_cache_key)
+        if not cities:
+            cities = list(City.objects.all())
+            cache.set(cities_cache_key, cities, 60*60)  # 1 час
+
+        currencies = cache.get(currencies_cache_key)
+        if not currencies:
+            currencies = list(Currency.objects.all())
+            cache.set(currencies_cache_key, currencies, 60*60)  # 1 час
+            
         context = super().get_context_data(**kwargs)
-        context['category'] = self.category
+        context['category'] = self.get_category()
         context['cities'] = City.objects.all()
         context['currencies'] = Currency.objects.all()
         context['query'] = self.request.GET.get('q', '')
         context['current_sort'] = self.request.GET.get('sort', '')
         context['current_city'] = self.request.GET.get('city', '')
         context['current_currency'] = self.request.GET.get('currency', '')
-        context['total_count'] = self.get_queryset().count()
-        context['has_more'] = context['total_count'] > len(context['products'])
+        
+        # Используем уже вычисленное значение total_count
+        context['total_count'] = self.total_count
+        context['has_more'] = self.total_count > len(context['products'])
+        
         if self.request.user.is_authenticated:
+            # Оптимизируем запрос избранных продуктов
             context['favorite_products'] = list(
-                self.request.user.favorites.values_list('product_id', flat=True)
+                Favorite.objects.filter(user=self.request.user).values_list('product_id', flat=True)
             )
         else:
             context['favorite_products'] = []
         return context
+
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
@@ -374,7 +438,7 @@ class FavoriteListView(ListView):
     model = Product
     template_name = 'app/favorites.html'
     context_object_name = 'products'
-    paginate_by = 10
+
 
     def get_queryset(self):
         return Product.objects.filter(
@@ -387,6 +451,7 @@ class FavoriteListView(ListView):
         context['title'] = 'Избранное'
         context['has_more'] = self.get_queryset().count() > len(context['products'])
         return context
+    
 
 
 

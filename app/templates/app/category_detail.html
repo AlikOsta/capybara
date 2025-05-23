@@ -18,21 +18,21 @@
             </div>
         </form>
     </div>
-
+    
     <!-- Заголовок категории -->
     <div class="d-flex align-items-center mb-3">
         <h4 class="mb-0 fw-bold">{{ category.name }}</h4>
         <span class="ms-2 badge bg-light text-dark rounded-pill">{{ total_count }}</span>
     </div>
-    
+
     <!-- Фильтры и сортировка -->
     <div class="filters-section mb-4">
         <div class="row g-2">
             <div class="col-12">
                 <select id="sort-select" class="form-select">
                     <option value="">Сортировка</option>
-                    <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Сначала дешевле</option>
-                    <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Сначала дороже</option>
+                    {% comment %} <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Сначала дешевле</option>
+                    <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Сначала дороже</option> {% endcomment %}
                     <option value="date_desc" {% if current_sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
                     <option value="date_asc" {% if current_sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
                 </select>
@@ -75,8 +75,8 @@
                 
                 {% if current_sort %}
                 <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="sort">
-                    {% if current_sort == 'price_asc' %}Сначала дешевле{% endif %}
-                    {% if current_sort == 'price_desc' %}Сначала дороже{% endif %}
+                    {% comment %} {% if current_sort == 'price_asc' %}Сначала дешевле{% endif %}
+                    {% if current_sort == 'price_desc' %}Сначала дороже{% endif %} {% endcomment %}
                     {% if current_sort == 'date_desc' %}Сначала новые{% endif %}
                     {% if current_sort == 'date_asc' %}Сначала старые{% endif %}
                     <i class="bi bi-x-circle ms-1"></i>
@@ -110,6 +110,8 @@
         </div>
         {% endif %}
     </div>
+
+
     
     <!-- Список объявлений -->
     <div id="products-container" class="row g-3" data-offset="{{ products|length }}" data-has-more="{{ has_more|lower }}">

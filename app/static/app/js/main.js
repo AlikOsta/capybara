@@ -209,3 +209,5 @@ function getCookie(name) {
     return cookieValue;
 }
 window.getCookie = getCookie;
+
+

@@ -1,15 +1,18 @@
-/**
- * Модуль для работы с избранными объявлениями
- */
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Находим все кнопки добавления в избранное
+    console.log('Initializing favorite buttons...');
+    initFavoriteButtons();
+});
+
+// Добавляем обработчик события htmx:afterSwap
+document.addEventListener('htmx:afterSwap', function() {
+    console.log('HTMX content loaded, reinitializing favorite buttons...');
     initFavoriteButtons();
 });
 
 // Функция для инициализации кнопок избранного
 function initFavoriteButtons() {
     const favoriteBtns = document.querySelectorAll('.favorite-btn:not(.initialized)');
+    console.log(`Found ${favoriteBtns.length} favorite buttons to initialize`);
     
     favoriteBtns.forEach(btn => {
         btn.classList.add('initialized');
@@ -20,6 +23,8 @@ function initFavoriteButtons() {
             
             const productId = this.dataset.productId;
             const isFavorite = this.dataset.isFavorite === 'true';
+            
+            console.log(`Toggle favorite for product ${productId}, current state: ${isFavorite}`);
             
             // Добавляем визуальный отклик при клике
             this.classList.add('clicked');
@@ -38,15 +43,19 @@ function initFavoriteButtons() {
                 body: JSON.stringify({})
             })
             .then(response => {
+                console.log(`Server response status: ${response.status}`);
                 if (!response.ok) {
-                    throw new Error('Ошибка сети');
+                    throw new Error(`Network error: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Server response data:', data);
+                
                 if (data.success) {
                     // Обновляем состояние кнопки
                     this.dataset.isFavorite = data.is_favorite.toString();
+                    console.log(`Updated button state to: ${data.is_favorite}`);
                     
                     // Обновляем иконку
                     const icon = this.querySelector('i');
@@ -56,50 +65,26 @@ function initFavoriteButtons() {
                     } else {
                         icon.classList.remove('bi-heart-fill');
                         icon.classList.add('bi-heart');
-                    }
-                    
-                    // Если мы на странице избранного и удалили из избранного, удаляем карточку
-                    if (!data.is_favorite && window.location.pathname.includes('/favorites/')) {
-                        const productCard = this.closest('.col-6');
-                        if (productCard) {
-                            // Анимация удаления
-                            productCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                            productCard.style.opacity = '0';
-                            productCard.style.transform = 'scale(0.9)';
+                        
+                        // Если мы на странице избранного и удалили из избранного, 
+                        // отправляем событие для обновления списка
+                        if (window.location.pathname.includes('/favorites/') || 
+                            document.querySelector('.favorites-page')) {
+                            console.log('Triggering favoriteListChanged event');
                             
-                            // Удаляем элемент после анимации
-                            setTimeout(() => {
-                                productCard.remove();
-                                
-                                // Проверяем, остались ли еще карточки
-                                const remainingCards = document.querySelectorAll('.favorites-page .col-6');
-                                if (remainingCards.length === 0) {
-                                    // Если карточек не осталось, показываем пустое состояние
-                                    const row = document.querySelector('.favorites-page .row');
-                                    if (row) {
-                                        row.innerHTML = `
-                                            <div class="col-12">
-                                                <div class="empty-favorites text-center py-5">
-                                                    <div class="empty-icon mb-3">
-                                                        <i class="bi bi-heart text-danger fs-1"></i>
-                                                    </div>
-                                                    <h5 class="mb-3">Нет избранных объявлений</h5>
-                                                    <p class="text-muted mb-4">Добавляйте понравившиеся объявления в избранное, чтобы быстро находить их позже</p>
-                                                    <a href="/" class="btn btn-primary">
-                                                        <i class="bi bi-search me-2"></i>Найти объявления
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        `;
-                                    }
-                                }
-                            }, 300);
+                            // Отправляем событие для HTMX
+                            document.body.dispatchEvent(
+                                new CustomEvent('favoriteListChanged', {
+                                    bubbles: true
+                                })
+                            );
                         }
                     }
                 }
             })
             .catch(error => {
-                console.error('Ошибка:', error);
+                console.error('Error:', error);
+                alert('Произошла ошибка при обновлении избранного. Пожалуйста, попробуйте еще раз.');
             });
         });
     });
@@ -123,3 +108,5 @@ function getCookie(name) {
 
 // Экспортируем функцию для использования в других скриптах
 window.initFavoriteButtons = initFavoriteButtons;
+
+console.log('favorites.js loaded');
