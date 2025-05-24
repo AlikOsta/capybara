@@ -361,34 +361,27 @@ def category_detail(request, category_slug):
 
 def category_product_list(request, category_slug):
     category = get_object_or_404(Category, slug=category_slug)
-    
-    # Получаем параметры
     offset = int(request.GET.get('offset', 0))
-    limit = int(request.GET.get('limit', 16))
+    limit = int(request.GET.get('limit', 8))
     query = request.GET.get('q', '').strip()
     sort = request.GET.get('sort', '')
     city = request.GET.get('city', '')
     currency = request.GET.get('currency', '')
     
-    # Базовый queryset
     qs = Product.objects.filter(status=3, category=category)
     qs = qs.select_related('author', 'category', 'currency', 'city')
     
-    # Добавляем поиск
     if query:
         qs = qs.filter(
             Q(title__icontains=query) | Q(description__icontains=query)
         )
     
-    # Фильтрация по городу
     if city and city.isdigit():
         qs = qs.filter(city_id=city)
-    
-    # Фильтрация по валюте
+
     if currency and currency.isdigit():
         qs = qs.filter(currency_id=currency)
     
-    # Сортировка
     ordering = {
         'date_desc': '-created_at',
         'date_asc': 'created_at',
@@ -397,17 +390,15 @@ def category_product_list(request, category_slug):
     }.get(sort, '-created_at')
     
     qs = qs.order_by(ordering)
-    
-    # Получаем продукты с offset
+
     total = qs.count()
     products = qs[offset:offset+limit]
     
-    # Избранные продукты пользователя
     favorite_products = set(
         Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
     ) if request.user.is_authenticated else set()
     
-    # Формируем параметры для следующего запроса
+
     filter_params = []
     if query:
         filter_params.append(f'q={query}')
