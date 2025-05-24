@@ -54,7 +54,10 @@
   <footer class="fixed-bottom bg-white border-top shadow-sm">
     <nav class="container d-flex justify-content-between align-items-center" role="navigation" aria-label="Главное меню">
       {% comment %} Кнопки навигации {% endcomment %}
-      <button type="button" class="nav-btn flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'app:index' %}" hx-target="#main-content" hx-push-url="true" aria-label="Поиск">
+      <button type="button" 
+              class="nav-btn flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+              onclick="window.location.href='{% url 'app:index' %}'"
+              aria-label="Поиск">
         <i class="bi bi-house fs-4"></i>
       </button>
       <button type="button" class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'app:favorites' %}" hx-trigger="click, favoriteListChanged from:body" hx-target="#main-content" aria-label="Избранное">

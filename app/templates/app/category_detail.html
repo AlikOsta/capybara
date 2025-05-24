@@ -1,5 +1,4 @@
 {% extends 'app/base.html' %}
-{% load static %}
 
 {% block title %}{{ category.name }} - Объявления{% endblock %}
 
@@ -7,157 +6,108 @@
 <div class="category-page mt-3">
     <!-- Поисковая строка -->
     <div class="mb-3">
-        <form id="search-form" class="search-form">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 search-icon">
-                    <i class="bi bi-search search-icon-text"></i>
-                </span>
-                <input type="text" name="q" id="search-input" class="form-control border-start-0 shadow-none search-input" 
-                    placeholder="Поиск..." value="{{ query }}">
-                <button class="btn btn-primary d-none" type="submit">Найти</button>
-            </div>
-        </form>
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" 
+                   id="search-input" 
+                   class="form-control border-start-0 shadow-none" 
+                   placeholder="Поиск в категории {{ category.name }}..."
+                   value="{{ query }}"
+                   name="q"
+                   hx-get="{% url 'app:category_product_list' category.slug %}"
+                   hx-trigger="input changed delay:300ms"
+                   hx-target="#category-products-container"
+                   hx-swap="innerHTML"
+                   hx-include="#filters-form">
+        </div>
     </div>
-    
-    <!-- Заголовок категории -->
+
+    <!-- Фильтры и сортировка -->
+    <form id="filters-form">
+        <div class="filters-section mb-4">
+            <div class="row g-2">
+                <!-- Сортировка -->
+                <div class="col-12">
+                    <select id="sort-select" 
+                            class="form-select" 
+                            name="sort"
+                            hx-get="{% url 'app:category_product_list' category.slug %}"
+                            hx-trigger="change"
+                            hx-target="#category-products-container"
+                            hx-swap="innerHTML"
+                            hx-include="#filters-form">
+                        <option value="">Сортировка</option>
+                        <option value="date_desc" {% if current_sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
+                        <option value="date_asc" {% if current_sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row g-2 mt-2">
+                <!-- Фильтр по городу -->
+                <div class="col-6">
+                    <select id="city-select" 
+                            class="form-select" 
+                            name="city"
+                            hx-get="{% url 'app:category_product_list' category.slug %}"
+                            hx-trigger="change"
+                            hx-target="#category-products-container"
+                            hx-swap="innerHTML"
+                            hx-include="#filters-form">
+                        <option value="">Все города</option>
+                        {% for city in cities %}
+                        <option value="{{ city.id }}" {% if current_city == city.id|stringformat:"s" %}selected{% endif %}>
+                            {{ city.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Фильтр по валюте -->
+                <div class="col-6">
+                    <select id="currency-select" 
+                            class="form-select" 
+                            name="currency"
+                            hx-get="{% url 'app:category_product_list' category.slug %}"
+                            hx-trigger="change"
+                            hx-target="#category-products-container"
+                            hx-swap="innerHTML"
+                            hx-include="#filters-form">
+                        <option value="">Все валюты</option>
+                        {% for currency in currencies %}
+                        <option value="{{ currency.id }}" {% if current_currency == currency.id|stringformat:"s" %}selected{% endif %}>
+                            {{ currency.code }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </form>
+
+        <!-- Заголовок категории -->
     <div class="d-flex align-items-center mb-3">
         <h4 class="mb-0 fw-bold">{{ category.name }}</h4>
         <span class="ms-2 badge bg-light text-dark rounded-pill">{{ total_count }}</span>
     </div>
 
-    <!-- Фильтры и сортировка -->
-    <div class="filters-section mb-4">
-        <div class="row g-2">
-            <div class="col-12">
-                <select id="sort-select" class="form-select">
-                    <option value="">Сортировка</option>
-                    {% comment %} <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Сначала дешевле</option>
-                    <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Сначала дороже</option> {% endcomment %}
-                    <option value="date_desc" {% if current_sort == 'date_desc' %}selected{% endif %}>Сначала новые</option>
-                    <option value="date_asc" {% if current_sort == 'date_asc' %}selected{% endif %}>Сначала старые</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="row g-2 mt-2">
-            <div class="col-6">
-                <select id="city-select" class="form-select">
-                    <option value="">Все города</option>
-                    {% for city in cities %}
-                    <option value="{{ city.id }}" {% if current_city == city.id|stringformat:"s" %}selected{% endif %}>
-                        {{ city.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="col-6">
-                <select id="currency-select" class="form-select">
-                    <option value="">Все валюты</option>
-                    {% for currency in currencies %}
-                    <option value="{{ currency.id }}" {% if current_currency == currency.id|stringformat:"s" %}selected{% endif %}>
-                        {{ currency.code }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-        
-        <!-- Активные фильтры -->
-        {% if current_sort or current_city or current_currency or query %}
-        <div class="active-filters mt-3">
-            <div class="d-flex flex-wrap gap-2">
-                {% if query %}
-                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="q">
-                    Поиск: {{ query }} <i class="bi bi-x-circle ms-1"></i>
-                </span>
-                {% endif %}
-                
-                {% if current_sort %}
-                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="sort">
-                    {% comment %} {% if current_sort == 'price_asc' %}Сначала дешевле{% endif %}
-                    {% if current_sort == 'price_desc' %}Сначала дороже{% endif %} {% endcomment %}
-                    {% if current_sort == 'date_desc' %}Сначала новые{% endif %}
-                    {% if current_sort == 'date_asc' %}Сначала старые{% endif %}
-                    <i class="bi bi-x-circle ms-1"></i>
-                </span>
-                {% endif %}
-                
-                {% if current_city %}
-                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="city">
-                    {% for city in cities %}
-                        {% if current_city == city.id|stringformat:"s" %}{{ city.name }}{% endif %}
-                    {% endfor %}
-                    <i class="bi bi-x-circle ms-1"></i>
-                </span>
-                {% endif %}
-                
-                {% if current_currency %}
-                <span class="badge bg-light text-dark text-decoration-none py-2 px-3 filter-badge" data-filter="currency">
-                    {% for currency in currencies %}
-                        {% if current_currency == currency.id|stringformat:"s" %}{{ currency.code }}{% endif %}
-                    {% endfor %}
-                    <i class="bi bi-x-circle ms-1"></i>
-                </span>
-                {% endif %}
-                
-                {% if current_sort or current_city or current_currency or query %}
-                <button id="reset-filters" class="badge bg-danger text-white text-decoration-none py-2 px-3">
-                    Сбросить все <i class="bi bi-x-circle ms-1"></i>
-                </button>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-
-
-    
-    <!-- Список объявлений -->
-    <div id="products-container" class="row g-3" data-offset="{{ products|length }}" data-has-more="{{ has_more|lower }}">
-        {% for product in products %}
-        <div class="col-6 product-item">
-            {% include 'app/includes/product_card.html' with product=product %}
-        </div>
-        {% empty %}
+    <!-- Контейнер для продуктов категории -->
+    <div id="category-products-container" class="row g-3">
+        <!-- Спиннер загрузки -->
         <div class="col-12 text-center py-5">
-            <div class="empty-state">
-                <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                <p class="text-muted">В этой категории пока нет объявлений</p>
-                {% if query or current_sort or current_city or current_currency %}
-                <button id="reset-filters" class="btn btn-outline-primary mt-2">Сбросить фильтры</button>
-                {% endif %}
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
             </div>
         </div>
-        {% endfor %}
-    </div>
-    
-    <!-- Индикатор загрузки -->
-    <div id="loader" class="text-center py-4" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Загрузка...</span>
-        </div>
     </div>
 
-    <!-- Сообщение о конце списка -->
-    <div id="end-message" class="text-center py-4" style="display: none;">
-        <p class="text-muted mb-0">Вы просмотрели все объявления</p>
+    <!-- HTMX загрузка первых продуктов -->
+    <div hx-get="{% url 'app:category_product_list' category.slug %}?offset=0&limit=16" 
+         hx-trigger="load"
+         hx-target="#category-products-container"
+         hx-swap="innerHTML">
     </div>
-
-    <!-- Сообщение об ошибке -->
-    <div id="error-message" class="text-center py-4" style="display: none;">
-        <p class="text-danger mb-2">Не удалось загрузить объявления</p>
-        <button id="retry-button" class="btn btn-outline-primary">Попробовать снова</button>
-    </div>
-
-    <!-- Кнопка "Наверх" -->
-    <button id="back-to-top" class="btn btn-primary rounded-circle position-fixed" style="bottom: 80px; right: 20px; display: none; width: 50px; height: 50px;">
-        <i class="bi bi-arrow-up"></i>
-    </button>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script src="{% static 'app/js/infinite-scroll.js' %}"></script>
-<script src="{% static 'app/js/category_detail.js' %}"></script>
 {% endblock %}
