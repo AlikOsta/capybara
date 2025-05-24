@@ -13,8 +13,8 @@ load_dotenv()
 # Базовые настройки
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
 # Приложения
 DJANGO_APPS = [
@@ -36,6 +36,7 @@ THIRD_PARTY_APPS = [
     'drf_yasg',
     'debug_toolbar',
     'imagekit',
+    'compressor',
 ]
 
 LOCAL_APPS = [
@@ -92,6 +93,18 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',    
+#         'NAME': os.getenv("NAME_SQL"),                          
+#         'USER': os.getenv("USER_SQL"),                             
+#         'PASSWORD': os.getenv('PASSWORD_SQL'),                       
+#         'HOST': os.getenv('HOST_SQL'),                          
+#         'PORT': os.getenv("PORT_SQL"),  
+                                     
+#     }
+# }
 
 # Валидация паролей
 AUTH_PASSWORD_VALIDATORS = [
@@ -308,6 +321,28 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 300,  # 5 минут по умолчанию
+        'TIMEOUT': 300,  
     }
 }
+
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter',
+    'compressor.filters.cssmin.rCSSMinFilter',
+]
+COMPRESS_JS_FILTERS = [
+    'compressor.filters.jsmin.JSMinFilter',
+]
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',  # Добавить эту строку
+]
+
+# Настройки статических файлов
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Медиа файлы
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
