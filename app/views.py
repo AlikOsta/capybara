@@ -333,6 +333,8 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
         else: 
             queryset = queryset.order_by('-created_at')
 
+        self.total_count = queryset.count()
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -359,8 +361,8 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
         context['current_city'] = self.request.GET.get('city', '')
         context['current_currency'] = self.request.GET.get('currency', '')
         
-        # Используем уже вычисленное значение total_count
-        context['total_count'] = self.total_count
+        total_count = self.get_queryset().count()
+        context['total_count'] = total_count
         context['has_more'] = self.total_count > len(context['products'])
         
         if self.request.user.is_authenticated:

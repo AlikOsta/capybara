@@ -1,0 +1,9 @@
+;(function(){const modal=new bootstrap.Modal(document.getElementById('modal'))
+htmx.on('htmx:afterSwap',(e)=>{if(e.detail.target.id==='dialog')
+modal.show()})
+htmx.on('htmx:beforeSwap',(e)=>{if(e.detail.target.id==='dialog'&&!e.detail.xhr.response){modal.hide()
+e.detail.shouldSwap=false}})
+htmx.on('hidden.bs.modal',(e)=>{document.getElementById('dialog').innerHTML='';})})();document.addEventListener('DOMContentLoaded',function(){if(TelegramApp.isAvailable()){console.log('Telegram Web App доступен');}
+setupBackToTopButton();lazyLoadImages();});function setupBackToTopButton(){const backToTopButton=document.getElementById('back-to-top');if(!backToTopButton)return;const handleScroll=utils.throttle(function(){if(window.scrollY>300){backToTopButton.style.display='flex';}else{backToTopButton.style.display='none';}},100);window.addEventListener('scroll',handleScroll);backToTopButton.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});if(TelegramApp.isInitialized()){TelegramApp.hapticFeedback('impact','medium');}});}
+function lazyLoadImages(){if('IntersectionObserver'in window){const imageObserver=new IntersectionObserver((entries,observer)=>{entries.forEach(entry=>{if(entry.isIntersecting){const img=entry.target;const src=img.getAttribute('data-src');if(src){img.src=src;img.removeAttribute('data-src');}
+observer.unobserve(img);}});});document.querySelectorAll('img[loading="lazy"]').forEach(img=>{if(!img.getAttribute('data-src')&&img.src){img.setAttribute('data-src',img.src);img.src='data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"%3E%3C/svg%3E';imageObserver.observe(img);}});}};

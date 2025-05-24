@@ -36,6 +36,7 @@ THIRD_PARTY_APPS = [
     'drf_yasg',
     'debug_toolbar',
     'imagekit',
+    'compressor',
 ]
 
 LOCAL_APPS = [
@@ -308,6 +309,26 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 300,  # 5 минут по умолчанию
+        'TIMEOUT': 300,  
     }
 }
+
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
+]
+
+COMPRESS_JS_FILTERS = [
+    'compressor.filters.jsmin.JSMinFilter',
+]
+
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter',
+    'compressor.filters.cssmin.rCSSMinFilter',
+]
+
+COMPRESS_ROOT = STATIC_ROOT
