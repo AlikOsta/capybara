@@ -187,14 +187,6 @@ SESSION_COOKIE_SECURE = not DEBUG  # True в продакшене
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
 
-# Настройки кэширования
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}
-
 # Время кэширования в секундах
 CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 минут
 
@@ -311,3 +303,11 @@ INTERNAL_IPS = [
 
 IMAGEKIT_CACHEFILE_DIR = 'media/CACHE/images'
 IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 300,  # 5 минут по умолчанию
+    }
+}

@@ -124,6 +124,10 @@ class Category(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['order']
+        indexes = [
+            models.Index(fields=['slug']),
+            models.Index(fields=['order']),
+        ]
 
 
 class Currency(models.Model):
@@ -174,6 +178,11 @@ class Favorite(models.Model):
         verbose_name_plural = "Избранное"
         unique_together = ('user', 'product')
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['product']),
+            models.Index(fields=['created_at']),
+        ]
 
 
 class ProductView(models.Model):
@@ -207,8 +216,13 @@ class ProductView(models.Model):
             ),
         ]
         ordering = ['-created_at']
-
-
+        indexes = [
+            models.Index(fields=['product']),
+            models.Index(fields=['user']),
+            models.Index(fields=['ip_address']),
+            models.Index(fields=['created_at']),
+        ]
+        
 
 class BannerPost(models.Model):
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Автор')

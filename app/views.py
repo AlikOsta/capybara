@@ -109,17 +109,6 @@ def product_update(request, pk):
     return render(request, 'app/includes/product_form_modal.html', context)
 
 
-@htmx_aware_login_required
-def favorites_list(request):
-    favorites = Favorite.objects.filter(user=request.user)
-    context = {
-        'favorites': favorites,
-    }
-    if request.headers.get("HX-Request"):
-        return render(request, "app/includes/include_favorites.html", context)
-    return render(request, "app/favorites.html", context)
-
-
 
 # Миксин для фильтрации опубликованных объявлений
 class PublishedProductsMixin:
@@ -149,6 +138,7 @@ class AuthorRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для списка объявлений."""
     model = Product
@@ -172,18 +162,19 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
+        context['categories'] = Category.objects.all().select_related()
         
         context['query'] = self.request.GET.get('q', '')
         context['total_count'] = self.get_queryset().count()
         context['has_more'] = context['total_count'] > len(context['products'])
-
-        context['banners'] = BannerPost.objects.all()
+        context['banners'] = BannerPost.objects.all().select_related('author')
 
         if self.request.user.is_authenticated:
-            context['favorite_products'] = list(
-                self.request.user.favorites.values_list('product_id', flat=True)
+            favorite_products = list(
+                Favorite.objects.filter(user=self.request.user)
+                .values_list('product_id', flat=True)
             )
+            context['favorite_products'] = favorite_products
         else:
             context['favorite_products'] = []
         return context
@@ -191,6 +182,7 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ProductDetailView(DetailView):
     """Представление для детального просмотра объявления."""
     model = Product
@@ -247,6 +239,8 @@ class ProductDetailView(DetailView):
         return request.META.get('REMOTE_ADDR')
 
 
+@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для детального просмотра категории."""
     model = Product
@@ -307,19 +301,39 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
         return queryset
 
     def get_queryset(self):
-        if self.filtered_queryset is None:
-            cache_key = f"category_{self.get_category().id}_products_{self.request.GET.urlencode()}"
-            cached_data = cache.get(cache_key)
-            
-            if cached_data:
-                self.filtered_queryset, self.total_count = cached_data
-            else:
-                base_queryset = self.get_base_queryset()
-                self.filtered_queryset = self.apply_filters(base_queryset)
-                self.total_count = len(list(self.filtered_queryset.values_list('id', flat=True)))
-                cache.set(cache_key, (self.filtered_queryset, self.total_count), 60*5)  # 5 минут
-                
-        return self.filtered_queryset
+        self.category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
+        queryset = Product.objects.filter(status=3, category=self.category).select_related(
+            'author', 'category', 'currency', 'city'
+        ).prefetch_related(
+            'favorited_by' 
+        )
+
+        query = self.request.GET.get('q', '')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query)
+            )
+
+        city_id = self.request.GET.get('city')
+        if city_id and city_id.isdigit():
+            queryset = queryset.filter(city_id=city_id)
+
+        currency_id = self.request.GET.get('currency')
+        if currency_id and currency_id.isdigit():
+            queryset = queryset.filter(currency_id=currency_id)
+
+        sort = self.request.GET.get('sort')
+        if sort == 'price_asc':
+            queryset = queryset.order_by('price')
+        elif sort == 'price_desc':
+            queryset = queryset.order_by('-price')
+        elif sort == 'date_asc':
+            queryset = queryset.order_by('created_at')
+        else: 
+            queryset = queryset.order_by('-created_at')
+
+        return queryset
 
     def get_context_data(self, **kwargs):
 
@@ -439,12 +453,15 @@ class FavoriteListView(ListView):
     template_name = 'app/favorites.html'
     context_object_name = 'products'
 
-
     def get_queryset(self):
         return Product.objects.filter(
             favorited_by__user=self.request.user,
             status=3 
-        ).select_related('category', 'city', 'currency', 'author')
+        ).select_related(
+            'category', 'city', 'currency', 'author'
+        ).prefetch_related(
+            'favorited_by'
+        ).distinct() 
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -452,8 +469,6 @@ class FavoriteListView(ListView):
         context['has_more'] = self.get_queryset().count() > len(context['products'])
         return context
     
-
-
 
 @login_required(login_url='user:telegram_auth')
 @require_POST
