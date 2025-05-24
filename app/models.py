@@ -8,6 +8,7 @@ from PIL import Image
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.core.validators import MinValueValidator, MaxValueValidator
+from .utils_img import process_image
 
 
 class Product(models.Model):
@@ -59,27 +60,16 @@ class Product(models.Model):
     def get_view_count(self):
         """Возвращает количество уникальных просмотров объявления."""
         return self.views.count()
-    
+            
     def save(self, *args, **kwargs):
-        if self.image and not self.id:  
-            
-            img = Image.open(self.image)
-            
-            if img.height > 800 or img.width > 800:
-                output_size = (800, 800)
-                img.thumbnail(output_size)
-            
-            if img.mode != "RGB":
-                img = img.convert("RGB")
-            
-            output = BytesIO()
-            img.save(output, format="WEBP", quality=65, optimize=True)
-            output.seek(0)
-            
-            base_name = self.image.name.rsplit('.', 1)[0]
-            self.image = ContentFile(output.read(), name=f"{base_name}.webp")
-        
         super().save(*args, **kwargs)
+
+        if self.image:
+            processed = process_image(self.image, self.pk)
+
+            if processed != self.image:
+                self.image = processed
+                super().save(update_fields=['image'])
 
 
     class Meta:
@@ -209,3 +199,13 @@ class BannerPost(models.Model):
     title = models.CharField(max_length=50, verbose_name='Товар', db_index=True)
     link = models.URLField(max_length=200, verbose_name='Ссылка', blank=True, null=True)
     image = models.ImageField(upload_to='media/images/banner/', verbose_name='Изображение')
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image:
+            processed = process_image(self.image, self.pk)
+
+            if processed != self.image:
+                self.image = processed
+                super().save(update_fields=['image'])

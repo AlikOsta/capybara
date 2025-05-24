@@ -27,8 +27,6 @@ def apply_exif_orientation(image):
 
 def process_image(image_field, instans_id=None, max_size=(800, 800), format="WEBP", quality=65):
 
-    print('******НАЧАЛО ОБРАБОТКИ ИЗОБРАЖЕНИЯ******')
-
     if not image_field:
         return None
     

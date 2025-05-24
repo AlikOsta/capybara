@@ -2,13 +2,13 @@
 
 <div class="mt-3">
 
-    {% comment %} {% cache 60 product_list %} {% endcomment %}
+    {% cache 60 product_list %} 
         <!-- Категории -->
         {% include "app/includes/category.html" %}
 
             <!-- Баннер -->
         {% include "app/includes/banner.html" %}
-    {% comment %} {% endcache %} {% endcomment %}
+    {% endcache %}
 
         <!-- Заголовок с количеством новых объявлений -->
     <div class="d-flex align-items-center mb-3">

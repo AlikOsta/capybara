@@ -21,7 +21,7 @@
         {% endif %}
 
         <!-- Форма -->
-        <form class="product-form" id="productForm" hx-post="{{ request.path }}" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="product-form" id="productForm" hx-post="{{ request.path }}" hx-encoding="multipart/form-data">
             {% csrf_token %}
 
             <div class="form-group mb-3">
