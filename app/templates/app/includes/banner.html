@@ -36,8 +36,9 @@
 
       <div class="ratio ratio-1x1 bg-light rounded-circle border border-4 border-primary overflow-hidden banner-img d-flex justify-content-center align-items-center">
         <img src="{{ banner.image.url }}"
-             alt="{{ banner.title }}"
-             class="w-100 h-100 object-fit-cover" />
+            width="80" height="80"
+            class="w-100 h-100 object-fit-cover"
+            alt="{{ banner.title }}">
       </div>
 
       <span class="mt-2 text-center text-dark small line-clamp">
@@ -54,7 +55,10 @@
             class="d-flex flex-column align-items-center banner btn btn-link p-0 text-decoration-none">
 
       <div class="ratio ratio-1x1">
-        <div class="bg-white rounded-circle border border-4 border-secondary border-dashed d-flex justify-content-center align-items-center w-100 h-100">
+        <div class="ratio ratio-1x1 rounded-circle border border-secondary bg-light
+            d-flex align-items-center justify-content-center"
+            style="width: 80px; height: 80px;"
+            role="button" aria-label="Add new">
           <span class="fs-2">+</span>
         </div>
       </div>

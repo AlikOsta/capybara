@@ -41,7 +41,10 @@
     <!-- Изображение с кнопкой избранного -->
     <div class="product-gallery mb-4">
         <div class="main-image-container rounded overflow-hidden position-relative">
-            <img src="{{ product.image.url }}" class="img-fluid w-100 main-product-image" alt="{{ product.title }}" loading="lazy">
+            <img src="{{ product.image.url }}" 
+                width="800" height="600"
+                class="img-fluid w-100 main-product-image" 
+                alt="{{ product.title }}">
             
             <!-- Кнопка избранного поверх фото -->
             {% if user.is_authenticated and user != product.author %}
