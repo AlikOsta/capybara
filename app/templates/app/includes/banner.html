@@ -35,10 +35,11 @@
        class="d-flex flex-column align-items-center banner text-decoration-none">
 
       <div class="ratio ratio-1x1 bg-light rounded-circle border border-4 border-primary overflow-hidden banner-img d-flex justify-content-center align-items-center">
-        <img src="{{ banner.image.url }}"
-            width="80" height="80"
-            class="w-100 h-100 object-fit-cover"
-            alt="{{ banner.title }}">
+        <img src="{{ banner.image_thumbnail.url }}"
+          width="80" height="80"
+          class="w-100 h-100 object-fit-cover"
+          alt="{{ banner.title }}"
+          loading="lazy">
       </div>
 
       <span class="mt-2 text-center text-dark small line-clamp">

@@ -35,6 +35,7 @@ THIRD_PARTY_APPS = [
     'django_filters', 
     'drf_yasg',
     'debug_toolbar',
+    'imagekit',
 ]
 
 LOCAL_APPS = [
@@ -307,3 +308,6 @@ INTERNAL_IPS = [
     "127.0.0.1",
     "localhost",
 ]
+
+IMAGEKIT_CACHEFILE_DIR = 'media/CACHE/images'
+IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'

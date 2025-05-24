@@ -8,7 +8,8 @@
                             <!-- Фоновое изображение занимает весь блок -->
                             <div class="position-absolute w-100 h-100 d-flex justify-content-end align-items-end p-2">
                                 {% if category.image %}
-                                    <img src="{{ category.image.url }}" class="img-fluid" 
+                                    <img src="{{ category.image_thumbnail.url }}" 
+                                        class="img-fluid" 
                                         width="70" height="70"
                                         alt="{{ category.name }}"
                                         style="max-height: 70px; max-width: 70px; opacity: 0.8;" 

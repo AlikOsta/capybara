@@ -1,14 +1,14 @@
-# app/models.py
+
 import os
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from slugify import slugify
-from PIL import Image
-from io import BytesIO
-from django.core.files.base import ContentFile
 from django.core.validators import MinValueValidator, MaxValueValidator
-from .utils_img import process_image
+from .utils_img import optimize_image, create_thumbnail
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill, ResizeToFit
+
 
 
 class Product(models.Model):
@@ -29,13 +29,15 @@ class Product(models.Model):
     title = models.CharField(max_length=50, verbose_name='Товар', db_index=True) 
     description = models.TextField(max_length=350, verbose_name='Описание')
     image = models.ImageField(upload_to='media/images/', verbose_name='Изображение')
+    image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(300, 300)], format='WEBP', options={'quality': 65})
+    image_small = ImageSpecField(source='image', processors=[ResizeToFill(150, 150)], format='WEBP', options={'quality': 60})
+    image_large = ImageSpecField(source='image', processors=[ResizeToFit(800, 800)], format='WEBP', options={'quality': 80})
     price = models.IntegerField(verbose_name='Цена', db_index=True, validators=[MinValueValidator(0), MaxValueValidator(9999999)],) 
     currency = models.ForeignKey('Currency', null=True, on_delete=models.PROTECT, verbose_name='Валюта')
     city = models.ForeignKey('City', null=True, on_delete=models.PROTECT, verbose_name='Город')
     created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Опубликовано')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
     status = models.IntegerField(choices=STATUS_CHOICES, default=0, verbose_name='Статус', db_index=True) 
-
 
     def __str__(self):
         return self.title
@@ -62,14 +64,16 @@ class Product(models.Model):
         return self.views.count()
             
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if self.image:
-            processed = process_image(self.image, self.pk)
-
-            if processed != self.image:
-                self.image = processed
-                super().save(update_fields=['image'])
+        if self.image and not self.id:
+            self.image = optimize_image(self.image, max_size=(800, 800))
+            super().save(*args, **kwargs)
+            try:
+                thumbnail_list = create_thumbnail(self.image, (300, 300))
+                thumbnail_card = create_thumbnail(self.image, (150, 150))
+            except Exception as e:
+                print(f"Error creating thumbnail: {e}")
+        else:
+            super().save(*args, **kwargs)
 
 
     class Meta:
@@ -92,14 +96,26 @@ class Category(models.Model):
     order = models.SmallIntegerField(default=0, db_index=True, verbose_name='Порядок')
     slug = models.SlugField(max_length=200, verbose_name='Слаг')
     image = models.ImageField(upload_to='media/images/cat_img/', blank=True, null=True, verbose_name='Изображение')
+    image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(70, 70)], format='WEBP', options={'quality': 65})
 
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):    
         if not self.slug:
             self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+        
+        if self.image and not self.id:
+            self.image = optimize_image(self.image, max_size=(400, 400))
+            super().save(*args, **kwargs)
+            try:
+                thumbnail = create_thumbnail(self.image, (70, 70))
+                if thumbnail:
+                    pass
+            except Exception as e:
+                print(f"Error creating thumbnail: {e}")
+        else:
+            super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("app:category_detail", args=[self.slug])
@@ -199,13 +215,17 @@ class BannerPost(models.Model):
     title = models.CharField(max_length=50, verbose_name='Товар', db_index=True)
     link = models.URLField(max_length=200, verbose_name='Ссылка', blank=True, null=True)
     image = models.ImageField(upload_to='media/images/banner/', verbose_name='Изображение')
+    image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(80, 80)], format='WEBP', options={'quality': 65})
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if self.image:
-            processed = process_image(self.image, self.pk)
-
-            if processed != self.image:
-                self.image = processed
-                super().save(update_fields=['image'])
+    def save(self, *args, **kwargs):    
+        if self.image and not self.id:
+            self.image = optimize_image(self.image, max_size=(800, 800))
+            super().save(*args, **kwargs)
+            try:
+                thumbnail = create_thumbnail(self.image, (80, 80))
+                if thumbnail:
+                    pass
+            except Exception as e:
+                print(f"Error creating thumbnail: {e}")
+        else:
+            super().save(*args, **kwargs)

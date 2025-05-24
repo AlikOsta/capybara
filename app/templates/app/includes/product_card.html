@@ -4,12 +4,11 @@
        style="color: var(--tg-theme-text-color, #000000);">
         <div class="card h-100 product-card-inner">
             <div class="product-image-container position-relative">
-                <img src="{{ product.image.url }}" 
+                <img src="{{ product.image_thumbnail.url }}" 
                     width="300" height="300"
                     class="card-img-top product-image" 
                     alt="{{ product.title }}" 
-                    loading="lazy">
-                     
+                    {% if not forloop.first or page_obj.number > 1 %}loading="lazy"{% endif %}>
                 {% if product.status != 3 %}
                 <div class="product-status-badge 
                     {% if product.status == 0 %}badge-pending{% elif product.status == 1 %}badge-approved{% elif product.status == 2 %}badge-rejected{% elif product.status == 4 %}badge-archived{% endif %}"
