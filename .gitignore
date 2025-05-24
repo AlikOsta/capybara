@@ -8,3 +8,6 @@ venv
 media
 
 bot.log
+datadump.json
+staticfiles*
+
