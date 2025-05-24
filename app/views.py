@@ -38,32 +38,37 @@ def htmx_aware_login_required(view_func):
     return wrapper
 
 
-@cache_page(60 * 5)
 def index(request):
+    favorite_products = set()
+    if request.user.is_authenticated:
+        favorite_products = set(
+            Favorite.objects.filter(user=request.user)
+                    .values_list('product_id', flat=True)
+        )
+    
     context = {
         'categories': get_cached('all_categories', Category.objects.all()),
-        'banners': get_cached('all_banners', BannerPost.objects.select_related('author').all()),
+        'banners': BannerPost.objects.select_related('author').all(),
         'total_count': cache.get_or_set(
             'products_total_count', 
             lambda: Product.objects.filter(status=3).count(), 
             60 * 5
         ),
+        # Возвращаем загрузку первых продуктов!
         'initial_products': cache.get_or_set(
             'initial_products',
             lambda: list(Product.objects.filter(status=3)
                         .select_related('author', 'category', 'currency', 'city')
                         .prefetch_related('favorited_by')[:8]),
-            60 * 2 
+            60 * 2
         ),
-        'favorite_products': set(
-            Favorite.objects.filter(user=request.user)
-                    .values_list('product_id', flat=True)
-        ) if request.user.is_authenticated else set(),
+        'favorite_products': favorite_products,
     }
     
     if request.headers.get("HX-Request"):
         return render(request, "app/includes/include_index.html", context)
     return render(request, "app/index.html", context)
+
 
 
 
@@ -98,6 +103,14 @@ def product_list(request):
     limit = 16
     products = base_qs.order_by('-created_at')[offset:offset+limit]
     
+    favorite_products = set()
+    if request.user.is_authenticated:
+        favorite_products = set(
+            Favorite.objects.filter(user=request.user)
+                    .values_list('product_id', flat=True)
+        )
+    
+    # Создаем объект для совместимости с шаблоном
     class ProductPage:
         def __init__(self, products, offset, limit, total):
             self.object_list = products
@@ -110,8 +123,10 @@ def product_list(request):
         'products': products_page,
         'total_count': total,
         'next_offset': products_page.next_offset,
+        'favorite_products': favorite_products,  # Добавляем избранные
     }
     return render(request, 'app/includes/product_list.html', context)
+
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
