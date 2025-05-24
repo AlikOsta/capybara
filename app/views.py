@@ -38,19 +38,6 @@ def htmx_aware_login_required(view_func):
     return wrapper
 
 
-def index(request):
-    context = {
-        'categories': Category.objects.all(),
-        'currencies': Currency.objects.all(),
-        'cities': City.objects.all(),
-        'banners': BannerPost.objects.all(),
-    }
-
-    if request.headers.get("HX-Request"):
-        return render(request, "app/includes/include_index.html", context)
-    return render(request, "app/index.html", context)
-
-
 def product_list(request):
     page = int(request.GET.get("page", 1))
     products = Product.objects.filter(status=3).order_by('-created_at')
@@ -109,7 +96,6 @@ def product_update(request, pk):
     return render(request, 'app/includes/product_form_modal.html', context)
 
 
-
 # Миксин для фильтрации опубликованных объявлений
 class PublishedProductsMixin:
     def get_queryset(self):
@@ -138,7 +124,7 @@ class AuthorRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 3), name='dispatch')
 class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для списка объявлений."""
     model = Product
@@ -182,7 +168,7 @@ class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 3), name='dispatch')
 class ProductDetailView(DetailView):
     """Представление для детального просмотра объявления."""
     model = Product
@@ -191,7 +177,6 @@ class ProductDetailView(DetailView):
     pk_url_kwarg = 'pk'
 
     def get_queryset(self):
-        # Используем select_related для загрузки связанных объектов за один запрос
         return Product.objects.select_related('author', 'category', 'currency', 'city')
 
     def get_object(self, queryset=None):
@@ -240,7 +225,7 @@ class ProductDetailView(DetailView):
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 3), name='dispatch')
 class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
     """Представление для детального просмотра категории."""
     model = Product
@@ -345,12 +330,12 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
         cities = cache.get(cities_cache_key)
         if not cities:
             cities = list(City.objects.all())
-            cache.set(cities_cache_key, cities, 60*60)  # 1 час
+            cache.set(cities_cache_key, cities, 60*5)  
 
         currencies = cache.get(currencies_cache_key)
         if not currencies:
             currencies = list(Currency.objects.all())
-            cache.set(currencies_cache_key, currencies, 60*60)  # 1 час
+            cache.set(currencies_cache_key, currencies, 60*5)  
             
         context = super().get_context_data(**kwargs)
         context['category'] = self.get_category()
@@ -366,7 +351,6 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
         context['has_more'] = self.total_count > len(context['products'])
         
         if self.request.user.is_authenticated:
-            # Оптимизируем запрос избранных продуктов
             context['favorite_products'] = list(
                 Favorite.objects.filter(user=self.request.user).values_list('product_id', flat=True)
             )
@@ -375,67 +359,8 @@ class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
         return context
 
 
-
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-class ProductCreateView(CreateView):
-    """Представление для создания нового объявления."""
-    model = Product
-    form_class = ProductForm
-    template_name = 'app/product_form.html'
-    success_url = reverse_lazy('app:index')
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        response = super().form_valid(form)
-        
-        # Если запрос от HTMX, возвращаем перенаправление для HTMX
-        if self.request.headers.get('HX-Request'):
-            return HttpResponse(
-                status=200,
-                headers={
-                    'HX-Redirect': self.get_success_url()
-                }
-            )
-        return response
-    
-    def get_template_names(self):
-        # Если запрос от HTMX, используем шаблон для модального окна
-        if self.request.headers.get('HX-Request'):
-            return ['app/includes/product_form_modal.html']
-        return [self.template_name]
-    
-
-@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-class ProductUpdateView(AuthorRequiredMixin, UpdateView):
-    """Представление для редактирования объявления."""
-    model = Product
-    form_class = ProductForm
-    template_name = 'app/product_form.html'
-    pk_url_kwarg = 'pk'
-
-    def get_queryset(self):
-        return Product.objects.filter(author=self.request.user)
-
-    def form_valid(self, form):
-        form.instance.status = 0 
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy('app:product_detail', kwargs={'pk': self.object.pk})
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['is_edit'] = True 
-        return context
-    
-    def get_template_names(self):
-        # Если запрос от HTMX, используем шаблон для модального окна
-        if self.request.headers.get('HX-Request'):
-            return ['app/includes/product_form_modal.html']
-        return [self.template_name]
-
-
-@method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+@method_decorator(cache_page(60 * 3), name='dispatch')
 class ProductDeleteView(AuthorRequiredMixin, DeleteView):
     """Представление для удаления объявления."""
     model = Product
@@ -449,6 +374,7 @@ class ProductDeleteView(AuthorRequiredMixin, DeleteView):
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+@method_decorator(cache_page(60 * 3), name='dispatch')
 class FavoriteListView(ListView):
     """Представление для отображения избранных объявлений."""
     model = Product
@@ -519,8 +445,8 @@ def change_product_status(request, pk, status):
         return redirect('app:product_detail', pk=pk)
 
     valid_transitions = {
-        3: [4],  # Из "Опубликовано" можно перейти только в "Архив"
-        4: [0],  # Из "Архив" можно перейти только на "Модерацию"
+        3: [4],  
+        4: [0],  
     }
     if product.status in valid_transitions and status in valid_transitions[product.status]:
         product.status = status
