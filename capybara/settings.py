@@ -14,7 +14,30 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+
+
+ALLOWED_HOSTS = [
+    '217.114.2.208', 
+    '127.0.0.1', 
+    'localhost', 
+    'capybaramarket.ru',
+    'www.capybaramarket.store'
+    ]
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://capybaramarket.ru',
+    'http://capybaramarket.ru', 
+    'https://217.114.2.208', 
+    'http://217.114.2.208',
+    'https://127.0.0.1',
+    'https://localhost',
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://www.capybaramarket.store',
+    'https://www.capybaramarket.store',
+    ]
+
 
 # Приложения
 DJANGO_APPS = [
