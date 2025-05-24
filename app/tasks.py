@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def archive_old_products():
     """
     Проверяет все активные объявления и переводит в архив те,
-    которые не обновлялись более 1 дня
+    которые не обновлялись более 28 дней
     """
     one_day_ago = timezone.now() - timedelta(days=28)
     

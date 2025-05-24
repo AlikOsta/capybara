@@ -37,6 +37,7 @@ THIRD_PARTY_APPS = [
     'debug_toolbar',
     'imagekit',
     'compressor',
+    'compressor',
 ]
 
 LOCAL_APPS = [
