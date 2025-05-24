@@ -38,37 +38,80 @@ def htmx_aware_login_required(view_func):
     return wrapper
 
 
-@cache_page(60 * 5)
 def index(request):
     context = {
-        'categories': get_cached('all_categories', Category.objects.all()),
-        'banners': get_cached('all_banners', BannerPost.objects.select_related('author').all()),
-        'total_count': cache.get_or_set(
-            'products_total_count', 
-            lambda: Product.objects.filter(status=3).count(), 
-            60 * 5
-        ),
-        'initial_products': cache.get_or_set(
-            'initial_products',
-            lambda: list(Product.objects.filter(status=3)
-                        .select_related('author', 'category', 'currency', 'city')
-                        .prefetch_related('favorited_by')[:8]),
-            60 * 2 
-        ),
-        'favorite_products': set(
-            Favorite.objects.filter(user=request.user)
-                    .values_list('product_id', flat=True)
-        ) if request.user.is_authenticated else set(),
+        'categories': Category.objects.all(),
+        'currencies': Currency.objects.all(),
+        'cities': City.objects.all(),
+        'banners': BannerPost.objects.all(),
     }
-    
+
     if request.headers.get("HX-Request"):
         return render(request, "app/includes/include_index.html", context)
     return render(request, "app/index.html", context)
 
 
+def product_list(request):
+    page = int(request.GET.get("page", 1))
+    products = Product.objects.filter(status=3).order_by('-created_at')
+    paginator = Paginator(products, 32)
+    
+    products_page = paginator.get_page(page)
+    
+    context = {
+        "products": products_page,
+        "total_count": products.count(),
+    }
+    
+    return render(request, 'app/includes/product_list.html', context)
 
-# Mixins
-class PublishedMixin:
+
+@htmx_aware_login_required
+def product_create(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.author = request.user
+            product.status = 0 
+            product.save()
+
+            async_task('app.tasks.moderate_product', product.id)
+
+            return HttpResponse(status=204, headers={'HX-Trigger': 'productListChanged'})
+    else:
+        form = ProductForm()
+    return render(request, 'app/includes/product_form_modal.html', {'form': form})
+
+
+@htmx_aware_login_required
+def product_update(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.author = request.user
+            product.status = 0
+            product.save()
+
+            async_task('app.tasks.moderate_product', product.id)
+
+            return HttpResponse(status=204, headers={'HX-Trigger': 'productListChanged'})
+    else:
+        form = ProductForm(instance=product)
+
+        context = {
+            'form': form,
+            'is_edit': True,
+        }
+
+    return render(request, 'app/includes/product_form_modal.html', context)
+
+
+
+# Миксин для фильтрации опубликованных объявлений
+class PublishedProductsMixin:
     def get_queryset(self):
         return super().get_queryset().filter(status=3)
 
@@ -87,35 +130,51 @@ class AuthorRequiredMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-def product_list(request):
-    page = int(request.GET.get('page', 1))
-    offset = int(request.GET.get('offset', 0))
+@method_decorator(cache_page(60 * 15), name='dispatch')
+class ProductListView(PublishedProductsMixin, SearchMixin, ListView):
+    """Представление для списка объявлений."""
+    model = Product
+    template_name = 'app/index.html'
+    context_object_name = 'products'
+    paginate_by = 30
+
+    def get_queryset(self):
+        queryset = Product.objects.filter(status=3).select_related(
+            'author', 'category', 'currency', 'city'
+        )
+
+        query = self.request.GET.get('q', '')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query)
+            )
+
+        return queryset.order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all().select_related()
+        
+        context['query'] = self.request.GET.get('q', '')
+        context['total_count'] = self.get_queryset().count()
+        context['has_more'] = context['total_count'] > len(context['products'])
+        context['banners'] = BannerPost.objects.all().select_related('author')
+
+        if self.request.user.is_authenticated:
+            favorite_products = list(
+                Favorite.objects.filter(user=self.request.user)
+                .values_list('product_id', flat=True)
+            )
+            context['favorite_products'] = favorite_products
+        else:
+            context['favorite_products'] = []
+        return context
     
-    base_qs = Product.objects.filter(status=3)
-    base_qs = base_qs.select_related('author', 'category', 'currency', 'city')
-    total = base_qs.count()
-    
-    limit = 16
-    products = base_qs.order_by('-created_at')[offset:offset+limit]
-    
-    class ProductPage:
-        def __init__(self, products, offset, limit, total):
-            self.object_list = products
-            self.has_next = offset + limit < total
-            self.next_offset = offset + limit if self.has_next else None
-    
-    products_page = ProductPage(products, offset, limit, total)
-    
-    context = {
-        'products': products_page,
-        'total_count': total,
-        'next_offset': products_page.next_offset,
-    }
-    return render(request, 'app/includes/product_list.html', context)
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-@method_decorator(cache_page(60 * 15), name='dispatch')
+@method_decorator(cache_page(60 * 3), name='dispatch')
 class ProductDetailView(DetailView):
     model = Product
     template_name = 'app/product_detail.html'
@@ -152,7 +211,8 @@ class ProductDetailView(DetailView):
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 @method_decorator(cache_page(60 * 15), name='dispatch')
-class CategoryDetailView(PublishedMixin, SearchMixin, ListView):
+class CategoryDetailView(PublishedProductsMixin, SearchMixin, ListView):
+    """Представление для детального просмотра категории."""
     model = Product
     template_name = 'app/category_detail.html'
     context_object_name = 'products'
@@ -172,32 +232,59 @@ class CategoryDetailView(PublishedMixin, SearchMixin, ListView):
         cur = self.request.GET.get('currency')
         if cur and cur.isdigit(): qs = qs.filter(currency_id=cur)
         sort = self.request.GET.get('sort')
-        ordering = {'price_asc':'price','price_desc':'-price','date_asc':'created_at'}.get(sort, '-created_at')
-        qs = qs.order_by(ordering)
-        self.total_count = qs.count()
-        return qs
+        if sort == 'price_asc':
+            queryset = queryset.order_by('price')
+        elif sort == 'price_desc':
+            queryset = queryset.order_by('-price')
+        elif sort == 'date_asc':
+            queryset = queryset.order_by('created_at')
+        else: 
+            queryset = queryset.order_by('-created_at')
+
+        return queryset
 
     def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx.update({
-            'category': self.get_category(),
-            'cities': get_cached('all_cities', City.objects.all()),
-            'currencies': get_cached('all_currencies', Currency.objects.all()),
-            'total_count': self.total_count,
-            'has_more': self.total_count > len(ctx['products']),
-            'query': self.request.GET.get('q', ''),
-            'current_sort': self.request.GET.get('sort', ''),
-            'current_city': self.request.GET.get('city', ''),
-            'current_currency': self.request.GET.get('currency', ''),
-            'favorite_products': set(
+
+        cities_cache_key = "all_cities"
+        currencies_cache_key = "all_currencies"
+
+        cities = cache.get(cities_cache_key)
+        if not cities:
+            cities = list(City.objects.all())
+            cache.set(cities_cache_key, cities, 60*60)  # 1 час
+
+        currencies = cache.get(currencies_cache_key)
+        if not currencies:
+            currencies = list(Currency.objects.all())
+            cache.set(currencies_cache_key, currencies, 60*60)  # 1 час
+            
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.get_category()
+        context['cities'] = City.objects.all()
+        context['currencies'] = Currency.objects.all()
+        context['query'] = self.request.GET.get('q', '')
+        context['current_sort'] = self.request.GET.get('sort', '')
+        context['current_city'] = self.request.GET.get('city', '')
+        context['current_currency'] = self.request.GET.get('currency', '')
+        
+        # Используем уже вычисленное значение total_count
+        context['total_count'] = self.total_count
+        context['has_more'] = self.total_count > len(context['products'])
+        
+        if self.request.user.is_authenticated:
+            # Оптимизируем запрос избранных продуктов
+            context['favorite_products'] = list(
                 Favorite.objects.filter(user=self.request.user).values_list('product_id', flat=True)
-            ) if self.request.user.is_authenticated else set(),
-        })
-        return ctx
+            )
+        else:
+            context['favorite_products'] = []
+        return context
+
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductCreateView(CreateView):
+    """Представление для создания нового объявления."""
     model = Product
     form_class = ProductForm
     template_name = 'app/product_form.html'
@@ -205,30 +292,28 @@ class ProductCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        form.instance.status = 0
         response = super().form_valid(form)
-
-        async_task('app.tasks.moderate_product', self.object.id)
         
+        # Если запрос от HTMX, возвращаем перенаправление для HTMX
         if self.request.headers.get('HX-Request'):
             return HttpResponse(
-                status=204, 
+                status=200,
                 headers={
-                    'HX-Trigger': 'productListChanged',
                     'HX-Redirect': self.get_success_url()
                 }
             )
-        
         return response
-
+    
     def get_template_names(self):
+        # Если запрос от HTMX, используем шаблон для модального окна
         if self.request.headers.get('HX-Request'):
             return ['app/includes/product_form_modal.html']
         return [self.template_name]
-
+    
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
 class ProductUpdateView(AuthorRequiredMixin, UpdateView):
+    """Представление для редактирования объявления."""
     model = Product
     form_class = ProductForm
     template_name = 'app/product_form.html'
@@ -238,31 +323,19 @@ class ProductUpdateView(AuthorRequiredMixin, UpdateView):
         return Product.objects.filter(author=self.request.user)
 
     def form_valid(self, form):
-        form.instance.status = 0
-        response = super().form_valid(form)
-
-        async_task('app.tasks.moderate_product', self.object.id)
-        
-        if self.request.headers.get('HX-Request'):
-            return HttpResponse(
-                status=204,
-                headers={
-                    'HX-Trigger': 'productListChanged',
-                    'HX-Redirect': self.get_success_url()
-                }
-            )
-        
-        return response
+        form.instance.status = 0 
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy('app:product_detail', kwargs={'pk': self.object.pk})
 
-    def get_context_data(self, **kw):
-        ctx = super().get_context_data(**kw)
-        ctx['is_edit'] = True
-        return ctx
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_edit'] = True 
+        return context
+    
     def get_template_names(self):
+        # Если запрос от HTMX, используем шаблон для модального окна
         if self.request.headers.get('HX-Request'):
             return ['app/includes/product_form_modal.html']
         return [self.template_name]
@@ -279,6 +352,7 @@ class ProductDeleteView(AuthorRequiredMixin, DeleteView):
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
+@method_decorator(cache_page(60 * 3), name='dispatch')
 class FavoriteListView(ListView):
     model = Product
     template_name = 'app/favorites.html'
@@ -315,8 +389,14 @@ def toggle_favorite(request, pk):
 @require_POST
 def change_product_status(request, pk, status):
     product = get_object_or_404(Product, pk=pk)
-    transitions = {3:[4],4:[0]}
-    if request.user == product.author and status in transitions.get(product.status, []):
+    if request.user != product.author:
+        return redirect('app:product_detail', pk=pk)
+
+    valid_transitions = {
+        3: [4],  # Из "Опубликовано" можно перейти только в "Архив"
+        4: [0],  # Из "Архив" можно перейти только на "Модерацию"
+    }
+    if product.status in valid_transitions and status in valid_transitions[product.status]:
         product.status = status
         product.save()
     return redirect('app:product_detail', pk=pk)
