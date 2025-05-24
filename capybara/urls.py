@@ -8,7 +8,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user_capybara.urls')),
     path('', include('app.urls')),
-    path('api/', include('api.urls')),  
 ]
 
 

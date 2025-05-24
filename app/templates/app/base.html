@@ -4,107 +4,97 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Capybara{% endblock %}</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
-          rel="preload" 
-          integrity="sha384-..." 
-          crossorigin="anonymous">
-    <link rel="preload" 
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" 
-          integrity="sha384-..." 
-          crossorigin="anonymous">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    {% compress css %}
-    <link rel="preload" href="{% static 'app/style/style.css' %}">
-    {% endcompress %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{% block title %}Capybara{% endblock %}</title>
+
+  <!-- Preconnect и DNS Prefetch для внешних ресурсов -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://telegram.org" crossorigin>
+
+  <!-- Preload основных ресурсов -->
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  </noscript>
+
+  <!-- Иконки -->
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  </noscript>
+
+  <!-- Основной CSS (компрессия и кеш) -->
+  {% compress css %}
+  <link rel="preload" as="style" href="{% static 'app/style/style.css' %}">
+  <link rel="stylesheet" href="{% static 'app/style/style.css' %}">
+  {% endcompress %}
+
 </head>
-
 <body class="d-flex flex-column min-vh-100" data-bs-theme="light" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
-    
-    {% csrf_token %}
 
-    <main class="flex-grow-1">
-        <div id="main-content" class="container">
-            {% block content %}
-            <!-- Здесь будет основное контент -->
-            {% endblock %}
-        </div>
-    </main>
+  {% csrf_token %}
 
-    <div class="modal fade" id="modal" tabindex="-1">
-        <div class="modal-dialog" id='dialog' hx-target='this'>
-            <!-- место для одального окнна -->
-        </div>
+  <main class="flex-grow-1">
+    <div id="main-content" class="container">
+      {% block content %}{% endblock %}
     </div>
+  </main>
 
-    <footer class="fixed-bottom bg-white border-top shadow-sm">
-  <nav class="container d-flex justify-content-between align-items-center" role="navigation" aria-label="Главное меню">
-    
-    <button type="button"
-            class="nav-btn flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
-            hx-get="{% url 'app:index' %}"
-            hx-target="#main-content"
-            hx-push-url="true"
-            aria-label="Поиск">
-    <i class="bi bi-house fs-4"></i>
-    </button>
+  <!-- Модальное окно HTMX -->
+  <div class="modal fade" id="modal" tabindex="-1">
+    <div class="modal-dialog" id="dialog" hx-target="this"></div>
+  </div>
 
-    <button type="button"
-            class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
-            hx-get="{% url 'app:favorites' %}"
-            hx-trigger="click, favoriteListChanged from:body"
-            hx-target="#main-content"
-            aria-label="Избранное">
-      <i class="bi bi-heart fs-4"></i>
-    </button>
+  <!-- Футер с навигацией -->
+  <footer class="fixed-bottom bg-white border-top shadow-sm">
+    <nav class="container d-flex justify-content-between align-items-center" role="navigation" aria-label="Главное меню">
+      {% comment %} Кнопки навигации {% endcomment %}
+      <button type="button" 
+              class="nav-btn flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+              onclick="window.location.href='{% url 'app:index' %}'"
+              aria-label="Поиск">
+        <i class="bi bi-house fs-4"></i>
+      </button>
+      <button type="button" class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'app:favorites' %}" hx-trigger="click, favoriteListChanged from:body" hx-target="#main-content" aria-label="Избранное">
+        <i class="bi bi-heart fs-4"></i>
+      </button>
+      <button type="button" class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'app:product_create' %}" hx-target="#dialog" aria-label="Создать пост">
+        <i class="bi bi-plus-square fs-4"></i>
+      </button>
+      <button type="button" class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'user:author_profile' user.id %}" hx-target="#main-content" aria-label="Профиль">
+        <i class="bi bi-person fs-4"></i>
+      </button>
+    </nav>
+  </footer>
 
-    <button type="button"
-            class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
-            hx-get="{% url 'app:product_create' %}"
-            hx-target="#dialog"
-            aria-label="Создать пост">
-      <i class="bi bi-plus-square fs-4"></i>
-    </button>
+  <!-- Скрипты внизу страницы для ускорения LCP -->
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script defer src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
 
-    <button type="button"
-            class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center"
-            hx-get="{% url 'user:author_profile' user.id %}"
-            hx-target="#main-content"
-            aria-label="Профиль">
-      <i class="bi bi-person fs-4"></i>
-    </button>
+  {% compress js %}
+  <!-- Deferred scripts -->
+  <script defer src="{% static 'app/js/dialog.js' %}"></script>
+  <script defer src="{% static 'app/js/main.js' %}"></script>
+  <script defer src="{% static 'app/js/favorites.js' %}"></script>
+  {% endcompress %}
 
-  </nav>
-</footer>
+  <!-- Inline init скрипт -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tg = window.Telegram?.WebApp;
+      if (tg && typeof adaptThemeToTelegram === 'function') {
+        adaptThemeToTelegram(tg);
+      }
+    });
+  </script>
 
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  {% block scripts %}{% endblock %}
 
-    {% compress js %}
-    <script defer src="{% static 'app/js/dialog.js' %}"></script>
-    <script defer src="{% static 'app/js/main.js' %}"></script>
-    <script src="{% static 'app/js/favorites.js' %}"></script>
-    <script src="{% static 'app/js/telegram-app.js' %}"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const tg = window.Telegram && window.Telegram.WebApp;
-            if (tg) {
-                if (typeof adaptThemeToTelegram === 'function') {
-                    adaptThemeToTelegram(tg);
-                }
-            }
-        });
-    </script>
-    
-    {% block scripts %}{% endblock %}
-
-    {% endcompress %}
-    
 </body>
 </html>

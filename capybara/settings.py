@@ -13,8 +13,8 @@ load_dotenv()
 # Базовые настройки
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
 # Приложения
 DJANGO_APPS = [
@@ -44,7 +44,6 @@ LOCAL_APPS = [
     'user_capybara',
     'bot_capybara',
     'stats',
-    'api',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -93,6 +92,18 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',    
+#         'NAME': os.getenv("NAME_SQL"),                          
+#         'USER': os.getenv("USER_SQL"),                             
+#         'PASSWORD': os.getenv('PASSWORD_SQL'),                       
+#         'HOST': os.getenv('HOST_SQL'),                          
+#         'PORT': os.getenv("PORT_SQL"),  
+                                     
+#     }
+# }
 
 # Валидация паролей
 AUTH_PASSWORD_VALIDATORS = [
@@ -313,29 +324,24 @@ CACHES = {
     }
 }
 
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
-
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
-]
-
-COMPRESS_JS_FILTERS = [
-    'compressor.filters.jsmin.JSMinFilter',
-]
-
 COMPRESS_CSS_FILTERS = [
     'compressor.filters.css_default.CssAbsoluteFilter',
     'compressor.filters.cssmin.rCSSMinFilter',
 ]
+COMPRESS_JS_FILTERS = [
+    'compressor.filters.jsmin.JSMinFilter',
+]
 
-COMPRESS_ROOT = STATIC_ROOT
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',  # Добавить эту строку
+]
 
-SECURE_HSTS_SECONDS = 3600
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+# Настройки статических файлов
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-CSRF_COOKIE_SECURE = True
-
+# Медиа файлы
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

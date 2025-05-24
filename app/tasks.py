@@ -3,6 +3,9 @@ from django.utils import timezone
 from .models import Product
 from django_q.tasks import async_task
 from .utils import moderate_goods
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def archive_old_products():
@@ -23,6 +26,7 @@ def archive_old_products():
 
 
 def moderate_product(product_id):
+    print(f"Запущена задача для продукта с ID {product_id}")
     """
     Фоновая задача: проверяет контент продукта через ИИ и сохраняет результат.
     """
@@ -35,4 +39,5 @@ def moderate_product(product_id):
             product.status = 2 
         product.save()
     except Product.DoesNotExist:
+        logger.error(f"Ошибка при модерации продукта {product_id}: {str(e)}")
         pass
