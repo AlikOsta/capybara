@@ -28,7 +28,7 @@ class Product(models.Model):
     category = models.ForeignKey('Category', on_delete=models.PROTECT, verbose_name='Категория')
     title = models.CharField(max_length=50, verbose_name='Товар', db_index=True) 
     description = models.TextField(max_length=350, verbose_name='Описание')
-    image = models.ImageField(upload_to='images/', verbose_name='Изображение')
+    image = models.ImageField(upload_to='midea/images/', verbose_name='Изображение')
     image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(300, 300)], format='WEBP', options={'quality': 65})
     image_small = ImageSpecField(source='image', processors=[ResizeToFill(150, 150)], format='WEBP', options={'quality': 60})
     image_large = ImageSpecField(source='image', processors=[ResizeToFit(800, 800)], format='WEBP', options={'quality': 80})
