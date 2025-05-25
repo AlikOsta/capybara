@@ -17,11 +17,24 @@ DEBUG = True
 
 
 ALLOWED_HOSTS = [
-    '217.114.2.208', 
+    '45.153.188.250', 
     '127.0.0.1', 
     'localhost', 
-    'capybaramarket.ru',
+    'capybaramarket.store',
     'www.capybaramarket.store'
+    '45.153.188.250',
+    ]
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://capybaramarket.store',
+    'http://capybaramarket.store', 
+    'https://45.153.188.250', 
+    'http://45.153.188.250',
+    'https://127.0.0.1',
+    'https://localhost',
+    'http://localhost',
+    'http://127.0.0.1',
     ]
 
 
@@ -109,24 +122,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'capybara.wsgi.application'
 
 # База данных
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',    
-#         'NAME': os.getenv("NAME_SQL"),                          
-#         'USER': os.getenv("USER_SQL"),                             
-#         'PASSWORD': os.getenv('PASSWORD_SQL'),                       
-#         'HOST': os.getenv('HOST_SQL'),                          
-#         'PORT': os.getenv("PORT_SQL"),  
-                                     
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',    
+        'NAME': os.getenv("NAME_SQL"),                          
+        'USER': os.getenv("USER_SQL"),                             
+        'PASSWORD': os.getenv('PASSWORD_SQL'),                       
+        'HOST': os.getenv('HOST_SQL'),                          
+        'PORT': os.getenv("PORT_SQL"),  
+                                     
+    }
+}
 
 # Валидация паролей
 AUTH_PASSWORD_VALIDATORS = [
