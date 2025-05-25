@@ -364,7 +364,7 @@ if DEBUG:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
     STATIC_URL = '/static/'
-    STATIC_ROOT = '/home/django/capybara/static'
+    STATIC_ROOT = '/home/django/capybara/staticfiles'
     STATICFILES_DIRS = [
         '/home/django/capybara/static',
     ]
