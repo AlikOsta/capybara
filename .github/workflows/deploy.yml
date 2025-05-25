@@ -1,0 +1,56 @@
+
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          
+          script: |
+            cd /home/django/capybara/
+            
+            echo "${{ secrets.PASSWORD }}" | sudo -S git pull
+            
+            source .venv/bin/activate
+            pip install -r requirements.txt
+
+            cat > .env << EOF
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+            MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }}
+            TELEGRAM_BOT_USERNAME=${{ secrets.TELEGRAM_BOT_USERNAME }}
+            TELEGRAM_MINI_APP_URL=${{ secrets.TELEGRAM_MINI_APP_URL }}
+            BASE_MINIAPP_URL=${{ secrets.BASE_MINIAPP_URL }}
+            PHOTO_ERROR=${{ secrets.PHOTO_ERROR }}
+            PHOTO_START=${{ secrets.PHOTO_START }}
+            PHOTO_HELP=${{ secrets.PHOTO_HELP }}
+            PHOTO_INFO=${{ secrets.PHOTO_INFO }}
+            PHOTO_THANKS=${{ secrets.PHOTO_THANKS }}
+            SAPPORT_URL=${{ secrets.SAPPORT_URL }}
+            YOUR_PERSONAL_CHAT_ID=${{ secrets.YOUR_PERSONAL_CHAT_ID }}
+            NAME_SQL=${{ secrets.NAME_SQL }}
+            USER_SQL=${{ secrets.USER_SQL }}
+            PORT_SQL=${{ secrets.PORT_SQL }}
+            HOST_SQL=${{ secrets.HOST_SQL }}
+            PASSWORD_SQL=${{ secrets.PASSWORD_SQL }}
+            EOF
+
+            python manage.py makemigrations
+            python manage.py migrate
+            python manage.py compress
+            python manage.py collectstatic --noinput
+            
+            echo "${{ secrets.PASSWORD }}" | sudo -S systemctl restart gunicorn

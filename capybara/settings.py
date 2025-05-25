@@ -363,3 +363,17 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+COMPRESS_ENABLED = True
+
+# (рекомендую) заранее сгенерировать файлы
+COMPRESS_OFFLINE = True
+
+# примеры фильтров — настраивайте по своему вкусу
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter',
+    'compressor.filters.cssmin.rCSSMinFilter',
+]
+COMPRESS_JS_FILTERS = [
+    'compressor.filters.jsmin.JSMinFilter',
+]
