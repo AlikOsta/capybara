@@ -29,11 +29,11 @@ jobs:
 
             cat > .env << EOF
             SECRET_KEY=${{ secrets.SECRET_KEY }}
-            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+            BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             MISTRAL_API_KEY=${{ secrets.MISTRAL_API_KEY }}
             TELEGRAM_BOT_USERNAME=${{ secrets.TELEGRAM_BOT_USERNAME }}
             TELEGRAM_MINI_APP_URL=${{ secrets.TELEGRAM_MINI_APP_URL }}
-            BASE_MINIAPP_URL=${{ secrets.BASE_MINIAPP_URL }}
+            BASE_MINIAPP_URL=${{ secrets.BASE_URL }}
             PHOTO_ERROR=${{ secrets.PHOTO_ERROR }}
             PHOTO_START=${{ secrets.PHOTO_START }}
             PHOTO_HELP=${{ secrets.PHOTO_HELP }}
