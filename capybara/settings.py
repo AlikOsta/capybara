@@ -217,13 +217,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-# Настройки сессий
 SESSION_COOKIE_SECURE = not DEBUG  # True в продакшене
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30 
 
-# Время кэширования в секундах
-CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 минут
+CACHE_MIDDLEWARE_SECONDS = 60 * 1  
 
 # Настройки Jazzmin
 JAZZMIN_SETTINGS = {
@@ -252,7 +250,7 @@ JAZZMIN_SETTINGS = {
         "app": [
             {
                 "name": "Статистика", 
-                "url": "/admin/stats/dashboard/",  # Новый URL для объединенной статистики
+                "url": "/admin/stats/dashboard/",  
                 "icon": "fas fa-chart-line"
             },
         ]
@@ -270,9 +268,9 @@ JAZZMIN_SETTINGS = {
     },
     
     # Настройка дашборда
-    "dashboard_charts": True,  # Включаем графики на дашборде
+    "dashboard_charts": True, 
     "changeform_format": "horizontal_tabs",
-    "show_ui_builder": True,  # Включаем UI Builder для настройки
+    "show_ui_builder": True,  
 }
 
 # Настройки UI для Jazzmin
@@ -309,7 +307,6 @@ JAZZMIN_UI_TWEAKS = {
 }
 
 JAZZMIN_SETTINGS.update({
-    # Настройка дашборда
     "dashboard_charts": True,
     "dashboard_widgets": [
         {
@@ -358,13 +355,11 @@ COMPRESS_JS_FILTERS = [
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',  # Добавить эту строку
+    'compressor.finders.CompressorFinder',  
 ]
 
-# Настройки статических файлов
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Медиа файлы
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

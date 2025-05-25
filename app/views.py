@@ -294,7 +294,6 @@ class ProductDeleteView(AuthorRequiredMixin, DeleteView):
 
 
 @method_decorator(login_required(login_url='user:telegram_auth'), name='dispatch')
-@method_decorator(cache_page(60 * 3), name='dispatch')
 class FavoriteListView(ListView):
     model = Product
     template_name = 'app/favorites.html'
