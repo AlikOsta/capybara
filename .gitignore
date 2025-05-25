@@ -10,5 +10,4 @@ media
 bot.log
 datadump.json
 staticfiles/
-static/
 staticfiles/CACHE*
