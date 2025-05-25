@@ -20,11 +20,18 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           
           script: |
+            echo "=== Добавляем директорию в безопасные ==="
+            git config --global --add safe.directory /home/django/capybara
+            
+            echo "=== Переходим в директорию проекта ==="
             cd /home/django/capybara/
             
-            echo "${{ secrets.PASSWORD }}" | sudo -S git pull
+            echo "=== Выполняем git pull ==="
+            git pull origin main
             
+            echo "=== Активируем виртуальное окружение ==="
             source .venv/bin/activate
+            
             pip install -r requirements.txt
 
             cat > .env << EOF
