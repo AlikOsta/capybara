@@ -13,7 +13,7 @@ load_dotenv()
 # Базовые настройки
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True')
 
 
 ALLOWED_HOSTS = [
@@ -22,21 +22,24 @@ ALLOWED_HOSTS = [
     'localhost', 
     'capybaramarket.store',
     'www.capybaramarket.store'
-    '45.153.188.250',
     ]
-
 
 CSRF_TRUSTED_ORIGINS = [
     'https://capybaramarket.store',
     'http://capybaramarket.store', 
     'https://45.153.188.250', 
     'http://45.153.188.250',
-    'https://127.0.0.1',
     'https://localhost',
     'http://localhost',
     'http://127.0.0.1',
+    'https://127.0.0.1',
     ]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://web.telegram.org",
+    "https://capybarashop.store",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://capybaramarket.ru',
@@ -51,8 +54,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.capybaramarket.store',
     ]
 
-
-# Приложения
 DJANGO_APPS = [
     'jazzmin',
     'django.contrib.admin',
@@ -82,6 +83,11 @@ LOCAL_APPS = [
     'stats',
 ]
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+    "localhost",
+]
+
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 # Middleware
@@ -98,7 +104,6 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-# URL и шаблоны
 ROOT_URLCONF = 'capybara.urls'
 
 TEMPLATES = [
@@ -158,20 +163,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Интернационализация
-LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'ru-ru')
-TIME_ZONE = os.getenv('TIME_ZONE', 'Europe/Moscow')
+LANGUAGE_CODE = 'ru-ru'
+TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
-
-# Статические файлы и медиа
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Настройки по умолчанию
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -196,21 +191,6 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-# CORS настройки
-CORS_ALLOWED_ORIGINS = [
-    "https://web.telegram.org",
-]
-CORS_ALLOW_CREDENTIALS = True
-
-# Настройки для Telegram бота
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME')
-TELEGRAM_MINI_APP_URL = os.getenv('TELEGRAM_MINI_APP_URL')
-BASE_URL = os.getenv('BASE_URL')
-
-# Mistral API
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 
-
 # Django Q настройки
 Q_CLUSTER = {
     'name': 'capybara',
@@ -223,12 +203,7 @@ Q_CLUSTER = {
     'orm': 'default',
 }
 
-# CORS настройки
-CORS_ALLOWED_ORIGINS = [
-    "https://web.telegram.org",
-    "https://capybarashop.store",
-]
-CORS_ALLOW_CREDENTIALS = True
+
 
 SESSION_COOKIE_SECURE = not DEBUG  # True в продакшене
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -331,6 +306,16 @@ JAZZMIN_SETTINGS.update({
     ],
 })
 
+
+# Настройки для Telegram бота
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_BOT_USERNAME = os.getenv('TELEGRAM_BOT_USERNAME')
+TELEGRAM_MINI_APP_URL = os.getenv('TELEGRAM_MINI_APP_URL')
+BASE_URL = os.getenv('BASE_URL')
+
+# Mistral API
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY") 
+
 # Пути к изображениям для бота
 PHOTO_START = os.getenv("PHOTO_START")
 PHOTO_HELP = os.getenv("PHOTO_HELP")
@@ -338,13 +323,6 @@ PHOTO_INFO = os.getenv("PHOTO_INFO")
 PHOTO_ERROR = os.getenv("PHOTO_ERROR")
 
 SAPPORT_URL = os.getenv("SAPPORT_URL")
-
-BASE_URL = os.getenv("BASE_URL")
-
-INTERNAL_IPS = [
-    "127.0.0.1",
-    "localhost",
-]
 
 IMAGEKIT_CACHEFILE_DIR = 'media/CACHE/images'
 IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
@@ -356,6 +334,10 @@ CACHES = {
         'TIMEOUT': 300,  
     }
 }
+
+COMPRESS_ENABLED = True
+
+COMPRESS_OFFLINE = True
 
 COMPRESS_CSS_FILTERS = [
     'compressor.filters.css_default.CssAbsoluteFilter',
@@ -371,22 +353,23 @@ STATICFILES_FINDERS = [
     'compressor.finders.CompressorFinder',  
 ]
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+if DEBUG:
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = [
+        BASE_DIR / 'static',
+    ]
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = '/home/django/capybra/static'
+    STATICFILES_DIRS = [
+        '/home/django/capybara/static',
+    ]
+    
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = '/home/django/capybra/media'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
-COMPRESS_ENABLED = True
-
-# (рекомендую) заранее сгенерировать файлы
-COMPRESS_OFFLINE = True
-
-# примеры фильтров — настраивайте по своему вкусу
-COMPRESS_CSS_FILTERS = [
-    'compressor.filters.css_default.CssAbsoluteFilter',
-    'compressor.filters.cssmin.rCSSMinFilter',
-]
-COMPRESS_JS_FILTERS = [
-    'compressor.filters.jsmin.JSMinFilter',
-]

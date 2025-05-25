@@ -46,6 +46,7 @@ jobs:
             PORT_SQL=${{ secrets.PORT_SQL }}
             HOST_SQL=${{ secrets.HOST_SQL }}
             PASSWORD_SQL=${{ secrets.PASSWORD_SQL }}
+            DEBUG=${{ secrets.DEBUG }}
             EOF
 
             python manage.py makemigrations

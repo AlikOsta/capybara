@@ -50,25 +50,74 @@
     <div class="modal-dialog" id="dialog" hx-target="this"></div>
   </div>
 
-  <!-- Футер с навигацией -->
+<!-- Футер с навигацией -->
   <footer class="fixed-bottom bg-white border-top shadow-sm">
     <nav class="container d-flex justify-content-between align-items-center" role="navigation" aria-label="Главное меню">
       {% comment %} Кнопки навигации {% endcomment %}
+      
+      <!-- Кнопка "Домой" - всегда доступна -->
       <button type="button" 
               class="nav-btn flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
               onclick="window.location.href='{% url 'app:index' %}'"
               aria-label="Поиск">
         <i class="bi bi-house fs-4"></i>
       </button>
-      <button type="button" class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'app:favorites' %}" hx-trigger="click, favoriteListChanged from:body" hx-target="#main-content" aria-label="Избранное">
-        <i class="bi bi-heart fs-4"></i>
-      </button>
-      <button type="button" class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'app:product_create' %}" hx-target="#dialog" aria-label="Создать пост">
-        <i class="bi bi-plus-square fs-4"></i>
-      </button>
-      <button type="button" class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" hx-get="{% url 'user:author_profile' user.id %}" hx-target="#main-content" aria-label="Профиль">
-        <i class="bi bi-person fs-4"></i>
-      </button>
+      
+      <!-- Кнопка "Избранное" - требует авторизации -->
+      {% if user.is_authenticated %}
+        <button type="button" 
+                class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+                hx-get="{% url 'app:favorites' %}" 
+                hx-trigger="click, favoriteListChanged from:body" 
+                hx-target="#main-content" 
+                aria-label="Избранное">
+          <i class="bi bi-heart fs-4"></i>
+        </button>
+      {% else %}
+        <button type="button" 
+                class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+                onclick="window.location.href='{% url 'user:telegram_auth' %}'"
+                aria-label="Избранное">
+          <i class="bi bi-heart fs-4"></i>
+        </button>
+      {% endif %}
+      
+      <!-- Кнопка "Создать пост" - требует авторизации -->
+      {% if user.is_authenticated %}
+        <button type="button" 
+                class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+                hx-get="{% url 'app:product_create' %}" 
+                hx-target="#dialog" 
+                aria-label="Создать пост">
+          <i class="bi bi-plus-square fs-4"></i>
+        </button>
+      {% else %}
+        <button type="button" 
+                class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+                onclick="window.location.href='{% url 'user:telegram_auth' %}'"
+                aria-label="Создать пост">
+          <i class="bi bi-plus-square fs-4"></i>
+        </button>
+      {% endif %}
+      
+      <!-- Кнопка "Профиль" - требует авторизации -->
+      {% if user.is_authenticated %}
+        <button type="button" 
+                class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+                hx-get="{% url 'user:author_profile' user.id %}" 
+                hx-target="#main-content" 
+                aria-label="Профиль">
+          <i class="bi bi-person fs-4"></i>
+        </button>
+      {% else %}
+        <button type="button" 
+                class="flex-fill btn bg-transparent border-0 d-flex flex-column align-items-center text-muted text-center" 
+                onclick="window.location.href='{% url 'user:telegram_auth' %}'"
+                aria-label="Профиль">
+          <i class="bi bi-person fs-4"></i>
+        </button>
+      {% endif %}
+      
     </nav>
   </footer>
 
