@@ -145,10 +145,17 @@
         
         <!-- Объявления на модерации (статус 1) -->
         <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
-            {% if pending_products or approved_products %}
+            {% if pending_products or approved_products %} 
             <div class="row g-3">
                 <!-- Затем показываем объявления со статусом 1 (одобрено, но не опубликовано) -->
-                {% for product in approved_products %}
+                {% for product in approved_products%}
+                <div class="col-6">
+                    <div class="position-relative">
+                        {% include 'app/includes/product_card.html' with product=product %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% for product in pending_products%}
                 <div class="col-6">
                     <div class="position-relative">
                         {% include 'app/includes/product_card.html' with product=product %}

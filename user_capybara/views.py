@@ -77,12 +77,10 @@ class AuthorProfileView(AuthorProfileMixin, TemplateView):
         if self._products_by_status is None:
             author = self.get_author()
             
-            # Получаем все продукты автора за один запрос
             all_products = Product.objects.filter(
                 author=author
             ).select_related('category', 'city', 'currency', 'author')
-            
-            # Группируем продукты по статусу
+
             self._products_by_status = {
                 0: [], # pending
                 1: [], # approved

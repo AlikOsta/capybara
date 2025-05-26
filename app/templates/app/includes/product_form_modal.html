@@ -1,5 +1,3 @@
-
-
 <div class="modal-content">
     <div class="modal-header">
         <h5 class="modal-title">
@@ -46,9 +44,9 @@
                 <!-- Контейнер для предпросмотра изображения -->
                 <div class="image-preview-container mb-2">
                     {% if is_edit and object.image %}
-                        <img src="{{ object.image.url }}" alt="{{ object.title }}" class="img-preview img-fluid rounded">
+                        <img id="imagePreview" src="{{ object.image.url }}" alt="{{ object.title }}" class="img-preview img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: cover;">
                     {% else %}
-                        <div class="img-preview-placeholder d-flex align-items-center justify-content-center rounded">
+                        <div id="imagePreview" class="img-preview-placeholder d-flex align-items-center justify-content-center rounded border" style="height: 200px; background-color: #f8f9fa;">
                             <i class="bi bi-image text-muted fs-1"></i>
                         </div>
                     {% endif %}
@@ -59,7 +57,12 @@
                     <label for="{{ form.image.id_for_label }}" class="btn btn-outline-primary w-100">
                         <i class="bi bi-upload me-2"></i>Выбрать фото
                     </label>
-                    <input type="file" id="{{ form.image.id_for_label }}" name="{{ form.image.html_name }}" class="d-none" accept="image/*">
+                    <input type="file" 
+                           id="{{ form.image.id_for_label }}" 
+                           name="{{ form.image.html_name }}" 
+                           class="d-none" 
+                           accept="image/*"
+                           onchange="previewImage(this)">
                 </div>
                 
                 {% if form.image.errors %}
@@ -106,7 +109,7 @@
         </form>
 
         <div class="d-grid gap-3 d-md-flex justify-content-md-end">
-            <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Отмена</a>
+            <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Отмена</button>
             <button type="submit" class="btn btn-primary" form="productForm">
                 {% if is_edit %}
                     Сохранить изменения
@@ -117,3 +120,38 @@
         </div> 
     </div>
 </div>
+
+<script>
+function previewImage(input) {
+    const file = input.files[0];
+    const imagePreview = document.getElementById('imagePreview');
+    
+    if (file && imagePreview) {
+        // Проверяем, что это изображение
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // Если это placeholder div, заменяем на img
+                if (imagePreview.tagName === 'DIV') {
+                    const newImg = document.createElement('img');
+                    newImg.id = 'imagePreview';
+                    newImg.className = 'img-preview img-fluid rounded';
+                    newImg.style.cssText = 'max-height: 200px; width: 100%; object-fit: cover;';
+                    newImg.src = e.target.result;
+                    newImg.alt = 'Предпросмотр';
+                    imagePreview.parentNode.replaceChild(newImg, imagePreview);
+                } else {
+                    // Если это уже img, просто меняем src
+                    imagePreview.src = e.target.result;
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        } else {
+            alert('Пожалуйста, выберите файл изображения');
+            input.value = '';
+        }
+    }
+}
+</script>
