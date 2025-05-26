@@ -8,7 +8,6 @@ class Command(BaseCommand):
         self.stdout.write('Generating thumbnails for Products...')
         for product in Product.objects.all():
             if product.image:
-                # Принудительно генерируем миниатюры
                 self.stdout.write(f'Processing product {product.id}')
                 try:
                     product.image_thumbnail.generate()

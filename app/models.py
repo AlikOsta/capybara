@@ -28,7 +28,7 @@ class Product(models.Model):
     category = models.ForeignKey('Category', on_delete=models.PROTECT, verbose_name='Категория')
     title = models.CharField(max_length=50, verbose_name='Товар', db_index=True) 
     description = models.TextField(max_length=350, verbose_name='Описание')
-    image = models.ImageField(upload_to='midea/images/', verbose_name='Изображение')
+    image = models.ImageField(upload_to='images/', verbose_name='Изображение')
     image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(300, 300)], format='WEBP', options={'quality': 65})
     image_small = ImageSpecField(source='image', processors=[ResizeToFill(150, 150)], format='WEBP', options={'quality': 60})
     image_large = ImageSpecField(source='image', processors=[ResizeToFit(800, 800)], format='WEBP', options={'quality': 80})
@@ -95,7 +95,7 @@ class Category(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name='Категория')
     order = models.SmallIntegerField(default=0, db_index=True, verbose_name='Порядок')
     slug = models.SlugField(max_length=200, verbose_name='Слаг')
-    image = models.ImageField(upload_to='media/images/cat_img/', blank=True, null=True, verbose_name='Изображение')
+    image = models.ImageField(upload_to='cat_img/', blank=True, null=True, verbose_name='Изображение')
     image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(70, 70)], format='WEBP', options={'quality': 65})
 
     def __str__(self):
@@ -228,7 +228,7 @@ class BannerPost(models.Model):
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Автор')
     title = models.CharField(max_length=50, verbose_name='Товар', db_index=True)
     link = models.URLField(max_length=200, verbose_name='Ссылка', blank=True, null=True)
-    image = models.ImageField(upload_to='media/images/banner/', verbose_name='Изображение')
+    image = models.ImageField(upload_to='banner/', verbose_name='Изображение')
     image_thumbnail = ImageSpecField(source='image', processors=[ResizeToFill(80, 80)], format='WEBP', options={'quality': 65})
 
     def save(self, *args, **kwargs):    

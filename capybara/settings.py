@@ -24,17 +24,6 @@ ALLOWED_HOSTS = [
     'www.capybaramarket.store'
     ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://capybaramarket.store',
-    'http://capybaramarket.store', 
-    'https://45.153.188.250', 
-    'http://45.153.188.250',
-    'https://localhost',
-    'http://localhost',
-    'http://127.0.0.1',
-    'https://127.0.0.1',
-    ]
-
 CORS_ALLOWED_ORIGINS = [
     "https://web.telegram.org",
     "https://capybarashop.store",
@@ -127,24 +116,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'capybara.wsgi.application'
 
 # База данных
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',    
-        'NAME': os.getenv("NAME_SQL"),                          
-        'USER': os.getenv("USER_SQL"),                             
-        'PASSWORD': os.getenv('PASSWORD_SQL'),                       
-        'HOST': os.getenv('HOST_SQL'),                          
-        'PORT': os.getenv("PORT_SQL"),  
-                                     
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',    
+#         'NAME': os.getenv("NAME_SQL"),                          
+#         'USER': os.getenv("USER_SQL"),                             
+#         'PASSWORD': os.getenv('PASSWORD_SQL'),                       
+#         'HOST': os.getenv('HOST_SQL'),                          
+#         'PORT': os.getenv("PORT_SQL"),  
+                                     
+#     }
+# }
 
 # Валидация паролей
 AUTH_PASSWORD_VALIDATORS = [
@@ -324,7 +313,7 @@ PHOTO_ERROR = os.getenv("PHOTO_ERROR")
 
 SAPPORT_URL = os.getenv("SAPPORT_URL")
 
-IMAGEKIT_CACHEFILE_DIR = 'media/CACHE/images'
+IMAGEKIT_CACHEFILE_DIR = 'CACHE/'
 IMAGEKIT_DEFAULT_CACHEFILE_STRATEGY = 'imagekit.cachefiles.strategies.Optimistic'
 
 CACHES = {
@@ -353,23 +342,11 @@ STATICFILES_FINDERS = [
     'compressor.finders.CompressorFinder',  
 ]
 
-if DEBUG:
-    STATIC_URL = '/static/'
-    STATICFILES_DIRS = [
-        BASE_DIR / 'static',
-    ]
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-else:
-    STATIC_URL = '/static/'
-    STATIC_ROOT = '/home/django/capybara/staticfiles'
-    STATICFILES_DIRS = [
-        '/home/django/capybara/static',
-    ]
-    
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = '/home/django/capybara/media'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = '/home/django/capybara/static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/home/django/capybara/media'
 
 
